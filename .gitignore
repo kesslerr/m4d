@@ -1,8 +1,11 @@
 .vscode/
 .Rproj.user
-
-
 **/.DS_Store
+
+# raw eeg data
+**/*.fdt
+**/*.set
+
 
 # large intermediary and processed files
 **/*.fif
