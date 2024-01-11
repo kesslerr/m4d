@@ -129,7 +129,8 @@ assert event_counts['face'] == event_counts['car'] == event_counts['scrambled_fa
 """ rereferencing """
 
 #Rereference to the average of P9 and P10
-raw = raw.set_eeg_reference(['P9','P10']) # there is no mastoids in the data
+#raw = raw.set_eeg_reference(['P9','P10']) # there is no mastoids in the data
+# TODO: do in multiverse instead
 
 """ eog channels """
 
