@@ -7,7 +7,7 @@ os.chdir('./..')
 
 # define components and number of participants
 components = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']
-n_participants = 5
+n_participants = 40
 
 # download 
 file_paths = {}
