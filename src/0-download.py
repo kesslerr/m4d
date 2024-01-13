@@ -5,22 +5,22 @@ from pipeline.datasets import get_erpcore
 import os, sys
 os.chdir('./..')
 
-# define components and number of participants
-components = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']
+# define experiment and number of participants
+experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']
 n_participants = 40
 
 # download 
 file_paths = {}
-for component in components:
-    file_paths[component] = get_erpcore(component, 
+for experiment in experiments:
+    file_paths[experiment] = get_erpcore(experiment, 
                                         participants=n_participants, 
                                         path='data')
 
 # move from data/erpcore to data, and delete the "eeg" subfolder
 # TODO: this does not yet move all files, some are not listed in the dict
-# for component in components:
-#     for file_type in file_paths[component].keys():
-#         for file in file_paths[component][file_type]:
+# for experiment in experiments:
+#     for file_type in file_paths[experiment].keys():
+#         for file in file_paths[compexperimentonent][file_type]:
 #             new_file = file.replace('/erpcore/','/')
 #             new_file = new_file.replace('/eeg/','/')
 #             os.renames(file,  
