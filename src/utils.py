@@ -1,4 +1,5 @@
 import numpy as np
+import json
 import mne
 from mne.preprocessing import ICA
 from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
