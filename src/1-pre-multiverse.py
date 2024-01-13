@@ -23,6 +23,9 @@ os.chdir(base_dir)
 sys.path.append(base_dir)
 from src.utils import discard_triggers, recalculate_eog_signal, set_montage, rename_annotations
 from src.config import subjects, experiments, delete_triggers, conditions_triggers
+from src.exceptions import exception_pre_preprocessing_annotations
+
+""" HEADER END """
 
 for experiment in experiments:
     print(f"Processing experiment {experiment}...")
@@ -45,12 +48,12 @@ for experiment in experiments:
                                     #montage_units='auto',
                                     verbose=None)
 
-        """ annotations and events """
         # discard unnecessary triggers
         raw = discard_triggers(raw.copy(), delete_triggers[experiment])
         
         # collate triggers into conditions in annotations
         raw = rename_annotations(raw.copy(), conditions_triggers[experiment])
+        raw = exception_pre_preprocessing_annotations(experiment, subject, raw.copy())
         
         # get events
         events, event_dict = mne.events_from_annotations(raw)

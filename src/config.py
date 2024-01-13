@@ -67,21 +67,35 @@ epoch_windows = {
 # windows for baseline correction
 baseline_windows = {
     '200ms': {
-        'ERN':  [-.6, -.4],
-        'LRP':  [-.8, -.6],
-        'MMN':  [-.2, 0.],
-        'N170': [-.2, 0.],
-        'N2pc': [-.2, 0.],
-        'N400': [-.2, 0.],
-        'P3':   [-.2, 0.],
+        'ERN':  (-.6, -.4),
+        'LRP':  (-.8, -.6),
+        'MMN':  (-.2, 0.),
+        'N170': (-.2, 0.),
+        'N2pc': (-.2, 0.),
+        'N400': (-.2, 0.),
+        'P3':   (-.2, 0.),
         },
     '400ms': {
-        'ERN':  [-.6, -.2],
-        'LRP':  [-.8, -.4],
-        'MMN':  [-.2, 0.],
-        'N170': [-.2, 0.],
-        'N2pc': [-.2, 0.],
-        'N400': [-.2, 0.],
-        'P3':   [-.2, 0.],
+        'ERN':  (-.6, -.2),
+        'LRP':  (-.8, -.4),
+        'MMN':  (-.2, 0.),
+        'N170': (-.2, 0.),
+        'N2pc': (-.2, 0.),
+        'N400': (-.2, 0.),
+        'P3':   (-.2, 0.),
         },
     }    
+
+# define multiverse parameter space
+multiverse_params = {
+        'hpf': [None, 0.1, 0.5], # was 0.01, but the raw data has implicit hpf of 0.03 already
+        'lpf': [None, 15, 45], # was 30
+        'emc': [None, 'ica'],  # 'peak-to-peak', 
+        'mus': [None, 'ica'], 
+        'ref': [['FCz'], 'average', ['P9', 'P10']], # , 'mastoids'
+        'base': [None, '200ms', '400ms'],
+        # TODO: univariate noise normalization in baseline?: 
+        # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
+        'det': [False, 'offset', 'linear'], # detrending should rather be combined with baseline correction, then det. is applied first. but it is again applied when loading data, so careful!
+        'ar': [False, True], 
+        }

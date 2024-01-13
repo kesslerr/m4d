@@ -1,5 +1,9 @@
 import numpy as np
 import mne
+from mne.preprocessing import ICA
+from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
+
+""" ------------------- pre-multiverse ------------------- """
 
 # delete all unnecessary triggers
 def discard_triggers(raw, delete_triggers):
@@ -107,3 +111,152 @@ def set_montage(raw):
     raw.set_montage(mont)
     
     return raw
+
+""" ------------------- multiverse ------------------- """
+
+# this to save some information about e.g. dropouts in some pipelines, n interpolated, and so on
+class CharacteristicsManager:
+    def __init__(self, file_path, force_new=False):
+        self.file_path = file_path
+        self.characteristics = {}
+        if not force_new:
+            self._load_characteristics()
+        self.save_characteristics()  # Save the file upon initialization
+
+    def _load_characteristics(self):
+        if os.path.isfile(self.file_path):
+            with open(self.file_path, 'r') as file:
+                self.characteristics = json.load(file)
+
+    def save_characteristics(self):
+        with open(self.file_path, 'w') as file:
+            json.dump(self.characteristics, file, indent=4)
+
+    def update_characteristic(self, key, value):
+        # if only 1 level is added
+        self.characteristics[key] = value
+        self.save_characteristics()
+
+    def get_characteristic(self, key):
+        return self.characteristics.get(key, None)
+
+    def update_subfield(self, key, subfield, subfield_value):
+        # if more than 1 level is added
+        if key not in self.characteristics:
+            self.characteristics[key] = {}
+        self.characteristics[key][subfield] = subfield_value
+        self.save_characteristics()
+
+    def get_subfield(self, key, subfield):
+        return self.characteristics.get(key, {}).get(subfield, None)
+
+    def update_subsubfield(self, key, subfield, subsubfield, subsubfield_value):
+        # if more than 2 level is added
+        if key not in self.characteristics:
+            self.characteristics[key] = {}
+        if subfield not in self.characteristics[key]:
+            self.characteristics[key][subfield] = {}
+        self.characteristics[key][subfield][subsubfield] = subsubfield_value
+        self.save_characteristics()
+
+    def get_subsubfield(self, key, subfield, subsubfield):
+        return self.characteristics.get(key, {}).get(subfield, {}).get(subsubfield, None)
+
+
+def ica_eog_emg(raw, method='eog'):
+    """ 
+    ICA to find EOG or EMG artifacts and remove them
+    For EOG, EOG channels need to be defined in raw.
+    Args:   
+        raw (mne.raw): raw data object
+        method (str): automated detection of either eye (eog) or muscle (emg) artifacts
+        save_ica (bool): save ica object
+        save_plot (bool): save ica plots
+        save_str (str): string to add to save name
+    Returns:
+        raw_new (mne.raw): raw data with artifacts regressed out
+        n_corr_components (int): number of found components that correlate with eog/emg
+    """
+    raw_new = raw.copy()
+
+    # HPF (necessary for ICA), l_freq is HPF cutoff, and h_freq is LPF cutoff
+    filt_raw = raw.copy().filter(l_freq=1.0, h_freq=None, n_jobs=-1)
+
+    # ica
+    ica = ICA(n_components=20, max_iter="auto", method='picard', random_state=97)
+    ica.fit(filt_raw) # bads seem to be ignored by default
+
+    # automatic detection of EOG/EMG components
+    ica.exclude = []
+
+    if method == 'eog':
+        # find which ICs match the EOG pattern
+        indices, scores = ica.find_bads_eog(raw_new)
+    elif method == 'emg':
+        # find which ICs match the muscle pattern
+        indices, scores = ica.find_bads_muscle(raw_new)
+    
+    print(f'Found {len(indices)} independent components correlating with {method.upper()}.')
+    ica.exclude.extend(indices) 
+
+    # because it is an "additive" process, the ica component removel on filtered data 
+    # can be used on the unfiltered raw data (source: tutorial)
+    # ica.apply() changes the Raw object in-place, so let's make a copy first:
+    ica.apply(raw_new)
+
+    return raw_new, len(indices)
+
+
+# autoreject parser
+def autorej(epochs):
+    """
+    Run Autoreject on trials.
+    
+    Args:
+        epochs (mne.epochs): epochs object
+        
+    Returns:
+        epochs_ar (mne.epochs): artifact rejected epochs
+        drop_log (pandas.DataFrame): drop log  
+    
+    """
+    n_interpolate = [len(epochs.copy().pick('eeg').ch_names)] # must be list for hyperparam opt; pick 'eeg' in case eog channels are still present
+    consensus = [len(epochs.copy().pick('eeg').ch_names)]
+
+    epochs.del_proj()  # remove proj, don't proj while interpolating (https://autoreject.github.io/stable/auto_examples/plot_auto_repair.html)
+    
+    # automated estimation of rejection threshold based on channel and trial per participant
+    ar = AutoReject(n_interpolate=n_interpolate, 
+                    consensus=consensus,
+                    random_state=11,
+                    n_jobs=-1, 
+                    verbose=False)
+    ar.fit(epochs)  # fit only a few epochs if you want to save time
+    epochs_ar, reject_log = ar.transform(epochs, return_log=True)
+
+    return epochs_ar, reject_log
+
+# function to count bads / interpolated from AR reject log matrix
+def summarize_artifact_interpolation(reject_log):
+    """if epochs are ONLY interpolated (not rejected),
+    this function returns some summaries about which trials and channels
+    or how many percent of them are interpolated.
+
+    Args:
+        reject_log (reject_log object): ar reject_log object
+
+    Returns:
+        dict: interp_frac_channels (key value pair of channel and percentage rejected)
+        dict: interp_frac_trials (key value pair of trial and percentage rejected)
+        float: total_interp_frac
+    """
+    ch_names = reject_log.ch_names
+    armat = reject_log.labels
+    armat_binary = np.where(armat == 2.0, 1.0, armat) 
+    # 2 means interpolated, 1 would be bad(?), but we then interpolate anyway therfore not in the data, 0 means ok
+    mean_per_channel = np.mean(armat_binary, axis=0)
+    mean_per_trial = np.mean(armat_binary, axis=1)
+    interp_frac_channels = {channel: value for channel, value in zip(ch_names, mean_per_channel)}
+    interp_frac_trials = {channel: value for channel, value in enumerate(mean_per_trial)}
+    total_interp_frac = np.mean(mean_per_trial)
+    return interp_frac_channels, interp_frac_trials, total_interp_frac
