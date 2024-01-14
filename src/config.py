@@ -88,14 +88,24 @@ baseline_windows = {
 
 # define multiverse parameter space
 multiverse_params = {
+        'ref': [['Cz'], 'average', ['P9', 'P10']], # 'Cz' instead of FCz because some experiments have FCz as electrode of interest (would be 0 else)
         'hpf': [None, 0.1, 0.5], # was 0.01, but the raw data has implicit hpf of 0.03 already
-        'lpf': [None, 15, 45], # was 30
-        'emc': [None, 'ica'],  # 'peak-to-peak', 
+        'lpf': [None, 6, 20, 45], # 6 Hz for alpha exclusion, Bae and Luck 2018, 2019a, 2019b (Ref in Bae 2021)
+        'emc': [None, 'ica'],  # 'peak-to-peak', 'regression'
         'mus': [None, 'ica'], 
-        'ref': [['FCz'], 'average', ['P9', 'P10']], # , 'mastoids'
-        'base': [None, '200ms', '400ms'],
+        'base': ['200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
         # TODO: univariate noise normalization in baseline?: 
         # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
-        'det': [False, 'offset', 'linear'], # detrending should rather be combined with baseline correction, then det. is applied first. but it is again applied when loading data, so careful!
+        'det': ['offset', 'linear'], # "False" is ommitted, makes no sense not to detrend
         'ar': [False, True], 
+        }
+
+channels_of_interest = {
+        'ERN': ['FCz'], # not compatible with some forking paths
+        'LRP': ['C3', 'C4'],
+        'MMN': ['FCz'], # not compatible with some forking paths
+        'N170': ['PO8'],
+        'N2pc': ['PO7', 'PO8'],
+        'N400': ['CPz'],
+        'P3': ['Pz'],
         }

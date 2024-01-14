@@ -1,6 +1,9 @@
+import os
 import numpy as np
 import json
 import mne
+from glob import glob
+import re
 from mne.preprocessing import ICA
 from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
 
@@ -261,3 +264,25 @@ def summarize_artifact_interpolation(reject_log):
     interp_frac_trials = {channel: value for channel, value in enumerate(mean_per_trial)}
     total_interp_frac = np.mean(mean_per_trial)
     return interp_frac_channels, interp_frac_trials, total_interp_frac
+
+
+""" ------------------- evoked ------------------- """
+
+def get_forking_paths(
+        base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+        experiment="N170",
+        subject="sub-001", 
+        sample=None):
+    files = sorted(glob(os.path.join(base_dir, "data", "processed", experiment, subject, "*.fif")))
+
+    if sample:
+        np.random.seed(108)
+        files = np.random.choice(files, sample, replace=False)
+
+    # get forking paths
+    forking_paths = [re.search(r"/([^/]+)-epo\.fif", i).group(1) for i in files]
+    
+    # split the strings at the hyphen
+    forking_paths_split = [i.split("_") for i in forking_paths]
+    
+    return forking_paths, files, forking_paths_split

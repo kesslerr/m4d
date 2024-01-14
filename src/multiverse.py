@@ -41,6 +41,9 @@ if not os.path.exists(interim_folder):
 processed_folder = os.path.join(base_dir, "data", "processed", experiment, subject)
 if not os.path.exists(processed_folder):
     os.makedirs(processed_folder)
+# delete all files in processed_folder and interim_folder
+_ = [os.remove(file) for file in glob(os.path.join(interim_folder, "*"))]
+_ = [os.remove(file) for file in glob(os.path.join(processed_folder, "*"))]
 
 # read raw data
 raw = mne.io.read_raw_fif(os.path.join(raw_folder, f"{subject}-raw.fif"), preload=True, verbose=None)
@@ -64,45 +67,44 @@ print(f'Number of parameter combinations: {total_iterations}')
 
 
 with tqdm(total=total_iterations) as pbar:
-    for hpf in multiverse_params['hpf']:
-        for lpf in multiverse_params['lpf']:
-            # hpf + lpf
-            if hpf is None and lpf is None:
-                _raw0 = raw.copy()
-            else:
-                # CAVE: l_freq is HPF cutoff, and h_freq is LPF cutoff
-                _raw0 = raw.copy().filter(l_freq=hpf, h_freq=lpf, method='fir', fir_design='firwin', skip_by_annotation='EDGE boundary', n_jobs=-1)
+    
 
-            for emc in multiverse_params['emc']:
-                # emc
-                param_str = f'{hpf}_{lpf}_{emc}'
-
-                if emc == 'ica':
-                    _raw1, n1 = ica_eog_emg(_raw0.copy(), method='eog')
-                    manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
-   
-                elif emc is None:
+    for ref in multiverse_params['ref']:
+        # ref
+        param_str = f'{ref}'
+        _raw0 = raw.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
+    
+        for hpf in multiverse_params['hpf']:
+            for lpf in multiverse_params['lpf']:
+                # hpf + lpf
+                if hpf is None and lpf is None:
                     _raw1 = _raw0.copy()
+                else:
+                    # CAVE: l_freq is HPF cutoff, and h_freq is LPF cutoff
+                    _raw1 = _raw0.copy().filter(l_freq=hpf, h_freq=lpf, method='fir', fir_design='firwin', skip_by_annotation='EDGE boundary', n_jobs=-1)
 
-                for mus in multiverse_params['mus']:
-                    # mus
-                    param_str = f'{hpf}_{lpf}_{emc}_{mus}'
-
-                    if mus == 'ica':
-                        _raw2, n1 = ica_eog_emg(_raw1.copy(), method='emg')
-                        manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
-                        
-                    elif mus is None:
+                for emc in multiverse_params['emc']:
+                    # emc
+                    param_str = f'{ref}_{hpf}_{lpf}_{emc}'
+                    if emc == 'ica':
+                        _raw2, n1 = ica_eog_emg(_raw1.copy(), method='eog')
+                        manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
+    
+                    elif emc is None:
                         _raw2 = _raw1.copy()
 
-                    for ref in multiverse_params['ref']:
-                        # ref
-                        param_str = f'{hpf}_{lpf}_{emc}_{mus}_{ref}'
-
-                        _raw3 = _raw2.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
-                        
-                        # drop non-eeg channels (eog usually), because the "robust" version doesn't return them anyway
-                        _raw3.pick_types(eeg=True)
+                    # drop non-eeg channels (eog)
+                    _raw2.pick_types(eeg=True)
+                    
+                    for mus in multiverse_params['mus']:
+                        # mus
+                        param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}'
+                        if mus == 'ica':
+                            _raw3, n1 = ica_eog_emg(_raw2.copy(), method='emg')
+                            manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
+                            
+                        elif mus is None:
+                            _raw3 = _raw2.copy()
 
                         for base in multiverse_params['base']:
                             # base (baseline correction and epoching)
@@ -122,7 +124,8 @@ with tqdm(total=total_iterations) as pbar:
                                 
                                 # epoching
                                 epochs = mne.Epochs(_raw3.copy(), 
-                                                    events, 
+                                                    events=events, 
+                                                    event_id=event_dict,
                                                     tmin=epoch_windows[experiment][0], 
                                                     tmax=epoch_windows[experiment][1],
                                                     baseline=baseline,
@@ -137,12 +140,12 @@ with tqdm(total=total_iterations) as pbar:
                                     # ar
 
                                     # string that describes the current parameter combination
-                                    param_str = f'{hpf}_{lpf}_{emc}_{mus}_{ref}_{base}_{det}_{ar}'
+                                    param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}_{base}_{det}_{ar}'
 
                                     # add metadata to epochs
                                     epochs.metadata = pd.DataFrame(
-                                                data=[[path_id, hpf, lpf, emc, mus, ref, base, det, ar]] * len(epochs), 
-                                                columns=['path_id', 'hpf', 'lpf', 'emc', 'mus', 'ref', 'base', 'det', 'ar'], 
+                                                data=[[path_id, ref, hpf, lpf, emc, mus, base, det, ar]] * len(epochs), 
+                                                columns=['path_id', 'ref', 'hpf', 'lpf', 'emc', 'mus', 'base', 'det', 'ar'], 
                                                 index=range(len(epochs)),
                                                 )
 
@@ -169,14 +172,4 @@ with tqdm(total=total_iterations) as pbar:
                                     # update iteration
                                     path_id += 1
                                     pbar.update(1)
-                                    
-        #                             break
-        #                         break
-        #                     break
-        #                 break
-        #             break
-        #         break
-        #     break
-        # break
-
                                     
