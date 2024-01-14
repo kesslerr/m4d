@@ -1,6 +1,7 @@
 .vscode/
 .Rproj.user
-**/.DS_Store
+**/*.DS_Store
+**/*.pyc # pychache
 
 # raw eeg data
 **/*.fdt
@@ -25,7 +26,7 @@
 **/*.zip
 
 # image files
-**/*.png
+#**/*.png
 
 # all the small files
 **/*.hdf5 # models
