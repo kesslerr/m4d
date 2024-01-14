@@ -21,7 +21,7 @@ delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only re
 conditions_triggers = {
     'ERN': {
         'correct': ['111','121','212','222'], # correct responses
-        'incorrect' : ['112','122','211','221'],
+        'incorrect' : ['112','122','211','221'], # incorrect responses
     },
     'LRP': {
         'response_left': ['111','112','121','122'], # response left
@@ -52,6 +52,9 @@ conditions_triggers = {
         'deviants': ['11','22','33','44','55'], # deviants
     },
 }
+
+
+
 
 # epoching windows
 epoch_windows = {
@@ -109,3 +112,51 @@ channels_of_interest = {
         'N400': ['CPz'],
         'P3': ['Pz'],
         }
+
+luck_references = {
+        'ERN': ['P9', 'P10'],
+        'LRP': ['P9', 'P10'],
+        'MMN': ['P9', 'P10'],
+        'N170': 'average',
+        'N2pc': ['P9', 'P10'],
+        'N400': ['P9', 'P10'],
+        'P3': ['P9', 'P10'],
+        }
+
+luck_forking_paths = { # these are not really the same, but some steps are comparable
+        'ERN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'LRP': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'MMN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
+        'N2pc': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        }
+
+# # difference waveforms, define the partners of subtraction
+# # not use atm, as more easy to compute in the evoked.py script
+# difference_waveforms = {
+#     'ERN': {
+#         'incorrect-correct': ['incorrect', 'correct'],
+#     },
+#     'LRP': {
+#         'response_left-response_right': ['response_left', 'response_right'],
+#         'response_right-response_left': ['response_right', 'response_left'],
+#     },
+#     'N170': {
+#         'faces-cars': ['faces', 'cars'],
+#     },
+#     'N2pc': {
+#         'target_left-target_right': ['target_left', 'target_right'],
+#         'target_right-target_left': ['target_right', 'target_left'],
+#     },
+#     'N400': {
+#         'unrelated-related': ['unrelated', 'related'],
+#     },
+#     'MMN': {
+#         'deviants-standards': ['deviants', 'standards'],
+#     },
+#     'P3': {
+#         'deviants-standards': ['deviants', 'standards'],
+#     },
+# }
