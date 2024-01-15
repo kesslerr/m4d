@@ -10,6 +10,7 @@ import pandas as pd
 
 # go to base directory and import globals
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#ptmp_dir = "/ptmp/kroma/m4d/"
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
@@ -38,7 +39,7 @@ raw_folder = os.path.join(base_dir, "data", "raw", experiment)
 interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
 if not os.path.exists(interim_folder):
     os.makedirs(interim_folder)
-processed_folder = os.path.join(base_dir, "data", "processed", experiment, subject)
+processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
 if not os.path.exists(processed_folder):
     os.makedirs(processed_folder)
 # delete all files in processed_folder and interim_folder
