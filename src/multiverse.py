@@ -19,6 +19,10 @@ from src.config import multiverse_params, epoch_windows, baseline_windows
 
 """ HEADER END """
 
+# DEBUG
+# experiment = "MMN"
+# subject = "sub-001"
+
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -29,9 +33,6 @@ else:
     subject = sys.argv[2]
     print(f'Processing Experiment {experiment} Subject {subject}!')
 
-# DEBUG
-# experiment = "N170"
-# subject = "sub-001"
 
 """ SPECIFICATIONS END"""
 

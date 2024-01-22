@@ -4,7 +4,7 @@ import numpy as np
 
 def exception_pre_preprocessing_annotations(experiment, subject, raw):
     
-    if subject == "sub-008" and experiment == "N2pc":
+    if subject == "sub-008" and experiment == "N2pc": # TODO: write luck
         raw.annotations.description = np.array(
             [
                 'target_left' if i == '-99' else i

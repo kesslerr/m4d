@@ -1,6 +1,5 @@
 """ Multiverse preprocessing """
 
-import itertools
 from matplotlib import pyplot as plt
 import seaborn as sns
 import mne
@@ -8,11 +7,6 @@ from scipy.signal import detrend
 import sys, os
 from tqdm import tqdm
 from glob import glob
-import json
-import re
-import numpy as np
-import itertools
-import pandas as pd
 if sys.platform.startswith('darwin'):
     mne.viz.set_browser_backend('qt', verbose=None) # 'qt' or 'matplotlib'
 
@@ -26,6 +20,10 @@ from src.config import subjects, experiments, delete_triggers, conditions_trigge
 from src.exceptions import exception_pre_preprocessing_annotations
 
 """ HEADER END """
+
+# DEBUG
+# experiment = "MMN"
+# subject = "sub-001"
 
 for experiment in experiments:
     print(f"Processing experiment {experiment}...")

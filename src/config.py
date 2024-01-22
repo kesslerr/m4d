@@ -7,7 +7,8 @@ subjects = [f"sub-{str(i).zfill(3)}" for i in range(1, 41)] # TODO: 40 subjects
 # define triggers and stuff
 delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
                    'LRP': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
-                   'MMN': ['180'], # first stream of standards
+                   'MMN': ['180', # first stream of standards
+                           '1', '4'], # these triggers were found with no reference in the data (1-2 occurences per participant), TODO: write Luck 
                    'N170': ['201', '202'] + # responses (correct and incorrect)
                            [str(i) for i in list(range(101,141))] + # # scrambled faces 
                            [str(i) for i in list(range(141,181))], # scrambled cars            
@@ -133,30 +134,30 @@ luck_forking_paths = { # these are not really the same, but some steps are compa
         'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         }
 
-# # difference waveforms, define the partners of subtraction
-# # not use atm, as more easy to compute in the evoked.py script
-# difference_waveforms = {
-#     'ERN': {
-#         'incorrect-correct': ['incorrect', 'correct'],
-#     },
-#     'LRP': {
-#         'response_left-response_right': ['response_left', 'response_right'],
-#         'response_right-response_left': ['response_right', 'response_left'],
-#     },
-#     'N170': {
-#         'faces-cars': ['faces', 'cars'],
-#     },
-#     'N2pc': {
-#         'target_left-target_right': ['target_left', 'target_right'],
-#         'target_right-target_left': ['target_right', 'target_left'],
-#     },
-#     'N400': {
-#         'unrelated-related': ['unrelated', 'related'],
-#     },
-#     'MMN': {
-#         'deviants-standards': ['deviants', 'standards'],
-#     },
-#     'P3': {
-#         'deviants-standards': ['deviants', 'standards'],
-#     },
-# }
+# difference waveforms, define the partners of subtraction
+# not use atm, as more easy to compute in the evoked.py script
+contrasts = {
+    'ERN': {
+        'incorrect - correct': ['incorrect', 'correct'],
+    },
+    'LRP': {
+        'response_right - response_left': ['response_right', 'response_left'], # corresponds to what is seen at C3 (right - left / contra - ipsi)
+        'response_left - response_right': ['response_left', 'response_right'], # corresponds to what is seen at C4 (left - right / contra - ipsi)
+    },
+    'MMN': {
+        'deviants - standards': ['deviants', 'standards'],
+    },
+    'N170': {
+        'faces - cars': ['faces', 'cars'],
+    },
+    'N2pc': {
+        'target_right - target_left': ['target_right', 'target_left'], # what is seen at PO7 (right - left / contra - ipsi)
+        'target_left - target_right': ['target_left', 'target_right'], # what is seen at PO8 (left - right / contra - ipsi)
+    },
+    'N400': {
+        'unrelated - related': ['unrelated', 'related'],
+    },
+    'P3': {
+        'deviants - standards': ['deviants', 'standards'],
+    },
+}
