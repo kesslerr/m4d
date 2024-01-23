@@ -9,6 +9,8 @@ import numpy as np
 import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
+import copy # deep copy of dicts
+import pickle
 
 # go to base directory and import globals
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,12 +19,11 @@ sys.path.append(base_dir)
 alt_dir = "/ptmp/kroma/m4d/"
 
 #from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
-from src.config import subjects, experiments, channels_of_interest, luck_forking_paths, contrasts
+from src.config import subjects, experiments, channels_of_interest, luck_forking_paths, contrasts, contrasts_combined
 from src.utils import get_forking_paths
 
-plot_dir = os.path.join(base_dir, "plots", "evoked")
-if not os.path.exists(plot_dir):
-    os.makedirs(plot_dir)
+plot_dir = os.path.join(base_dir, "plots")
+model_dir = os.path.join(base_dir, "models")
 
 """ HEADER END """
 
@@ -34,8 +35,10 @@ if not os.path.exists(plot_dir):
 
 
 """ Individual evoked plots """
+group_results = {}
 
 for experiment in experiments:
+    group_results[experiment] = {}
 
     forking_path = luck_forking_paths[experiment] 
     contrast = contrasts[experiment]
@@ -79,30 +82,6 @@ for experiment in experiments:
             group_evoked_diff[this_contrast].append(evokeds_diff[this_contrast].copy())
             #evokeds_diff.comment = this_contrast # might be the default comment
 
-        for channel, this_contrast in zip(channels, contrast.keys()):
-            # plot evoked
-            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), sharex=True, sharey=True)
-            
-            mne.viz.plot_compare_evokeds(evokeds,
-                                        picks=channel,
-                                        title=None, #f"{experiment} {subject} {channel} {forking_path}",
-                                        axes=ax[0],
-                                        show=False)[0]
-
-            # plot difference wave
-            #if experiment == 'N170':
-            mne.viz.plot_compare_evokeds(evokeds_diff[this_contrast],
-                                        picks=channel,
-                                        title=None, #f"{experiment} {subject} {channel} {forking_path}",
-                                        axes=ax[1],
-                                        colors=['k'],
-                                        show=False)[0]
-            plt.suptitle(f"{experiment}, {subject}, channel: {channel}, forking path: {forking_path}")
-            plt.tight_layout()
-            
-            # save plot
-            fig.savefig(os.path.join(plot_dir_exp_sub, f"{channel}_{forking_path}.png"))
-            plt.close(fig)
 
     """ grand average evoked plots """
 
@@ -113,35 +92,159 @@ for experiment in experiments:
     grand_average_evoked_diff = {}
     for this_contrast in contrast.keys():
         grand_average_evoked_diff[this_contrast] = mne.grand_average(group_evoked_diff[this_contrast])
+        grand_average_evoked_diff[this_contrast].comment = this_contrast # TODO: test if this is right
 
-    for channel, this_contrast in zip(channels, contrast.keys()):
-        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), sharex=True, sharey=True)
-        mne.viz.plot_compare_evokeds(grand_average_evoked,
-                                    picks=channel,
-                                    legend='upper left', 
-                                    show_sensors='upper right',
-                                    title=None, #f"{experiment} {subject} {channel} {forking_path}",
-                                    axes=ax[0],
-                                    truncate_xaxis=True,
-                                    truncate_yaxis=True,
-                                    show=False)[0]
-        mne.viz.plot_compare_evokeds(grand_average_evoked_diff[this_contrast],
-                                    picks=channel,
-                                    legend='upper left', 
-                                    show_sensors='upper right',
-                                    title=None, #f"{experiment} {subject} {channel} {forking_path}",
-                                    axes=ax[1],
-                                    colors=['k'],
-                                    truncate_xaxis=True,
-                                    truncate_yaxis=True,
-                                    show=False)[0]
-        plt.suptitle(f"{experiment}, channel: {channel}, forking path: {forking_path}")
-        plt.tight_layout()
-
-        # save plot
-        fig.savefig(os.path.join(plot_dir, f"{experiment}_{channel}_{forking_path}.png"))
-        #plt.close(fig)
+    for channel, this_contrast in zip(channels, contrast.keys()):        
+        # merge grand_average_evoked and grand_average_evoked_diff
+        grand_average_both = grand_average_evoked.copy()
+        grand_average_both[this_contrast] = grand_average_evoked_diff[this_contrast]
+        
+        group_results[experiment][channel] = grand_average_both
+        
+        
 
 
-    # TODO: there is huge whitespace above the first subplot
-    # TODO: y axis is not showing numbers
+
+
+""" combine left and right (N2pc and LRP) """
+
+#group_results_combined = group_results.copy() # copy it, and change channel values manually
+group_results_combined = copy.deepcopy(group_results)
+
+# LRP
+
+C3_right = group_results['LRP']["C3"]["response_right"].copy().pick("C3").get_data() # contralateral
+C3_left  = group_results['LRP']["C3"]["response_left"].copy().pick("C3").get_data() # ipsilateral
+C4_right = group_results['LRP']["C4"]["response_right"].copy().pick("C4").get_data() # ipsilateral
+C4_left  = group_results['LRP']["C4"]["response_left"].copy().pick("C4").get_data() # contralateral
+contralateral = np.mean([C3_right, C4_left], axis=0)
+ipsilateral = np.mean([C3_left, C4_right], axis=0)
+contra_minus_ipsi = contralateral - ipsilateral
+
+contralateral = np.vstack((contralateral, contralateral))
+ipsilateral = np.vstack((ipsilateral, ipsilateral))
+contra_minus_ipsi = np.vstack((contra_minus_ipsi, contra_minus_ipsi))
+
+del group_results_combined['LRP']["C3"]
+del group_results_combined['LRP']["C4"]
+
+group_results_combined['LRP']["C3/C4"] = {}
+group_results_combined['LRP']["C3/C4"]["contralateral"] = mne.EvokedArray(contralateral,
+                                                                        group_results['LRP']["C3"]["response_right"].copy().pick(["C3", "C4"]).info, 
+                                                                        tmin=group_results['LRP']["C3"]["response_right"].tmin)
+group_results_combined['LRP']["C3/C4"]["ipsilateral"] = mne.EvokedArray(ipsilateral,
+                                                                        group_results['LRP']["C3"]["response_right"].copy().pick(["C3", "C4"]).info, 
+                                                                        tmin=group_results['LRP']["C3"]["response_right"].tmin)
+group_results_combined['LRP']["C3/C4"]["contralateral - ipsilateral"] = mne.EvokedArray(contra_minus_ipsi,
+                                                                        group_results['LRP']["C3"]["response_right"].copy().pick(["C3", "C4"]).info, 
+                                                                        tmin=group_results['LRP']["C3"]["response_right"].tmin)
+
+# experiment = "LRP"
+# mne.viz.plot_compare_evokeds(group_results_combined[experiment]["C3/C4"],
+#                             picks=["C3", "C4"],
+#                             combine='mean',
+#                             legend='upper left', 
+#                             show_sensors='upper right',
+#                             title=experiment, #f"{experiment} {subject} {channel} {forking_path}",
+#                             #axes=ax[ax_counter],
+#                             colors=colors,
+#                             linestyles=linestyles,
+#                             #ci=0.95, # this doesnt work with dashed?
+#                             truncate_xaxis=False,
+#                             truncate_yaxis=False,
+#                             show=False)[0]
+
+# N2pc
+
+PO7_right = group_results['N2pc']["PO7"]["target_right"].copy().pick("PO7").get_data() # contralateral
+PO7_left  = group_results['N2pc']["PO7"]["target_left"].copy().pick("PO7").get_data() # ipsilateral
+PO8_right = group_results['N2pc']["PO8"]["target_right"].copy().pick("PO8").get_data() # ipsilateral
+PO8_left  = group_results['N2pc']["PO8"]["target_left"].copy().pick("PO8").get_data() # contralateral
+contralateral = np.mean([PO7_right, PO8_left], axis=0)
+ipsilateral = np.mean([PO7_left, PO8_right], axis=0)
+contra_minus_ipsi = contralateral - ipsilateral
+# TODO: double check that no side effects with experiment LRP
+
+contralateral = np.vstack((contralateral, contralateral))
+ipsilateral = np.vstack((ipsilateral, ipsilateral))
+contra_minus_ipsi = np.vstack((contra_minus_ipsi, contra_minus_ipsi))
+
+del group_results_combined['N2pc']["PO7"]
+del group_results_combined['N2pc']["PO8"]
+
+group_results_combined['N2pc']["PO7/PO8"] = {}
+group_results_combined['N2pc']["PO7/PO8"]["contralateral"] = mne.EvokedArray(contralateral,
+                                                                        group_results['N2pc']["PO7"]["target_right"].copy().pick(["PO7", "PO8"]).info, 
+                                                                        tmin=group_results['N2pc']["PO7"]["target_right"].tmin)
+group_results_combined['N2pc']["PO7/PO8"]["ipsilateral"] = mne.EvokedArray(ipsilateral,
+                                                                        group_results['N2pc']["PO7"]["target_right"].copy().pick(["PO7", "PO8"]).info, 
+                                                                        tmin=group_results['N2pc']["PO7"]["target_right"].tmin)
+group_results_combined['N2pc']["PO7/PO8"]["contralateral - ipsilateral"] = mne.EvokedArray(contra_minus_ipsi,
+                                                                        group_results['N2pc']["PO7"]["target_right"].copy().pick(["PO7", "PO8"]).info, 
+                                                                        tmin=group_results['N2pc']["PO7"]["target_right"].tmin)
+
+
+# experiment = "N2pc"
+# mne.viz.plot_compare_evokeds(group_results_combined[experiment]["PO7/PO8"],
+#                             picks=["PO7", "PO8"],
+#                             combine='mean',
+#                             legend='upper left', 
+#                             show_sensors='upper right',
+#                             title=experiment, #f"{experiment} {subject} {channel} {forking_path}",
+#                             #axes=ax[ax_counter],
+#                             colors=colors,
+#                             linestyles=linestyles,
+#                             #ci=0.95, # this doesnt work with dashed?
+#                             truncate_xaxis=False,
+#                             truncate_yaxis=False,
+#                             show=False)[0]
+
+""" save results """
+with open(f'{model_dir}/evoked_combined.pck', 'wb') as handle:
+    pickle.dump(group_results_combined, handle, protocol=pickle.HIGHEST_PROTOCOL)
+with open(f'{model_dir}/evoked.pck', 'wb') as handle:
+    pickle.dump(group_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+
+""" plotting """
+
+colors = ['#878787', '#878787', 'k'] # ['#a6cee3', '#1f78b4', '#b2df8a']
+linestyles = ['dashed', 'dotted', 'solid']
+
+fig, ax = plt.subplots(nrows=7, ncols=1, figsize=(9, 18), sharex=False, sharey=False)
+
+for ax_counter, experiment in enumerate(experiments):
+
+    contrast = contrasts_combined[experiment]
+    channels = channels_of_interest[experiment]
+    if experiment not in ['N2pc', 'LRP']:
+        channels = channels[0] # only one channel for all other experiments
+        channels_key = channels
+    else:
+        channels_key = f"{channels[0]}/{channels[1]}"
+    
+    mne.viz.plot_compare_evokeds(group_results_combined[experiment][channels_key],
+                                picks=channels,
+                                combine='mean',
+                                legend='upper left', 
+                                show_sensors='upper right',
+                                title=experiment, #f"{experiment} {subject} {channel} {forking_path}",
+                                axes=ax[ax_counter],
+                                colors=colors,
+                                linestyles=linestyles,
+                                #ci=0.95, # this doesnt work with dashed?
+                                truncate_xaxis=False,
+                                truncate_yaxis=False,
+                                show=False)[0]
+    # turn x axis label description off in all but last axis
+    if ax_counter < 8:
+        ax[ax_counter].set_xlabel("")
+
+plt.tight_layout()
+
+# save plot
+fig.savefig(os.path.join(plot_dir, f"evokeds.png"), dpi=300)
+plt.show()
+#plt.close(fig)
+

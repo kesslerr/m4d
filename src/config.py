@@ -161,3 +161,27 @@ contrasts = {
         'deviants - standards': ['deviants', 'standards'],
     },
 }
+
+contrasts_combined = {
+    'ERN': {
+        'incorrect - correct': ['incorrect', 'correct'],
+    },
+    'LRP': {
+        'contralateral - ipsilateral': ['contralateral', 'ipsilateral'], 
+    },
+    'MMN': {
+        'deviants - standards': ['deviants', 'standards'],
+    },
+    'N170': {
+        'faces - cars': ['faces', 'cars'],
+    },
+    'N2pc': {
+        'contralateral - ipsilateral': ['contralateral', 'ipsilateral'], 
+    },
+    'N400': {
+        'unrelated - related': ['unrelated', 'related'],
+    },
+    'P3': {
+        'deviants - standards': ['deviants', 'standards'],
+    },
+}
