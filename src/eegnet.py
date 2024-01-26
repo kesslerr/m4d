@@ -82,7 +82,7 @@ def parallel_eegnet(forking_path, file):
     set_random_seeds(108, cuda=False)
     
     # create stratified k folds (same percentage (nearly) of each class in each fold, relative to original ratio)
-    skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=None) # TODO: set seed?, TODO: increase to increase stability of estimation?
+    skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=None) # TODO: set seed?
     
     # class weight for imbalanced learning
     class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)

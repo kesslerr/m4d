@@ -1,13 +1,7 @@
 import mne
 from scipy.signal import detrend
 import sys, os
-from tqdm import tqdm
-from glob import glob
-import fnmatch
-import re
 import numpy as np
-import itertools
-import pandas as pd
 import matplotlib.pyplot as plt
 import copy # deep copy of dicts
 import pickle
@@ -20,7 +14,6 @@ alt_dir = "/ptmp/kroma/m4d/"
 
 #from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
 from src.config import subjects, experiments, channels_of_interest, luck_forking_paths, contrasts, contrasts_combined
-from src.utils import get_forking_paths
 
 plot_dir = os.path.join(base_dir, "plots")
 model_dir = os.path.join(base_dir, "models")
@@ -201,18 +194,24 @@ group_results_combined['N2pc']["PO7/PO8"]["contralateral - ipsilateral"] = mne.E
 
 """ save results """
 with open(f'{model_dir}/evoked_combined.pck', 'wb') as handle:
-    pickle.dump(group_results_combined, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(group_results_combined, handle)
 with open(f'{model_dir}/evoked.pck', 'wb') as handle:
-    pickle.dump(group_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(group_results, handle)
 
+""" load results """
+with open(f'{model_dir}/evoked_combined.pck', 'rb') as handle:
+    group_results_combined = pickle.load(handle)
+with open(f'{model_dir}/evoked.pck', 'rb') as handle:
+    group_results = pickle.load(handle)
 
 
 """ plotting """
 
 colors = ['#878787', '#878787', 'k'] # ['#a6cee3', '#1f78b4', '#b2df8a']
 linestyles = ['dashed', 'dotted', 'solid']
+n_subfigures = len(experiments)
 
-fig, ax = plt.subplots(nrows=7, ncols=1, figsize=(9, 18), sharex=False, sharey=False)
+fig, ax = plt.subplots(nrows=n_subfigures, ncols=1, figsize=(10, 15), sharex=False, sharey=False)
 
 for ax_counter, experiment in enumerate(experiments):
 
@@ -238,7 +237,7 @@ for ax_counter, experiment in enumerate(experiments):
                                 truncate_yaxis=False,
                                 show=False)[0]
     # turn x axis label description off in all but last axis
-    if ax_counter < 8:
+    if ax_counter < (n_subfigures - 1):
         ax[ax_counter].set_xlabel("")
 
 plt.tight_layout()

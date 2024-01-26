@@ -70,8 +70,8 @@ epoch_windows = {
 
 # windows for baseline correction
 baseline_windows = {
-    '200ms': {
-        'ERN':  (-.6, -.4),
+    '200ms': { # correspond to Kappenmann et al.
+        'ERN':  (-.4, -.2), 
         'LRP':  (-.8, -.6),
         'MMN':  (-.2, 0.),
         'N170': (-.2, 0.),
@@ -82,11 +82,11 @@ baseline_windows = {
     '400ms': {
         'ERN':  (-.6, -.2),
         'LRP':  (-.8, -.4),
-        'MMN':  (-.2, 0.),
-        'N170': (-.2, 0.),
-        'N2pc': (-.2, 0.),
-        'N400': (-.2, 0.),
-        'P3':   (-.2, 0.),
+        'MMN':  (-.4, 0.),
+        'N170': (-.4, 0.),
+        'N2pc': (-.4, 0.),
+        'N400': (-.4, 0.),
+        'P3':   (-.4, 0.),
         },
     }    
 
@@ -103,6 +103,9 @@ multiverse_params = {
         'det': ['offset', 'linear'], # "False" is ommitted, makes no sense not to detrend
         'ar': [False, True], 
         }
+
+# replace special characters in the multiverse parameter space
+translation_table = str.maketrans("", "", "[],' ")
 
 channels_of_interest = {
         'ERN': ['FCz'], # not compatible with some forking paths

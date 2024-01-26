@@ -15,7 +15,7 @@ os.chdir(base_dir)
 sys.path.append(base_dir)
 
 from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
-from src.config import multiverse_params, epoch_windows, baseline_windows
+from src.config import multiverse_params, epoch_windows, baseline_windows, translation_table
 
 """ HEADER END """
 
@@ -73,7 +73,7 @@ with tqdm(total=total_iterations) as pbar:
 
     for ref in multiverse_params['ref']:
         # ref
-        param_str = f'{ref}'
+        param_str = f'{ref}'.translate(translation_table)
         _raw0 = raw.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
     
         for hpf in multiverse_params['hpf']:
@@ -87,7 +87,7 @@ with tqdm(total=total_iterations) as pbar:
 
                 for emc in multiverse_params['emc']:
                     # emc
-                    param_str = f'{ref}_{hpf}_{lpf}_{emc}'
+                    param_str = f'{ref}_{hpf}_{lpf}_{emc}'.translate(translation_table)
                     if emc == 'ica':
                         _raw2, n1 = ica_eog_emg(_raw1.copy(), method='eog')
                         manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
@@ -100,7 +100,7 @@ with tqdm(total=total_iterations) as pbar:
                     
                     for mus in multiverse_params['mus']:
                         # mus
-                        param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}'
+                        param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}'.translate(translation_table)
                         if mus == 'ica':
                             _raw3, n1 = ica_eog_emg(_raw2.copy(), method='emg')
                             manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
@@ -142,7 +142,7 @@ with tqdm(total=total_iterations) as pbar:
                                     # ar
 
                                     # string that describes the current parameter combination
-                                    param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}_{base}_{det}_{ar}'
+                                    param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}_{base}_{det}_{ar}'.translate(translation_table)
 
                                     # add metadata to epochs
                                     epochs.metadata = pd.DataFrame(
