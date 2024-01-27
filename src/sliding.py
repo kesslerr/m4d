@@ -14,6 +14,9 @@ from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, c
 from sklearn.utils import compute_class_weight
 from joblib import Parallel, delayed, dump
 
+# import svm
+from sklearn.svm import SVC
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -41,18 +44,18 @@ from src.config import translation_table
 """ HEADER END """
 
 # DEBUG
-experiment = "MMN"
-subject = "sub-001"
+#experiment = "P3"
+#subject = "sub-001"
 
 
-# # define subject and session by arguments to this script
-# if len(sys.argv) != 3:
-#     print("Usage: python script.py experiment subject")
-#     sys.exit(1)
-# else:
-#     experiment = sys.argv[1]
-#     subject = sys.argv[2]
-#     print(f'Processing Experiment {experiment} Subject {subject}!')
+# define subject and session by arguments to this script
+if len(sys.argv) != 3:
+    print("Usage: python script.py experiment subject")
+    sys.exit(1)
+else:
+    experiment = sys.argv[1]
+    subject = sys.argv[2]
+    print(f'Processing Experiment {experiment} Subject {subject}!')
 
 
 raw_folder = os.path.join(base_dir, "data", "raw", experiment)
@@ -72,8 +75,8 @@ forking_paths, files, forking_paths_split = get_forking_paths(
 
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
-    clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear"))
-    time_decod = SlidingEstimator(clf, n_jobs=-1, scoring="balanced_accuracy", verbose=True) # "roc_auc"
+    clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear", class_weight='balanced'))
+    time_decod = SlidingEstimator(clf, n_jobs=-1, scoring="balanced_accuracy", verbose=True) # "roc_auc" balanced_accuracy
     # here we use cv=3 just for speed
     scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=-1)
     # Mean scores across cross-validation splits
@@ -102,15 +105,21 @@ def slider_parallel(forking_path, file):
     X = epochs.get_data()
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
-    scores = slider(X,y)
+    scores = slider(X.copy(),y.copy())
+    
+    permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
     
     # save scores to file
     np.save(os.path.join(model_folder, f"{forking_path.translate(translation_table)}.npy"), scores)
+    # save permutation scores to file
+    np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
     
-    return scores
+    
+    #return scores, permut_scores
 
 
 Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_path, file in zip(forking_paths, files))
+# TODO: all fps
 
 # DEBUG
 # file = files[0]
@@ -120,6 +129,14 @@ Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_pat
 
 # TODO: the following is for one-participant / one-fp statistics... computationally very long. If want to use that kind of statistics,
 # need to find one single value that corresponds to decoding performance
+
+# epochs = mne.read_epochs(file, preload=True, verbose=None)
+
+# # extract data from epochs
+# X = epochs.get_data()
+# y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
+
+# scores = slider(X,y)
 
 # permut_scores = slider_permut(X,y)
 
@@ -142,6 +159,6 @@ Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_pat
 # ax.axvline(0.0, color="k", linestyle="-")
 # ax.set_title("Sensor space decoding")
 
-# # add the p_val_mask as shaded regions
+# # # add the p_val_mask as shaded regions
 # ax.fill_between(epochs.times, 0.5, 0.55, where=p_val_mask==1, color='green', alpha=0.5)
 

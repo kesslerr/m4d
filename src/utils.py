@@ -286,3 +286,26 @@ def get_forking_paths(
     forking_paths_split = [i.split("_") for i in forking_paths]
     
     return forking_paths, files, forking_paths_split
+
+
+""" 5b sliding groups """
+
+
+def cluster_test(data, side=1):
+    # Pivot the DataFrame
+    wide_data = data.pivot(index='times', columns='subject', values='balanced accuracy')
+    # Reset the index to make 'times' a regular column
+    wide_data = wide_data.reset_index()
+    times = wide_data['times']
+    wide_data.drop(labels=['times'], axis=1, inplace = True)
+    X = wide_data.values.T
+    t_obs, clusters, cluster_pv, H0 = mne.stats.permutation_cluster_1samp_test(
+                                                X-0.5, # to make it zero centered (theoretically) 
+                                                threshold=None, 
+                                                n_permutations=1024, 
+                                                tail=side, # 0: two-sided, 1: right, -1: left
+                                                stat_fun=None, adjacency=None, n_jobs=None, 
+                                                seed=None, max_step=1, exclude=None, step_down_p=0, 
+                                                t_power=1, out_type='indices', check_disjoint=False, 
+                                                buffer_size=1000, verbose=None)
+    return t_obs, clusters, cluster_pv, H0, times 
