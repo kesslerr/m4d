@@ -11,7 +11,7 @@ sys.path.append(base_dir)
 
 """ HEADER END"""
 
-# plot montage
+# plot montage --> ERPCORE
 file = sorted(glob(base_dir + "/data/processed/N170/sub-001/*.fif"))[0]
 epochs = mne.read_epochs(file, preload=True, verbose=None)
 fig, ax = plt.subplots(figsize=(6, 6))
@@ -27,6 +27,27 @@ epochs.get_montage().plot(
 plt.title("EEG channels")
 plt.tight_layout()
 fig.savefig(os.path.join(base_dir, "plots", "montage.png"), dpi=300)
+
+# plot montage --> MIPDB TODO
+file = sorted(glob(base_dir + "/data/processed/MIPDB/sub-001/*.fif"))[0]
+epochs = mne.read_epochs(file, preload=True, verbose=None)
+fig, ax = plt.subplots(figsize=(6, 6))
+epochs.get_montage().plot(
+    scale_factor=20,
+    show_names=True,
+    kind="topomap",
+    show=False,
+    sphere=None,
+    axes=ax,
+    verbose=None,
+);
+plt.title("EEG channels")
+plt.tight_layout()
+fig.savefig(os.path.join(base_dir, "plots", "montage.png"), dpi=300)
+
+
+
+
 #fig.savefig(os.path.join(base_dir, "manuscript", "montage.png"), dpi=300)
 
 # test epoch compressing

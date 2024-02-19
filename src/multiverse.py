@@ -6,7 +6,7 @@ from glob import glob
 import numpy as np
 import itertools
 import pandas as pd
-
+import pickle
 
 # go to base directory and import globals
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,8 +20,8 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-# experiment = "MMN"
-# subject = "sub-001"
+experiment = "MIPDB"
+subject = "A00053398"
 
 
 # define subject and session by arguments to this script
@@ -34,9 +34,12 @@ else:
     print(f'Processing Experiment {experiment} Subject {subject}!')
 
 
-""" SPECIFICATIONS END"""
+""" SPECIFICATIONS END """
 
-raw_folder = os.path.join(base_dir, "data", "raw", experiment)
+if experiment == "MIPDB":
+    raw_folder = os.path.join(base_dir, "data", "raw", experiment, subject)
+else:
+    raw_folder = os.path.join(base_dir, "data", "raw", experiment)
 interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
 if not os.path.exists(interim_folder):
     os.makedirs(interim_folder)
@@ -53,14 +56,25 @@ raw = mne.io.read_raw_fif(os.path.join(raw_folder, f"{subject}-raw.fif"), preloa
 manager = CharacteristicsManager(f"{interim_folder}/characteristics.json", force_new=True)
 
 # calculate again event_counts, because it doesnt surive i/o operations
-event_counts = {}
-for key in sorted(set(raw.annotations.description)):
-    event_counts[key] = np.count_nonzero(raw.annotations.description == key)
-    print(key, event_counts[key])
+if experiment == "MIPDB":
+    with open(os.path.join(raw_folder, "event_counts.pck"), "rb") as file:
+        event_counts = pickle.load(file)
+    with open(os.path.join(raw_folder, "events.pck"), "rb") as file:
+        events = pickle.load(file)
+    with open(os.path.join(raw_folder, "event_id.pck"), "rb") as file:
+        event_dict = pickle.load(file)
+    
+else:
+    event_counts = {} # TODO get from file instead
+    for key in sorted(set(raw.annotations.description)):
+        event_counts[key] = np.count_nonzero(raw.annotations.description == key)
+        print(key, event_counts[key])
+    # get events again, because it doesn't survive i/o operations
+    events, event_dict = mne.events_from_annotations(raw) # TODO: get from file instead, because no annotations in MIPDB dataset, and already done in pre-multiverse
+    
+    
 manager.update_characteristic('event_counts', event_counts)
 
-# get events again, because it doesn't survive i/o operations
-events, event_dict = mne.events_from_annotations(raw)
 
 # run multiverse
 path_id = 1
@@ -74,7 +88,17 @@ with tqdm(total=total_iterations) as pbar:
     for ref in multiverse_params['ref']:
         # ref
         param_str = f'{ref}'.translate(translation_table)
-        _raw0 = raw.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
+        if experiment == "MIPDB": # for MIPDB; the naming doesnt follow 10/10 convention, therefore make some exceptions:
+            if ref == ['Cz']:
+                _raw0 = raw.copy()  # Cz already is the online reference
+            elif ref == "average":
+                _raw0 = raw.copy().set_eeg_reference(ref, projection=False)
+            elif ref == ['P9', 'P10']:
+                _raw0 = raw.copy().set_eeg_reference(['E58', 'E96'], projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created     
+            else:
+                raise ValueError(f"Reference {ref} not implemented for MIPDB dataset.")       
+        else:
+            _raw0 = raw.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
     
         for hpf in multiverse_params['hpf']:
             for lpf in multiverse_params['lpf']:
@@ -156,6 +180,10 @@ with tqdm(total=total_iterations) as pbar:
 
                                     if ar:
                                         # Autoreject
+                                        
+                                        # if MIPDB , E129 doesnt have channel location, therefore drop it before autoreject (it would throw error)
+                                        if experiment == "MIPDB":
+                                            epochs = epochs.copy().drop_channels(['E129'])
                                         
                                         # estimate autoreject model on all epochs (not only training epochs), 
                                         # TODO: mention, that this is potential data leakage, but the only feasible way to do it

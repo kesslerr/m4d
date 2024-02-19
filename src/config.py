@@ -1,3 +1,4 @@
+import pandas as pd
 
 # experiments and subjects to be analyzed
 experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']  
@@ -8,8 +9,12 @@ cichy_exclude = [4,8,9,15,25,30,32,40]
 cichy_subjects_infants = [f"sub-{str(i).zfill(2)}" for i in range(1, 49) if i not in cichy_exclude] 
 cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
 
+# child mind institute
+subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
+
 # define triggers and stuff
-delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
+delete_triggers = { # ERPCORE
+                   'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
                    'LRP': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
                    'MMN': ['180', # first stream of standards
                            '1', '4'], # these triggers were found with no reference in the data (1-2 occurences per participant), TODO: write Luck 
@@ -21,7 +26,8 @@ delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only re
                             '111', '112', '121', '122'], # prime words
                    'P3': ['201', '202'], # responses (correct and incorrect)
                    
-                   'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults
+                   # Cichy
+                   'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults, probably paperclip stimuli (for blinks) and responses to it
                    }
 
 # collate triggers so conditions are merged for decoding
@@ -104,6 +110,7 @@ conditions_triggers = {
 
 # epoching windows
 epoch_windows = {
+    # ERPCORE
     'ERN':  [-.6, .6],
     'LRP':  [-.8, .4],
     'MMN':  [-.4, .8],
@@ -111,6 +118,8 @@ epoch_windows = {
     'N2pc': [-.4, .8],
     'N400': [-.4, .8],
     'P3':   [-.4, .8],
+    # MIPDB
+    'MIPDB': [-.8, .4],
     }
 
 # windows for baseline correction
@@ -123,6 +132,7 @@ baseline_windows = {
         'N2pc': (-.2, 0.),
         'N400': (-.2, 0.),
         'P3':   (-.2, 0.),
+        'MIPDB': [-.8, -.6],
         },
     '400ms': {
         'ERN':  (-.6, -.2),
@@ -132,6 +142,7 @@ baseline_windows = {
         'N2pc': (-.4, 0.),
         'N400': (-.4, 0.),
         'P3':   (-.4, 0.),
+        'MIPDB': [-.8, -.4],
         },
     }    
 

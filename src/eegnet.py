@@ -16,6 +16,8 @@ from braindecode.util import set_random_seeds
 from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, cross_validate, StratifiedKFold
 from sklearn.utils import compute_class_weight
 import torch
+torch.set_num_threads(1) # TODO: check if this helps with overload
+
 from joblib import Parallel, delayed, dump
 
 # go to base directory and import globals
@@ -106,7 +108,7 @@ def parallel_eegnet(forking_path, file):
                         scoring="balanced_accuracy", # for balanced classes, this corresponds to accuracy,
                         # chance level might be 0 (adjusted = False), or 0.X (adjusted = True)
                         cv=skfold, 
-                        n_jobs=-1,
+                        n_jobs=1, # TODO: check if this avoids overload
                         return_estimator=False, # if you need the model to estimate on another test set
                         return_train_score=False,
                         )

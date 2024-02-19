@@ -6,8 +6,18 @@ from glob import glob
 import re
 from mne.preprocessing import ICA
 from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
+import requests
 
 """ ------------------- pre-multiverse ------------------- """
+
+# download one participant MPIDB
+def download_mipdb(subject, destination):
+    url = f'https://fcp-indi.s3.amazonaws.com/data/Projects/EEG_Eyetracking_CMI_data/compressed/{subject}.tar.gz'
+
+    response = requests.get(url)
+    with open(destination, 'wb') as f:
+        f.write(response.content)
+
 
 # delete all unnecessary triggers
 def discard_triggers(raw, delete_triggers):
@@ -25,6 +35,27 @@ def discard_triggers(raw, delete_triggers):
     raw : mne.io.Raw
         Raw data with deleted triggers.
     """
+    raw.annotations.delete([i for i, x in enumerate(raw.annotations.description) if x in delete_triggers])
+    return raw
+
+# delete all unnecessary triggers if defined by stimulus channel and not annotations
+def discard_triggers_mipdb(raw, events, delete_triggers):
+    """Delete all unnecessary triggers from the data.
+
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw data.
+    delete_triggers : list of str
+        List of triggers to delete.
+
+    Returns
+    -------
+    raw : mne.io.Raw
+        Raw data with deleted triggers.
+    """
+    
+    
     raw.annotations.delete([i for i, x in enumerate(raw.annotations.description) if x in delete_triggers])
     return raw
 
@@ -53,7 +84,7 @@ def rename_annotations(raw, conditions_triggers):
         )
     return raw
 
-# make artificial EOG channels by combining existing channels
+# make artificial EOG channels by combining existing channels --> ERPCORE
 def recalculate_eog_signal(raw):
     """
     Recalculates the EOG (Electrooculogram) signal by creating HEOG (Horizontal EOG) and VEOG (Vertical EOG) channels.
@@ -78,6 +109,34 @@ def recalculate_eog_signal(raw):
     # delete original EOG channels
     raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
     
+    return raw
+
+# make artificial EOG channels by combining existing channels
+def recalculate_eog_signal_128egi(raw):
+    """
+    Recalculates the EOG (Electrooculogram) signal by creating HEOG (Horizontal EOG) and VEOG (Vertical EOG) channels.
+    Study who uses this calculations is: https://bmcneurosci.biomedcentral.com/articles/10.1186/1471-2202-15-68
+    Based on 129 channel EGI system. No particular EOG channels have been defined a priori.
+
+    Args:
+        raw (mne.io.Raw): The raw data containing the original EOG channels.
+
+    Returns:
+        mne.io.Raw: The raw data with the recalculated EOG channels.
+
+    """
+    #Create HEOG channel...
+    heog_info = mne.create_info(['HEOG'], 250, "eog") # 250 Hz in this study, not 256
+    heog_data = raw['E128'][0]-raw['E125'][0]
+    heog_raw = mne.io.RawArray(heog_data, heog_info)
+    #...and VOEG
+    veog_info = mne.create_info(['VEOG'], 250, "eog")
+    veog_data = ( (raw['E8'][0]-raw['E126'][0]) + (raw['E25'][0]-raw['E127'][0]) ) / 2
+    veog_raw = mne.io.RawArray(heog_data, veog_info)
+    #Append them to the data
+    raw.add_channels([heog_raw, veog_raw],True)
+    # delete original EOG channels
+    #raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
     return raw
 
 # set the Luck et al montage
