@@ -3,6 +3,10 @@
 experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']  
 subjects = [f"sub-{str(i).zfill(3)}" for i in range(1, 41)] # TODO: 40 subjects
 
+# cichy / paperclip
+cichy_exclude = [4,8,9,15,25,30,32,40]
+cichy_subjects_infants = [f"sub-{str(i).zfill(2)}" for i in range(1, 49) if i not in cichy_exclude] 
+cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
 
 # define triggers and stuff
 delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
@@ -16,6 +20,8 @@ delete_triggers = {'ERN': ['11', '12', '21', '22'], # stimulus triggers (only re
                    'N400': ['201', '202', # responses (correct and incorrect)
                             '111', '112', '121', '122'], # prime words
                    'P3': ['201', '202'], # responses (correct and incorrect)
+                   
+                   'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults
                    }
 
 # collate triggers so conditions are merged for decoding
@@ -52,6 +58,45 @@ conditions_triggers = {
                       '51','52','53','54'], # standards # TODO Future: one could also decode letters from standards
         'deviants': ['11','22','33','44','55'], # deviants
     },
+    'paperclip': {
+        'toy': ['Stimulus/S  1', 'Stimulus/S  2', 'Stimulus/S  3',
+                'Stimulus/S  4', 'Stimulus/S  5', 'Stimulus/S  6', 'Stimulus/S  7',
+                'Stimulus/S  8', 'Stimulus/S  9', 'Stimulus/S 10', 'Stimulus/S 11',
+                'Stimulus/S 12', 'Stimulus/S 13', 'Stimulus/S 14', 'Stimulus/S 15',
+                'Stimulus/S 16', 'Stimulus/S 17', 'Stimulus/S 18', 'Stimulus/S 19',
+                'Stimulus/S 20', 'Stimulus/S 21', 'Stimulus/S 22', 'Stimulus/S 23',
+                'Stimulus/S 24', 'Stimulus/S 25', 'Stimulus/S 26', 'Stimulus/S 27',
+                'Stimulus/S 28', 'Stimulus/S 29', 'Stimulus/S 30', 'Stimulus/S 31',
+                'Stimulus/S 32'], 
+        'body': ['Stimulus/S 33', 'Stimulus/S 34', 'Stimulus/S 35',
+                'Stimulus/S 36', 'Stimulus/S 37', 'Stimulus/S 38', 'Stimulus/S 39',
+                'Stimulus/S 40', 'Stimulus/S 41', 'Stimulus/S 42', 'Stimulus/S 43',
+                'Stimulus/S 44', 'Stimulus/S 45', 'Stimulus/S 46', 'Stimulus/S 47',
+                'Stimulus/S 48', 'Stimulus/S 49', 'Stimulus/S 50', 'Stimulus/S 51',
+                'Stimulus/S 52', 'Stimulus/S 53', 'Stimulus/S 54', 'Stimulus/S 55',
+                'Stimulus/S 56', 'Stimulus/S 57', 'Stimulus/S 58', 'Stimulus/S 59',
+                'Stimulus/S 60', 'Stimulus/S 61', 'Stimulus/S 62', 'Stimulus/S 63',
+                'Stimulus/S 64'], 
+        'houses': ['Stimulus/S 65', 'Stimulus/S 66', 'Stimulus/S 67',
+                'Stimulus/S 68', 'Stimulus/S 69', 'Stimulus/S 70', 'Stimulus/S 71',
+                'Stimulus/S 72', 'Stimulus/S 73', 'Stimulus/S 74', 'Stimulus/S 75',
+                'Stimulus/S 76', 'Stimulus/S 77', 'Stimulus/S 78', 'Stimulus/S 79',
+                'Stimulus/S 80', 'Stimulus/S 81', 'Stimulus/S 82', 'Stimulus/S 83',
+                'Stimulus/S 84', 'Stimulus/S 85', 'Stimulus/S 86', 'Stimulus/S 87',
+                'Stimulus/S 88', 'Stimulus/S 89', 'Stimulus/S 90', 'Stimulus/S 91',
+                'Stimulus/S 92', 'Stimulus/S 93', 'Stimulus/S 94', 'Stimulus/S 95',
+                'Stimulus/S 96'], 
+        'faces': ['Stimulus/S 97', 'Stimulus/S 98',
+                'Stimulus/S 99', 'Stimulus/S100', 'Stimulus/S101', 'Stimulus/S102',
+                'Stimulus/S103', 'Stimulus/S104', 'Stimulus/S105', 'Stimulus/S106',
+                'Stimulus/S107', 'Stimulus/S108', 'Stimulus/S109', 'Stimulus/S110',
+                'Stimulus/S111', 'Stimulus/S112', 'Stimulus/S113', 'Stimulus/S114',
+                'Stimulus/S115', 'Stimulus/S116', 'Stimulus/S117', 'Stimulus/S118',
+                'Stimulus/S119', 'Stimulus/S120', 'Stimulus/S121', 'Stimulus/S122',
+                'Stimulus/S123', 'Stimulus/S124', 'Stimulus/S125', 'Stimulus/S126',
+                'Stimulus/S127', 'Stimulus/S128'],
+    },
+    
 }
 
 

@@ -8,6 +8,7 @@ import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import re
 
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, cross_validate, StratifiedKFold
@@ -39,14 +40,15 @@ os.chdir(base_dir)
 sys.path.append(base_dir)
 
 from src.utils import get_forking_paths
-from src.config import translation_table
+from src.config import translation_table, baseline_windows
 
 """ HEADER END """
 
 # DEBUG
-#experiment = "P3"
-#subject = "sub-001"
+# experiment = "P3"
+# subject = "sub-001"
 
+# TODO: decoding should only be done after the baseline period ended!
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -97,12 +99,18 @@ def slider_permut(X,y, iter=100): # TODO increase iter
 
 def slider_parallel(forking_path, file):  
     
+    # extract the string "XXXms" from forking path
+    baseline_ms = re.search(r"_(\d{3}ms)_", forking_path).group(1)
+    baseline_end = baseline_windows[baseline_ms][experiment][-1]
+    
+    
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
+    
     #n_tp = len(epochs.times)
     
     # extract data from epochs
-    X = epochs.get_data()
+    X = epochs.get_data(tmin=baseline_end)
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
     scores = slider(X.copy(),y.copy())

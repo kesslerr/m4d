@@ -81,7 +81,7 @@ def recalculate_eog_signal(raw):
     return raw
 
 # set the Luck et al montage
-def set_montage(raw):
+def set_montage(raw, experiment=None):
     """
     Sets the montage for the Luck et al. raw data.
 
@@ -91,22 +91,23 @@ def set_montage(raw):
     Returns:
     mne.io.Raw: The raw data with the montage set.
     """
-    # rename channels so they match with templates
-    raw.rename_channels(dict(FP1 = 'Fp1', FP2 = 'Fp2'))
-
-    mont1020 = mne.channels.make_standard_montage('standard_1020')
+    if experiment == None:
+        # rename channels so they match with templates
+        raw.rename_channels(dict(FP1 = 'Fp1', FP2 = 'Fp2'))
+    
+    mont1005 = mne.channels.make_standard_montage('standard_1005')
     # Choose what channels you want to keep
     kept_channels = raw.ch_names
 
-    ind = [i for (i, channel) in enumerate(mont1020.ch_names) if (channel in kept_channels)] # or (channel in add_channels)
-    mont = mont1020.copy()
+    ind = [i for (i, channel) in enumerate(mont1005.ch_names) if (channel in kept_channels)] # or (channel in add_channels)
+    mont = mont1005.copy()
 
     # Keep only the desired channels
-    mont.ch_names = [mont1020.ch_names[x]for x in ind]
-    kept_channel_info = [mont1020.dig[x + 3] for x in ind]
+    mont.ch_names = [mont1005.ch_names[x]for x in ind]
+    kept_channel_info = [mont1005.dig[x + 3] for x in ind]
 
     # Keep the first three rows as they are the fiducial points information
-    mont.dig = mont1020.dig[:3] + kept_channel_info
+    mont.dig = mont1005.dig[:3] + kept_channel_info
 
     # plot
     #mont.plot()
@@ -115,6 +116,8 @@ def set_montage(raw):
     raw.set_montage(mont)
     
     return raw
+
+
 
 """ ------------------- multiverse ------------------- """
 

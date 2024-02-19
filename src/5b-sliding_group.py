@@ -55,12 +55,15 @@ forking_paths, files, forking_paths_split = get_forking_paths(
 # TODO: across fps and experiments
 #experiment = "N170"
 results = []
-
+histo = {}
 for experiment in experiments:
     times = mne.read_epochs(f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif").times
-
+    #histo[experiment] = []
+    #histo[experiment]['times'] = times # TODO: use this to convert indices to times
+    #histo[experiment]['significant'] = [] # TODO: fill this with the exact time points
+    print(f"Experiment: {experiment}")
     for forking_path in forking_paths:
-
+        forking_path = forking_path.translate(translation_table)
         dfs = []
         for i, subject in enumerate(subjects):
             model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
@@ -82,25 +85,43 @@ for experiment in experiments:
         mean_ba = df.groupby(['experiment', 'times']).agg({'balanced accuracy': 'mean'}).reset_index()
 
         cumulative_decoding_accuracy = []
-        predictive_timepoints = []
+        timepoints = []
+        
+        #predictive_timepoints = []
         for i_c, c in enumerate(clusters):
             c = c[0] # get rid of the empty second element
             if cluster_pv[i_c] <= 0.05:
                 print(f"{times[c[0]]}s - {times[c[-1]]}s: p={cluster_pv[i_c]:.3f}")
-                cumulative_decoding_accuracy.append((mean_ba[(mean_ba.times >= times[c[0]]) & (mean_ba.times <= times[c[-1]])]['balanced accuracy']-0.5)*2)
+                cumulative_decoding_accuracy.append(((mean_ba[(mean_ba.times >= times[c[0]]) & (mean_ba.times <= times[c[-1]])]['balanced accuracy']-0.5)*2).values)
+                timepoints.append((times[c[0]], times[c[-1]]))
+            break
+        break
+    break
+
                 # -.5, *2, to normalize between 0 and 1
-                predictive_timepoints.append(len(cumulative_decoding_accuracy[-1]))
-                
+                #predictive_timepoints.append(len(cumulative_decoding_accuracy[-1]))
+        
+        # Flatten the list of arrays to a 1D array
+        if len(cumulative_decoding_accuracy) > 1:
+            cumulative_decoding_accuracy = np.concatenate([arr.ravel() for arr in cumulative_decoding_accuracy])
+        else: 
+            cumulative_decoding_accuracy = cumulative_decoding_accuracy[0]
+
+        n_predictive_timepoints = cumulative_decoding_accuracy.shape[0]
+        
         cumulative_decoding_accuracy = np.sum(cumulative_decoding_accuracy)
-        predictive_timepoints = np.sum(predictive_timepoints)
 
         results.append(pd.DataFrame({'experiment': [experiment], 
                                                 'forking path': [forking_path],
                                                 'cumulative decoding accuracy': [cumulative_decoding_accuracy], 
-                                                'predictive timepoints': [predictive_timepoints]}))
+                                                'predictive timepoints': [n_predictive_timepoints]}))
 
 results = pd.concat(results)
 results.to_csv(f"{base_dir}/models/sliding/results.csv", index=False)
+
+
+# TODO: also write each predictive time point to results, so we can have a histogram across fps
+
 
 # analyze and plot the performances only on the luck forking path for each experiment for exemplary visualization
 

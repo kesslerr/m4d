@@ -16,7 +16,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 from src.utils import discard_triggers, recalculate_eog_signal, set_montage, rename_annotations
-from src.config import subjects, experiments, delete_triggers, conditions_triggers
+from src.config import subjects, experiments, delete_triggers, conditions_triggers, cichy_subjects_infants, cichy_subjects_adults
 from src.exceptions import exception_pre_preprocessing_annotations
 
 """ HEADER END """
@@ -24,6 +24,70 @@ from src.exceptions import exception_pre_preprocessing_annotations
 # DEBUG
 # experiment = "MMN"
 # subject = "sub-001"
+
+
+""" CICHY """
+experiment = "paperclip"
+group = "adults"
+subject = "sub-01" # cichy only uses 1 leading 0
+
+for subject in cichy_subjects_adults:
+    # file paths
+    download_folder = os.path.join(base_dir, "data", "cichy", group, subject, "eeg") # TODO: infants no folder "eeg"
+    raw_folder = os.path.join(base_dir, "data", "raw", f"{experiment}_{group}")
+    if not os.path.exists(raw_folder):
+        os.makedirs(raw_folder)
+
+    # read raw data
+    raw_file = glob(os.path.join(download_folder, "*.vhdr"))
+    assert len(raw_file) == 1, "More than one raw file found!"
+    raw_file = raw_file[0]
+    raw = mne.io.read_raw_brainvision(raw_file, eog=(), preload=True, # TODO: check if brainvision is correct for all groups
+                                #montage_units='auto',
+                                verbose=None)
+
+    # discard unnecessary triggers
+    raw = discard_triggers(raw.copy(), delete_triggers[experiment])
+
+    # collate triggers into conditions in annotations
+    raw = rename_annotations(raw.copy(), conditions_triggers[experiment])
+    #raw = exception_pre_preprocessing_annotations(experiment, subject, raw.copy())
+
+    # get events
+    events, event_dict = mne.events_from_annotations(raw)
+
+    #Shift the stimulus event codes forward in time to account for the LCD monitor delay
+    #(26 ms on our monitor, as measured with a photosensor)
+    #raw.annotations.onset = raw.annotations.onset+.026
+
+    #Downsample from the recorded sampling rate of 1024 Hz to 256 Hz to speed data processing
+    raw, events = raw.resample(256, events = events)
+    raw.events = events
+
+    # get and save the event counts
+    event_counts = {}
+    for key in event_dict.keys():
+        event_counts[key] = len(events[events[:, 2] == event_dict[key]])
+        print(key, len(events[events[:, 2] == event_dict[key]]))
+
+    # for some experiments, assure that the number of trials per condition is equal
+    if experiment in ['N170', 'N2pc', 'N400']:
+        assert len(set(event_counts.values())) == 1, "Not all conditions have same number of trials."
+    raw.event_counts = event_counts
+
+    # recalculate EOG channels
+    #raw = recalculate_eog_signal(raw.copy())
+
+    # set montage
+    raw = set_montage(raw.copy(), experiment="paperclip")
+
+    # save raw data
+    raw.save(os.path.join(raw_folder, f"{subject}-raw.fif"), overwrite=True)
+
+
+
+
+""" ERPCORE """
 
 for experiment in experiments:
     print(f"Processing experiment {experiment}...")

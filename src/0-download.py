@@ -5,6 +5,8 @@ from pipeline.datasets import get_erpcore
 import os, sys
 os.chdir('./..')
 
+## ERPCORE
+
 # define experiment and number of participants
 experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']
 n_participants = 40
@@ -16,14 +18,14 @@ for experiment in experiments:
                                         participants=n_participants, 
                                         path='data')
 
-# move from data/erpcore to data, and delete the "eeg" subfolder
-# TODO: this does not yet move all files, some are not listed in the dict
-# for experiment in experiments:
-#     for file_type in file_paths[experiment].keys():
-#         for file in file_paths[compexperimentonent][file_type]:
-#             new_file = file.replace('/erpcore/','/')
-#             new_file = new_file.replace('/eeg/','/')
-#             os.renames(file,  
-#                        new_file)
-#             # os.renames creates directory (os.rename (without s) 
-#             # would throw error if directory doesn't exist)
+
+## CICHY
+
+"""
+to download:
+adults (30 GB): wget -nc -O adults.zip https://files.de-1.osf.io/v1/resources/ruxfg/providers/osfstorage/6361374bb2331213c9431246/?zip=
+infants (1.5 GB): wget -nc -O infants.zip https://files.de-1.osf.io/v1/resources/ruxfg/providers/osfstorage/63612a03b233121399431479/?zip=
+
+
+
+"""
