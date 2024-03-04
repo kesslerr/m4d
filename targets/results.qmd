@@ -1,0 +1,82 @@
+---
+title: "Multiverse4Decoding"
+author: "Roman Kessler"
+format: html
+editor: visual
+---
+
+```{r}
+library(targets)
+library(tarchetypes)
+library(dplyr)
+options(dplyr.print_max = 1e9)
+
+```
+
+## Multiverse for Decoding
+
+In short, decoding accuracies have been calculated for each participant, each experiment, and each variation in the pipeline. Marginal means have been calculated and plotted in the following.
+
+The original idea was to replicate the HLM from Clayson et al (2021, Neuroimage). However, the HLM might be faulty, and significances were probably overestimated in Clayson. This needs further investigation with HLM Experts to find out.
+
+For now, statistics has been done by averaging over 2 levels of a variable (e.g., variable "autoreject", levels "TRUE" and "FALSE"), by marginalizing out all other variables. Then, one value for each subjects and level is put into a (paired-)t-test (depending on the data structure). Benjamini Yekutieli FDR correction is applied for all pairwise comparisons within a variable (p.adj, not shown in printed table).
+
+The T-Test might be replaced by something non-parametric.
+
+Tests have been calculated across experiments and age groups within a dataset, or for each single experiment and age group (below).
+
+-   ERPCORE: adult data set containing experiments (ERN, LRP, MMN, N170, N2pc, N400, P3)
+-   MIPDB: children / teenagers (experiment LRP, for different age groups)
+
+The Raincloud plots show general data distributions.
+
+The Paired-Plots are not pretty, but there one can nicely see why comparisons get significant, because for some variations of steps, there is a very systematic but tiny difference in accuracy for each participant.
+
+```{r}
+tar_visnetwork()
+```
+
+## Across all experiments or age_groups
+
+### ERPCORE
+
+```{r}
+#| echo: false
+tar_read(raincloud_all, branches = 1)
+tar_read(paired_all, branches = 1)
+tar_read(stats_all, branches = 1)
+```
+
+### MIPDB
+
+```{r}
+#| echo: false
+tar_read(raincloud_all, branches = 2)
+tar_read(paired_all, branches = 2)
+tar_read(stats_all, branches = 2) %>% print(n = nrow(.))
+```
+
+## For each single experiments or age_group
+
+### ERPCORE
+
+```{r}
+#| echo: false
+for (branch in c(1,2,3,4,5,6,7)){
+  tar_read(raincloud_single, branches = branch) %>% print()
+  tar_read(paired_single, branches = branch) %>% print()
+  tar_read(stats_single, branches = branch) %>% print()
+}
+
+```
+
+### MIPDB
+
+```{r}
+#| echo: false
+for (branch in c(8,9,10,11,12)){
+  tar_read(raincloud_single, branches = branch) %>% print()
+  tar_read(paired_single, branches = branch) %>% print()
+  tar_read(stats_single, branches = branch) %>% print()
+}
+```

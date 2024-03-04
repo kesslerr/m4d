@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.528">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Roman Kessler">
+
+<title>Multiverse4Decoding</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="results_files/libs/clipboard/clipboard.min.js"></script>
+<script src="results_files/libs/quarto-html/quarto.js"></script>
+<script src="results_files/libs/quarto-html/popper.min.js"></script>
+<script src="results_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="results_files/libs/quarto-html/anchor.min.js"></script>
+<link href="results_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="results_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="results_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="results_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="results_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="results_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="results_files/libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="results_files/libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="results_files/libs/visNetwork-binding-2.1.2/visNetwork.js"></script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Multiverse4Decoding</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Roman Kessler </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(targets)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tarchetypes)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">dplyr.print_max =</span> <span class="fl">1e9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="multiverse-for-decoding" class="level2">
+<h2 class="anchored" data-anchor-id="multiverse-for-decoding">Multiverse for Decoding</h2>
+<p>In short, decoding accuracies have been calculated for each participant, each experiment, and each variation in the pipeline. Marginal means have been calculated and plotted in the following.</p>
+<p>The original idea was to replicate the HLM from Clayson et al (2021, Neuroimage). However, the HLM might be faulty, and significances were probably overestimated in Clayson. This needs further investigation with HLM Experts to find out.</p>
+<p>For now, statistics has been done by averaging over 2 levels of a variable (e.g., variable “autoreject”, levels “TRUE” and “FALSE”), by marginalizing out all other variables. Then, one value for each subjects and level is put into a (paired-)t-test (depending on the data structure). Benjamini Yekutieli FDR correction is applied for all pairwise comparisons within a variable (p.adj, not shown in printed table).</p>
+<p>The T-Test might be replaced by something non-parametric.</p>
+<p>Tests have been calculated across experiments and age groups within a dataset, or for each single experiment and age group (below).</p>
+<ul>
+<li>ERPCORE: adult data set containing experiments (ERN, LRP, MMN, N170, N2pc, N400, P3)</li>
+<li>MIPDB: children / teenagers (experiment LRP, for different age groups)</li>
+</ul>
+<p>The Raincloud plots show general data distributions.</p>
+<p>The Paired-Plots are not pretty, but there one can nicely see why comparisons get significant, because for some variations of steps, there is a very systematic but tiny difference in accuracy for each participant.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar_visnetwork</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>- The lockfile is already up to date.
+tar_source() only sources R scripts. Ignoring non-R files: R/.DS_Store</code></pre>
+</div>
+<div class="cell-output-display">
+<div class="visNetwork html-widget html-fill-item" id="htmlwidget-4d81a9bbee0192c22a2d" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-4d81a9bbee0192c22a2d">{"x":{"nodes":{"name":["data","data_dataset","file","marginal_means","marginal_means_single_exp","paired_all","paired_single","raincloud_all","raincloud_single","single_exp_data","stats_all","stats_single","filter_experiment","replacements","estimate_marginal_means","get_preprocess_data","paired_tests","raincloud_mm","paired_box"],"type":["stem","stem","stem","pattern","pattern","pattern","pattern","pattern","pattern","stem","pattern","pattern","function","object","function","function","function","function","function"],"description":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"status":["uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate","uptodate"],"seconds":[0.646,0.009,1.139,0.41,1.296,0.087,0.269,0.08,0.202,0.113,0.566,1.601,null,null,null,null,null,null,null],"bytes":[1854448,1856082,31206155,27097,67808,935540,3054224,382699,2086525,1856387,114837,245769,null,null,null,null,null,null,null],"branches":[null,null,null,2,12,2,12,2,12,null,2,12,null,null,null,null,null,null,null],"label":["data","data_dataset","file","marginal_means","marginal_means_single_exp","paired_all","paired_single","raincloud_all","raincloud_single","single_exp_data","stats_all","stats_single","filter_experiment","replacements","estimate_marginal_means","get_preprocess_data","paired_tests","raincloud_mm","paired_box"],"color":["#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823","#354823"],"id":["data","data_dataset","file","marginal_means","marginal_means_single_exp","paired_all","paired_single","raincloud_all","raincloud_single","single_exp_data","stats_all","stats_single","filter_experiment","replacements","estimate_marginal_means","get_preprocess_data","paired_tests","raincloud_mm","paired_box"],"level":[2,3,1,4,5,5,6,5,6,4,5,6,0,1,1,1,1,2,2],"shape":["dot","dot","dot","square","square","square","square","square","square","dot","square","square","triangle","triangleDown","triangle","triangle","triangle","triangle","triangle"]},"edges":{"from":["replacements","replacements","data_dataset","marginal_means","raincloud_mm","data_dataset","data_dataset","estimate_marginal_means","file","get_preprocess_data","data","estimate_marginal_means","single_exp_data","marginal_means_single_exp","raincloud_mm","single_exp_data","data_dataset","marginal_means","paired_box","marginal_means_single_exp","paired_box","single_exp_data","data_dataset","marginal_means","paired_tests","marginal_means_single_exp","paired_tests"],"to":["raincloud_mm","paired_box","raincloud_all","raincloud_all","raincloud_all","single_exp_data","marginal_means","marginal_means","data","data","data_dataset","marginal_means_single_exp","marginal_means_single_exp","raincloud_single","raincloud_single","raincloud_single","paired_all","paired_all","paired_all","paired_single","paired_single","paired_single","stats_all","stats_all","stats_all","stats_single","stats_single"],"arrows":["to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to","to"]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot","physics":false},"manipulation":{"enabled":false},"edges":{"smooth":{"type":"cubicBezier","forceDirection":"horizontal"}},"physics":{"stabilization":false},"interaction":{"zoomSpeed":1},"layout":{"hierarchical":{"enabled":true,"direction":"LR"}}},"groups":null,"width":null,"height":null,"idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":1,"to":1},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"},"legend":{"width":0.2,"useGroups":false,"position":"right","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["Up to date","Stem","Pattern","Function","Object"],"color":["#354823","#899DA4","#899DA4","#899DA4","#899DA4"],"shape":["dot","dot","square","triangle","triangleDown"]},"nodesToDataframe":true},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;white-space: nowrap;font-family: verdana;font-size:14px;font-color:#000000;background-color: #f5f4ed;-moz-border-radius: 3px;-webkit-border-radius: 3px;border-radius: 3px;border: 1px solid #808074;box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="across-all-experiments-or-age_groups" class="level2">
+<h2 class="anchored" data-anchor-id="across-all-experiments-or-age_groups">Across all experiments or age_groups</h2>
+<section id="erpcore" class="level3">
+<h3 class="anchored" data-anchor-id="erpcore">ERPCORE</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$raincloud_all_b0f09ebd</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$paired_all_b0f09ebd</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$stats_all_b0f09ebd
+# A tibble: 38 × 16
+   variable    estimate .y.   group1 group2    n1    n2 statistic        p    df
+ * &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar           8.67e-3 accu… FALSE  TRUE      40    40    7.72   2.25e- 9    39
+ 2 base         1.70e-5 accu… 200ms  400ms     40    40    0.161  8.73e- 1    39
+ 3 det         -1.01e-3 accu… offset linear    40    40   -1.00   3.21e- 1    39
+ 4 emc          4.15e-3 accu… None   ica       40    40    4.48   6.41e- 5    39
+ 5 experiment   5.13e-2 accu… ERN    LRP       40    40    4.25   1.29e- 4    39
+ 6 experiment   2.92e-1 accu… ERN    MMN       40    40   22.8    3.54e-24    39
+ 7 experiment   1.15e-1 accu… ERN    N170      40    40    6.78   4.29e- 8    39
+ 8 experiment   2.05e-1 accu… ERN    N2pc      40    40   11.7    2.32e-14    39
+ 9 experiment   1.96e-1 accu… ERN    N400      40    40   14.3    4.27e-17    39
+10 experiment   1.78e-1 accu… ERN    P3        40    40   12.2    6.70e-15    39
+11 experiment   2.40e-1 accu… LRP    MMN       40    40   21.0    6.78e-23    39
+12 experiment   6.41e-2 accu… LRP    N170      40    40    5.45   3.03e- 6    39
+13 experiment   1.54e-1 accu… LRP    N2pc      40    40    9.60   8.09e-12    39
+14 experiment   1.44e-1 accu… LRP    N400      40    40    9.28   2.05e-11    39
+15 experiment   1.27e-1 accu… LRP    P3        40    40    9.77   4.9 e-12    39
+16 experiment  -1.76e-1 accu… MMN    N170      40    40  -12.2    7.5 e-15    39
+17 experiment  -8.66e-2 accu… MMN    N2pc      40    40   -5.68   1.44e- 6    39
+18 experiment  -9.58e-2 accu… MMN    N400      40    40   -6.91   2.82e- 8    39
+19 experiment  -1.13e-1 accu… MMN    P3        40    40   -8.44   2.49e-10    39
+20 experiment   8.96e-2 accu… N170   N2pc      40    40    5.25   5.71e- 6    39
+21 experiment   8.03e-2 accu… N170   N400      40    40    4.68   3.45e- 5    39
+22 experiment   6.30e-2 accu… N170   P3        40    40    3.68   7.02e- 4    39
+23 experiment  -9.28e-3 accu… N2pc   N400      40    40   -0.515  6.1 e- 1    39
+24 experiment  -2.66e-2 accu… N2pc   P3        40    40   -1.62   1.14e- 1    39
+25 experiment  -1.73e-2 accu… N400   P3        40    40   -1.13   2.64e- 1    39
+26 hpf         -2.03e-4 accu… None   0.1       40    40   -0.895  3.76e- 1    39
+27 hpf         -2.75e-3 accu… None   0.5       40    40   -5.03   1.13e- 5    39
+28 hpf         -2.55e-3 accu… 0.1    0.5       40    40   -5.60   1.88e- 6    39
+29 lpf         -3.26e-3 accu… None   6         40    40   -3.09   4   e- 3    39
+30 lpf         -5.94e-3 accu… None   20        40    40   -6.53   9.68e- 8    39
+31 lpf          4.61e-5 accu… None   45        40    40    0.0884 9.3 e- 1    39
+32 lpf         -2.68e-3 accu… 6      20        40    40   -4.33   9.99e- 5    39
+33 lpf          3.31e-3 accu… 6      45        40    40    2.90   6   e- 3    39
+34 lpf          5.99e-3 accu… 20     45        40    40    5.87   7.87e- 7    39
+35 mac          6.33e-3 accu… None   ica       40    40    6.68   5.84e- 8    39
+36 ref         -2.89e-3 accu… avera… Cz        40    40   -4.63   4   e- 5    39
+37 ref         -2.71e-3 accu… avera… P9P10     40    40   -3.45   1   e- 3    39
+38 ref          1.76e-4 accu… Cz     P9P10     40    40    0.245  8.08e- 1    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="mipdb" class="level3">
+<h3 class="anchored" data-anchor-id="mipdb">MIPDB</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$raincloud_all_6893711f</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$paired_all_6893711f</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$stats_all_6893711f
+# A tibble: 27 × 16
+   variable     estimate .y.     group1 group2    n1    n2 statistic     p    df
+   &lt;chr&gt;           &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar          0.0129    accura… FALSE  TRUE      79    79    3.17   0.002  78  
+ 2 base       -0.0000825 accura… 200ms  400ms     79    79   -0.313  0.755  78  
+ 3 det         0.00111   accura… offset linear    79    79    0.379  0.706  78  
+ 4 emc        -0.000878  accura… None   ica       79    79   -1.67   0.1    78  
+ 5 hpf        -0.00290   accura… None   0.1       79    79   -2.02   0.047  78  
+ 6 hpf        -0.00181   accura… None   0.5       79    79   -1.06   0.292  78  
+ 7 hpf         0.00108   accura… 0.1    0.5       79    79    0.683  0.497  78  
+ 8 lpf         0.00367   accura… None   6         79    79    2.37   0.02   78  
+ 9 lpf         0.000431  accura… None   20        79    79    0.508  0.613  78  
+10 lpf         0.000447  accura… None   45        79    79    0.617  0.539  78  
+11 lpf        -0.00323   accura… 6      20        79    79   -2.76   0.007  78  
+12 lpf        -0.00322   accura… 6      45        79    79   -2.41   0.018  78  
+13 lpf         0.0000164 accura… 20     45        79    79    0.0313 0.975  78  
+14 mac        -0.0000552 accura… None   ica       79    79   -0.195  0.846  78  
+15 ref        -0.00524   accura… avera… Cz        79    79   -2.03   0.046  78  
+16 ref        -0.00468   accura… avera… P9P10     79    79   -2.80   0.006  78  
+17 ref         0.000565  accura… Cz     P9P10     79    79    0.225  0.823  78  
+18 experiment -0.0384    accura… LRP_6… LRP_1…    17    16   -2.49   0.02   24.4
+19 experiment -0.0290    accura… LRP_6… LRP_1…    17    18   -1.80   0.083  27.5
+20 experiment -0.00454   accura… LRP_6… LRP_1…    17    18   -0.221  0.826  32.7
+21 experiment -0.0146    accura… LRP_6… LRP_1…    17    10   -0.767  0.451  23.4
+22 experiment  0.00941   accura… LRP_1… LRP_1…    16    18    0.828  0.414  31.6
+23 experiment  0.0339    accura… LRP_1… LRP_1…    16    18    1.99   0.058  24.2
+24 experiment  0.0239    accura… LRP_1… LRP_1…    16    10    1.58   0.137  14.5
+25 experiment  0.0245    accura… LRP_1… LRP_1…    18    18    1.39   0.177  26.9
+26 experiment  0.0144    accura… LRP_1… LRP_1…    18    10    0.910  0.375  16.8
+27 experiment -0.0100    accura… LRP_1… LRP_1…    18    10   -0.494  0.625  25.3
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="for-each-single-experiments-or-age_group" class="level2">
+<h2 class="anchored" data-anchor-id="for-each-single-experiments-or-age_group">For each single experiments or age_group</h2>
+<section id="erpcore-1" class="level3">
+<h3 class="anchored" data-anchor-id="erpcore-1">ERPCORE</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$raincloud_single_e4248d57</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_e4248d57</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_f3701d0f
+# A tibble: 17 × 16
+   variable  estimate .y.      group1 group2    n1    n2 statistic       p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00822  accuracy FALSE  TRUE      40    40     3.71  6.48e-4    39
+ 2 base      0.000110 accuracy 200ms  400ms     40    40     0.411 6.84e-1    39
+ 3 det       0.00114  accuracy offset linear    40    40     0.384 7.03e-1    39
+ 4 emc       0.00131  accuracy None   ica       40    40     0.896 3.76e-1    39
+ 5 hpf      -0.000746 accuracy None   0.1       40    40    -1.04  3.04e-1    39
+ 6 hpf      -0.00513  accuracy None   0.5       40    40    -3.99  2.82e-4    39
+ 7 hpf      -0.00438  accuracy 0.1    0.5       40    40    -4.69  3.35e-5    39
+ 8 lpf      -0.00266  accuracy None   6         40    40    -1.26  2.16e-1    39
+ 9 lpf      -0.00418  accuracy None   20        40    40    -2.40  2.1 e-2    39
+10 lpf       0.000820 accuracy None   45        40    40     0.803 4.27e-1    39
+11 lpf      -0.00153  accuracy 6      20        40    40    -1.76  8.6 e-2    39
+12 lpf       0.00348  accuracy 6      45        40    40     1.74  8.9 e-2    39
+13 lpf       0.00500  accuracy 20     45        40    40     3.17  3   e-3    39
+14 mac       0.00334  accuracy None   ica       40    40     2.28  2.8 e-2    39
+15 ref      -0.00867  accuracy avera… Cz        40    40    -4.09  2.09e-4    39
+16 ref      -0.000224 accuracy avera… P9P10     40    40    -0.111 9.12e-1    39
+17 ref       0.00844  accuracy Cz     P9P10     40    40     4.27  1.21e-4    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_b6f648fc</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_b6f648fc</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_106a6fe3
+# A tibble: 17 × 16
+   variable  estimate .y.     group1 group2    n1    n2 statistic        p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.0109   accura… FALSE  TRUE      40    40     9.74  5.30e-12    39
+ 2 base      0.000367 accura… 200ms  400ms     40    40     1.93  6.1 e- 2    39
+ 3 det      -0.00378  accura… offset linear    40    40    -2.86  7   e- 3    39
+ 4 emc       0.00145  accura… None   ica       40    40     1.55  1.29e- 1    39
+ 5 hpf      -0.000414 accura… None   0.1       40    40    -1.60  1.18e- 1    39
+ 6 hpf      -0.00207  accura… None   0.5       40    40    -2.81  8   e- 3    39
+ 7 hpf      -0.00165  accura… 0.1    0.5       40    40    -2.56  1.5 e- 2    39
+ 8 lpf      -0.0247   accura… None   6         40    40    -6.95  2.47e- 8    39
+ 9 lpf      -0.0256   accura… None   20        40    40    -7.71  2.31e- 9    39
+10 lpf      -0.00406  accura… None   45        40    40    -3.09  4   e- 3    39
+11 lpf      -0.000925 accura… 6      20        40    40    -1.26  2.15e- 1    39
+12 lpf       0.0206   accura… 6      45        40    40     6.41  1.4 e- 7    39
+13 lpf       0.0215   accura… 20     45        40    40     7.18  1.20e- 8    39
+14 mac       0.0233   accura… None   ica       40    40     7.43  5.6 e- 9    39
+15 ref       0.000897 accura… avera… Cz        40    40     0.912 3.67e- 1    39
+16 ref       0.00525  accura… avera… P9P10     40    40     4.75  2.75e- 5    39
+17 ref       0.00435  accura… Cz     P9P10     40    40     3.94  3.32e- 4    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_6a8ed01b</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_6a8ed01b</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_4f045a0c
+# A tibble: 17 × 16
+   variable   estimate .y.     group1 group2    n1    n2 statistic       p    df
+ * &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00664   accura… FALSE  TRUE      40    40    4.76   2.66e-5    39
+ 2 base      0.000558  accura… 200ms  400ms     40    40    2.03   4.9 e-2    39
+ 3 det      -0.00437   accura… offset linear    40    40   -6.16   3.09e-7    39
+ 4 emc       0.000784  accura… None   ica       40    40    1.47   1.5 e-1    39
+ 5 hpf      -0.0000245 accura… None   0.1       40    40   -0.0882 9.3 e-1    39
+ 6 hpf      -0.00197   accura… None   0.5       40    40   -5.46   2.89e-6    39
+ 7 hpf      -0.00195   accura… 0.1    0.5       40    40   -6.22   2.54e-7    39
+ 8 lpf      -0.00276   accura… None   6         40    40   -1.58   1.21e-1    39
+ 9 lpf      -0.00537   accura… None   20        40    40   -3.35   2   e-3    39
+10 lpf      -0.000845  accura… None   45        40    40   -1.13   2.67e-1    39
+11 lpf      -0.00261   accura… 6      20        40    40   -2.91   6   e-3    39
+12 lpf       0.00192   accura… 6      45        40    40    1.12   2.67e-1    39
+13 lpf       0.00452   accura… 20     45        40    40    2.88   6   e-3    39
+14 mac       0.00533   accura… None   ica       40    40    3.45   1   e-3    39
+15 ref      -0.000644  accura… avera… Cz        40    40   -0.934  3.56e-1    39
+16 ref      -0.00206   accura… avera… P9P10     40    40   -2.72   1   e-2    39
+17 ref      -0.00141   accura… Cz     P9P10     40    40   -1.90   6.4 e-2    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_63760388</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_63760388</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_8685240a
+# A tibble: 17 × 16
+   variable  estimate .y.      group1 group2    n1    n2 statistic       p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.0118   accuracy FALSE  TRUE      40    40     5.13  8.3 e-6    39
+ 2 base     -0.000486 accuracy 200ms  400ms     40    40    -1.90  6.5 e-2    39
+ 3 det      -0.00970  accuracy offset linear    40    40    -4.75  2.72e-5    39
+ 4 emc       0.00116  accuracy None   ica       40    40     0.736 4.66e-1    39
+ 5 hpf      -0.00128  accuracy None   0.1       40    40    -2.62  1.2 e-2    39
+ 6 hpf      -0.00498  accuracy None   0.5       40    40    -4.07  2.19e-4    39
+ 7 hpf      -0.00369  accuracy 0.1    0.5       40    40    -3.47  1   e-3    39
+ 8 lpf       0.0181   accuracy None   6         40    40     4.04  2.44e-4    39
+ 9 lpf       0.00562  accuracy None   20        40    40     2.53  1.5 e-2    39
+10 lpf       0.000232 accuracy None   45        40    40     0.253 8.02e-1    39
+11 lpf      -0.0124   accuracy 6      20        40    40    -3.44  1   e-3    39
+12 lpf      -0.0178   accuracy 6      45        40    40    -3.83  4.47e-4    39
+13 lpf      -0.00539  accuracy 20     45        40    40    -2.26  3   e-2    39
+14 mac      -0.00412  accuracy None   ica       40    40    -1.69  9.9 e-2    39
+15 ref      -0.00304  accuracy avera… Cz        40    40    -1.93  6.1 e-2    39
+16 ref      -0.0107   accuracy avera… P9P10     40    40    -4.85  1.98e-5    39
+17 ref      -0.00765  accuracy Cz     P9P10     40    40    -3.67  7.33e-4    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_4aa9a355</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_4aa9a355</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-10.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_da904a94
+# A tibble: 17 × 16
+   variable  estimate .y.      group1 group2    n1    n2 statistic       p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00710  accuracy FALSE  TRUE      40    40    3.85   0.00043    39
+ 2 base     -0.000572 accuracy 200ms  400ms     40    40   -2.07   0.045      39
+ 3 det       0.00159  accuracy offset linear    40    40    0.731  0.469      39
+ 4 emc       0.0195   accuracy None   ica       40    40    3.41   0.002      39
+ 5 hpf       0.000365 accuracy None   0.1       40    40    0.726  0.472      39
+ 6 hpf      -0.00120  accuracy None   0.5       40    40   -1.47   0.149      39
+ 7 hpf      -0.00157  accuracy 0.1    0.5       40    40   -2.37   0.023      39
+ 8 lpf      -0.00472  accuracy None   6         40    40   -1.84   0.073      39
+ 9 lpf      -0.00574  accuracy None   20        40    40   -2.30   0.027      39
+10 lpf       0.00319  accuracy None   45        40    40    1.48   0.146      39
+11 lpf      -0.00102  accuracy 6      20        40    40   -0.801  0.428      39
+12 lpf       0.00791  accuracy 6      45        40    40    2.60   0.013      39
+13 lpf       0.00893  accuracy 20     45        40    40    3.16   0.003      39
+14 mac       0.00854  accuracy None   ica       40    40    3.28   0.002      39
+15 ref      -0.00152  accuracy avera… Cz        40    40   -1.64   0.109      39
+16 ref      -0.000183 accuracy avera… P9P10     40    40   -0.0741 0.941      39
+17 ref       0.00133  accuracy Cz     P9P10     40    40    0.540  0.592      39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_a8242834</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-11.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_a8242834</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-12.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_857a3173
+# A tibble: 17 × 16
+   variable  estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00626  accuracy FALSE   TRUE      40    40    2.62   0.012    39
+ 2 base      0.000146 accuracy 200ms   400ms     40    40    0.406  0.687    39
+ 3 det       0.00905  accuracy offset  linear    40    40    2.48   0.018    39
+ 4 emc       0.00354  accuracy None    ica       40    40    2.00   0.053    39
+ 5 hpf       0.00101  accuracy None    0.1       40    40    1.14   0.263    39
+ 6 hpf       0.000165 accuracy None    0.5       40    40    0.0884 0.93     39
+ 7 hpf      -0.000843 accuracy 0.1     0.5       40    40   -0.532  0.598    39
+ 8 lpf      -0.00288  accuracy None    6         40    40   -1.40   0.168    39
+ 9 lpf      -0.00349  accuracy None    20        40    40   -1.68   0.102    39
+10 lpf       0.00164  accuracy None    45        40    40    0.860  0.395    39
+11 lpf      -0.000608 accuracy 6       20        40    40   -0.598  0.554    39
+12 lpf       0.00452  accuracy 6       45        40    40    1.85   0.072    39
+13 lpf       0.00513  accuracy 20      45        40    40    2.03   0.049    39
+14 mac       0.00539  accuracy None    ica       40    40    2.87   0.007    39
+15 ref      -0.00460  accuracy average Cz        40    40   -3.12   0.003    39
+16 ref      -0.00562  accuracy average P9P10     40    40   -2.46   0.018    39
+17 ref      -0.00102  accuracy Cz      P9P10     40    40   -0.387  0.701    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_2b3f4dee</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_2b3f4dee</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-5-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_b64ce0b0
+# A tibble: 17 × 16
+   variable    estimate .y.    group1 group2    n1    n2 statistic       p    df
+ * &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00980    accur… FALSE  TRUE      40    40    4.60   4.37e-5    39
+ 2 base     -0.00000434 accur… 200ms  400ms     40    40   -0.0162 9.87e-1    39
+ 3 det      -0.000969   accur… offset linear    40    40   -0.333  7.41e-1    39
+ 4 emc       0.00132    accur… None   ica       40    40    0.694  4.92e-1    39
+ 5 hpf      -0.000327   accur… None   0.1       40    40   -0.397  6.94e-1    39
+ 6 hpf      -0.00409    accur… None   0.5       40    40   -2.55   1.5 e-2    39
+ 7 hpf      -0.00376    accur… 0.1    0.5       40    40   -2.62   1.2 e-2    39
+ 8 lpf      -0.00321    accur… None   6         40    40   -1.37   1.79e-1    39
+ 9 lpf      -0.00286    accur… None   20        40    40   -1.39   1.72e-1    39
+10 lpf      -0.000659   accur… None   45        40    40   -0.514  6.1 e-1    39
+11 lpf       0.000352   accur… 6      20        40    40    0.275  7.85e-1    39
+12 lpf       0.00255    accur… 6      45        40    40    1.10   2.79e-1    39
+13 lpf       0.00220    accur… 20     45        40    40    1.13   2.65e-1    39
+14 mac       0.00252    accur… None   ica       40    40    1.53   1.33e-1    39
+15 ref      -0.00264    accur… avera… Cz        40    40   -1.52   1.37e-1    39
+16 ref      -0.00545    accur… avera… P9P10     40    40   -2.70   1   e-2    39
+17 ref      -0.00281    accur… Cz     P9P10     40    40   -1.33   1.9 e-1    39
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="mipdb-1" class="level3">
+<h3 class="anchored" data-anchor-id="mipdb-1">MIPDB</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$raincloud_single_1ff270c9</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_1ff270c9</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_6de59e65
+# A tibble: 17 × 16
+   variable   estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.0144    accuracy FALSE   TRUE      17    17    1.74   0.101    16
+ 2 base     -0.000215  accuracy 200ms   400ms     17    17   -0.548  0.592    16
+ 3 det       0.00614   accuracy offset  linear    17    17    0.988  0.338    16
+ 4 emc      -0.00173   accuracy None    ica       17    17   -1.15   0.266    16
+ 5 hpf      -0.00106   accuracy None    0.1       17    17   -0.320  0.753    16
+ 6 hpf       0.00159   accuracy None    0.5       17    17    0.434  0.67     16
+ 7 hpf       0.00265   accuracy 0.1     0.5       17    17    0.675  0.509    16
+ 8 lpf       0.00773   accuracy None    6         17    17    1.86   0.082    16
+ 9 lpf       0.00130   accuracy None    20        17    17    0.918  0.372    16
+10 lpf       0.000284  accuracy None    45        17    17    0.221  0.828    16
+11 lpf      -0.00643   accuracy 6       20        17    17   -1.91   0.074    16
+12 lpf      -0.00744   accuracy 6       45        17    17   -2.09   0.053    16
+13 lpf      -0.00101   accuracy 20      45        17    17   -1.02   0.321    16
+14 mac       0.0000122 accuracy None    ica       17    17    0.0192 0.985    16
+15 ref      -0.00936   accuracy average Cz        17    17   -1.57   0.136    16
+16 ref      -0.0131    accuracy average P9P10     17    17   -3.33   0.004    16
+17 ref      -0.00369   accuracy Cz      P9P10     17    17   -1.16   0.264    16
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_529f0c77</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_529f0c77</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_ce71c695
+# A tibble: 17 × 16
+   variable  estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00665  accuracy FALSE   TRUE      16    16    0.951  0.357    15
+ 2 base     -0.00102  accuracy 200ms   400ms     16    16   -1.59   0.133    15
+ 3 det      -0.00220  accuracy offset  linear    16    16   -0.343  0.736    15
+ 4 emc      -0.000670 accuracy None    ica       16    16   -1.01   0.33     15
+ 5 hpf      -0.00250  accuracy None    0.1       16    16   -1.09   0.293    15
+ 6 hpf      -0.00680  accuracy None    0.5       16    16   -1.71   0.109    15
+ 7 hpf      -0.00430  accuracy 0.1     0.5       16    16   -1.15   0.266    15
+ 8 lpf       0.000808 accuracy None    6         16    16    0.580  0.571    15
+ 9 lpf      -0.000735 accuracy None    20        16    16   -0.486  0.634    15
+10 lpf      -0.00133  accuracy None    45        16    16   -0.944  0.36     15
+11 lpf      -0.00154  accuracy 6       20        16    16   -0.978  0.344    15
+12 lpf      -0.00214  accuracy 6       45        16    16   -1.82   0.09     15
+13 lpf      -0.000597 accuracy 20      45        16    16   -0.467  0.647    15
+14 mac      -0.000455 accuracy None    ica       16    16   -0.835  0.417    15
+15 ref      -0.00643  accuracy average Cz        16    16   -1.36   0.194    15
+16 ref      -0.00632  accuracy average P9P10     16    16   -1.16   0.264    15
+17 ref       0.000104 accuracy Cz      P9P10     16    16    0.0593 0.953    15
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_a5bbc8de</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_a5bbc8de</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_248928b6
+# A tibble: 17 × 16
+   variable   estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00376   accuracy FALSE   TRUE      18    18    0.597  0.558    17
+ 2 base      0.000781  accuracy 200ms   400ms     18    18    1.70   0.108    17
+ 3 det       0.00245   accuracy offset  linear    18    18    0.365  0.719    17
+ 4 emc       0.000452  accuracy None    ica       18    18    0.537  0.598    17
+ 5 hpf       0.00143   accuracy None    0.1       18    18    0.622  0.542    17
+ 6 hpf       0.00159   accuracy None    0.5       18    18    0.464  0.649    17
+ 7 hpf       0.000164  accuracy 0.1     0.5       18    18    0.0515 0.96     17
+ 8 lpf       0.00198   accuracy None    6         18    18    0.857  0.403    17
+ 9 lpf       0.00190   accuracy None    20        18    18    0.810  0.429    17
+10 lpf       0.00221   accuracy None    45        18    18    0.993  0.335    17
+11 lpf      -0.0000781 accuracy 6       20        18    18   -0.0820 0.936    17
+12 lpf       0.000233  accuracy 6       45        18    18    0.253  0.803    17
+13 lpf       0.000311  accuracy 20      45        18    18    0.395  0.698    17
+14 mac       0.0000131 accuracy None    ica       18    18    0.0261 0.979    17
+15 ref       0.00764   accuracy average Cz        18    18    1.58   0.132    17
+16 ref      -0.00153   accuracy average P9P10     18    18   -0.852  0.406    17
+17 ref      -0.00917   accuracy Cz      P9P10     18    18   -1.98   0.064    17
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_f0ad381a</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_f0ad381a</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_3666e60b
+# A tibble: 17 × 16
+   variable  estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.0289   accuracy FALSE   TRUE      18    18    2.27   0.036    17
+ 2 base     -0.000124 accuracy 200ms   400ms     18    18   -0.192  0.85     17
+ 3 det       0.00313  accuracy offset  linear    18    18    0.577  0.572    17
+ 4 emc      -0.000342 accuracy None    ica       18    18   -0.353  0.728    17
+ 5 hpf      -0.00585  accuracy None    0.1       18    18   -1.54   0.141    17
+ 6 hpf      -0.00365  accuracy None    0.5       18    18   -0.959  0.351    17
+ 7 hpf       0.00220  accuracy 0.1     0.5       18    18    0.807  0.431    17
+ 8 lpf       0.00498  accuracy None    6         18    18    1.04   0.312    17
+ 9 lpf       0.000331 accuracy None    20        18    18    0.165  0.871    17
+10 lpf       0.00103  accuracy None    45        18    18    0.886  0.388    17
+11 lpf      -0.00465  accuracy 6       20        18    18   -1.31   0.207    17
+12 lpf      -0.00395  accuracy 6       45        18    18   -0.896  0.383    17
+13 lpf       0.000697 accuracy 20      45        18    18    0.500  0.624    17
+14 mac      -0.000741 accuracy None    ica       18    18   -1.24   0.23     17
+15 ref      -0.0127   accuracy average Cz        18    18   -1.95   0.068    17
+16 ref      -0.000196 accuracy average P9P10     18    18   -0.0719 0.944    17
+17 ref       0.0125   accuracy Cz      P9P10     18    18    1.45   0.166    17
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;
+
+$raincloud_single_1f56c01b</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$paired_single_1f56c01b</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="results_files/figure-html/unnamed-chunk-6-10.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+$stats_single_ee387d20
+# A tibble: 17 × 16
+   variable  estimate .y.      group1  group2    n1    n2 statistic     p    df
+ * &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 ar        0.00829  accuracy FALSE   TRUE      10    10     1.33  0.215     9
+ 2 base      0.000156 accuracy 200ms   400ms     10    10     0.180 0.861     9
+ 3 det      -0.00823  accuracy offset  linear    10    10    -0.885 0.399     9
+ 4 emc      -0.00313  accuracy None    ica       10    10    -1.50  0.167     9
+ 5 hpf      -0.00913  accuracy None    0.1       10    10    -2.26  0.051     9
+ 6 hpf      -0.00244  accuracy None    0.5       10    10    -0.579 0.577     9
+ 7 hpf       0.00669  accuracy 0.1     0.5       10    10     1.49  0.17      9
+ 8 lpf       0.00200  accuracy None    6         10    10     0.898 0.392     9
+ 9 lpf      -0.00164  accuracy None    20        10    10    -0.880 0.402     9
+10 lpf      -0.000653 accuracy None    45        10    10    -0.386 0.709     9
+11 lpf      -0.00365  accuracy 6       20        10    10    -2.22  0.053     9
+12 lpf      -0.00266  accuracy 6       45        10    10    -1.23  0.25      9
+13 lpf       0.000990 accuracy 20      45        10    10     0.646 0.534     9
+14 mac       0.00158  accuracy None    ica       10    10     1.59  0.146     9
+15 ref      -0.00615  accuracy average Cz        10    10    -1.33  0.217     9
+16 ref      -0.00153  accuracy average P9P10     10    10    -0.521 0.615     9
+17 ref       0.00462  accuracy Cz      P9P10     10    10     1.17  0.271     9
+# ℹ 6 more variables: conf.low &lt;dbl&gt;, conf.high &lt;dbl&gt;, method &lt;chr&gt;,
+#   alternative &lt;chr&gt;, p.adj &lt;dbl&gt;, p.adj.signif &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

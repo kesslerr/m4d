@@ -1,4 +1,210 @@
+---
+title: "hlm_eegnet"
+output: html_document
+date: "2024-02-12"
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+## Imports
 
+```{r}
 library(tidyverse)
+library(lmerTest)
+library(data.table)
+library(ggplot2)
+
+```
+
+# import data
+
+
+
+
+```{r cars}
+
+# Define the directory containing the subfolders
+model_folder = "/Users/roman/GitHub/m4d/R/data/eegnet/"
+
+# Get subdirectory names
+#subdirectory_names <- basename(dirname(model_folder))
+experiments <- list.dirs(model_folder, full.names = FALSE, recursive = FALSE)
+
+subjects <- list.dirs(paste0(model_folder, experiments[1]), full.names = FALSE, recursive = FALSE)
+
+new_column_names <- c('ref','hpf','lpf','emc','mac','base','det','ar')
+
+# Initialize an empty data table to store the concatenated data
+concatenated_data <- NULL
+
+# DEBUG
+experiment = experiments[1]
+subject = subjects[1]
+for (experiment in experiments){
+  for (subject in subjects){
+    # List all CSV files in the subdirectory
+    files <- list.files(path = paste0(model_folder, experiment, '/', subject), pattern = "\\.csv$", full.names = TRUE)
+    
+    # Read and vertically concatenate the CSV files
+    data <- lapply(files, fread)
+    data <- rbindlist(data, fill = TRUE)
+    
+    # Split the column at each "_" and name the new columns
+    data[, (new_column_names) := tstrsplit(forking_path, "_", fixed = TRUE)]
+
+    # Add subdirectory names as separate columns
+    data[, "experiment" := rep(experiment,length(files))]
+    data[, "subject" := rep(subject,length(files))]
+    
+    # Delete the "forking_path" column
+    data[, forking_path := NULL]
+    
+    concatenated_data <- rbindlist(list(concatenated_data, data), fill = TRUE)
+  }
+}
+
+# recode variables
+
+# Assuming 'hpf' is a factor variable in your data
+concatenated_data$hpf <- factor(concatenated_data$hpf, levels = c("None", "0.1", "0.5"))
+concatenated_data$lpf <- factor(concatenated_data$lpf, levels = c("None", "6", "20", "45"))
+concatenated_data$ref <- factor(concatenated_data$ref, levels = c("average", "Cz", "P9P10"))
+concatenated_data$emc <- factor(concatenated_data$emc, levels = c("None", "ica"))
+concatenated_data$mac <- factor(concatenated_data$mac, levels = c("None", "ica"))
+concatenated_data$base <- factor(concatenated_data$base, levels = c("200ms", "400ms"))
+concatenated_data$det <- factor(concatenated_data$det, levels = c("offset", "linear"))
+concatenated_data$ar <- factor(concatenated_data$ar, levels = c("False", "True"))
+concatenated_data$experiment <- factor(concatenated_data$experiment)
+
+# Output the combined data
+print(concatenated_data)
+
+```
+
+
+
+## save data more consicely
+
+```{r}
+data_folder =  "/Users/roman/GitHub/m4d/R/data/"
+
+write.csv(concatenated_data, paste0(model_folder, "eegnet.csv"), row.names = FALSE)
+
+```
+
+## load
+
+```{r}
+# Load CSV file into a data table
+data <- read.csv(paste0(data_folder, "eegnet.csv"))
+
+# Check the structure of the loaded data table
+str(data)
+```
+
+
+
+## HLM
+
+```{r}
+
+#model <- lmer(accuracy ~ ref + hpf + lpf + base + det + ar + emc + mac + experiment + ref * experiment + hpf * experiment + lpf * experiment + base * experiment + det * experiment + ar * experiment + emc * experiment + mac * experiment + (1 | subject), data = concatenated_data)
+model <- lmer(accuracy ~ ref + hpf + lpf + base + det + ar + emc + mac + experiment + (1 | subject), data = concatenated_data)
+
+# Set options to display numbers in clear format
+options(scipen = 999)
+
+summary(model)
+
+```
+## random effects
+```{r}
+# Extract random effects (intercepts) for the 'subject' variable
+random_effects <- ranef(model)$subject
+
+# Plotting
+boxplot(random_effects, main = "Random Effects of 'Subject'", ylab = "Random Effect")
+
+```
+```{r}
+# Create a data frame with random effects
+df <- data.frame(RandomEffect = random_effects$`(Intercept)`)
+
+# Create a dot plot using ggplot2
+ggplot(df, aes(x = 1, y = RandomEffect)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.01, fill = "black", color = "black") +
+  theme_minimal() +
+  labs(title = "Dot Plot of Random Effects for 'Subject'", x = "", y = "Random Effect")
+```
+
+```{r}
+# Perform hypothesis test for random effects
+summary(model)$varcor
+```
+
+
+## plot
+
+```{r}
+
+# Get the parameter estimates from the model summary
+parameter_estimates <- as.data.frame(summary(model)$coefficients)
+
+# Remove the row for the intercept
+parameter_estimates <- parameter_estimates[-1, ]
+
+# Extract the parameter names and estimates
+parameter_names <- rownames(parameter_estimates)
+parameter_values <- parameter_estimates[, "Estimate"]
+
+# Create a data frame for plotting
+plot_data <- data.frame(Parameter = parameter_names, Estimate = parameter_values)
+
+# Separate variables starting with "experiment" and others
+experiment_vars <- filter(plot_data, grepl("^experiment", Parameter))
+other_vars <- filter(plot_data, !grepl("^experiment", Parameter))
+
+# Create a function to plot data
+plot_params <- function(data, title) {
+  ggplot(data, aes(x = Parameter, y = Estimate)) +
+    geom_bar(stat = "identity", fill = "darkgrey") +
+    labs(x = "Parameter", y = "Estimate", title = title) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+}
+
+# Create plots
+plot_experiment <- plot_params(experiment_vars, "Parameter Estimates for Experiment Variables")
+plot_other <- plot_params(other_vars, "Parameter Estimates for Other Variables")
+
+# Print the plots
+print(plot_experiment)
+print(plot_other)
+```
+
+
+## for each experiment, own HLM
+
+```{r}
+for (i in experiments){
+  print(i)
+  subset_data <- concatenated_data[experiment == i, ]
+
+  model <- lmer(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (1 | subject), data = subset_data)
+
+  print(summary(model))
+}
+```
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
