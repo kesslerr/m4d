@@ -67,13 +67,17 @@ model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 
+# delete previous files if existent
+for file in glob(os.path.join(model_folder, "*.npy")):
+    os.remove(file)
+
 forking_paths, files, forking_paths_split = get_forking_paths(
                             base_dir="/ptmp/kroma/m4d/", 
                             experiment=experiment,
                             subject=subject, 
                             sample=None)
 
-
+assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
 
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
