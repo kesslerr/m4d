@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # experiments and subjects to be analyzed
 experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']  
@@ -11,6 +13,21 @@ cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
 
 # child mind institute
 subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
+
+# mipdb age groups and their corresponding participants
+subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
+age_groups = {"6-9": [6,7,8,9],
+              "10-11": [10,11],
+              "12-13": [12,13],
+              "14-17": [14,15,16,17],
+              "18-25": [18,19,20,21,22,23,24,25],
+              }
+
+groups_subjects_mipdb = {}
+for group, ages in age_groups.items():
+    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
+    
+
 
 # define triggers and stuff
 delete_triggers = { # ERPCORE
@@ -145,6 +162,19 @@ baseline_windows = {
         'MIPDB': [-.8, -.4],
         },
     }    
+
+decoding_windows = {
+    # ERPCORE
+    'ERN':  [-.2, .6],
+    'LRP':  [-.4, .4],
+    'MMN':  [.0, .8],
+    'N170': [.0, .8],
+    'N2pc': [.0, .8],
+    'N400': [.0, .8],
+    'P3':   [.0, .8],
+    # MIPDB
+    'MIPDB': [-.4, .4],
+    }
 
 # define multiverse parameter space
 multiverse_params = {

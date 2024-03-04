@@ -40,7 +40,7 @@ os.chdir(base_dir)
 sys.path.append(base_dir)
 
 from src.utils import get_forking_paths
-from src.config import translation_table, baseline_windows
+from src.config import translation_table, baseline_windows, decoding_windows
 
 """ HEADER END """
 
@@ -78,9 +78,9 @@ forking_paths, files, forking_paths_split = get_forking_paths(
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
     clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear", class_weight='balanced'))
-    time_decod = SlidingEstimator(clf, n_jobs=-1, scoring="balanced_accuracy", verbose=True) # "roc_auc" balanced_accuracy
+    time_decod = SlidingEstimator(clf, n_jobs=1, scoring="balanced_accuracy", verbose=True) # "roc_auc" balanced_accuracy  # new, n_jobs=1 to prevent overload
     # here we use cv=3 just for speed
-    scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=-1)
+    scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=1) # new, n_jobs=1 to prevent overload
     # Mean scores across cross-validation splits
     return np.mean(scores, axis=0)
 
@@ -100,27 +100,29 @@ def slider_permut(X,y, iter=100): # TODO increase iter
 def slider_parallel(forking_path, file):  
     
     # extract the string "XXXms" from forking path
-    baseline_ms = re.search(r"_(\d{3}ms)_", forking_path).group(1)
-    baseline_end = baseline_windows[baseline_ms][experiment][-1]
+    #baseline_ms = re.search(r"_(\d{3}ms)_", forking_path).group(1)
+    #baseline_end = baseline_windows[baseline_ms][experiment][-1]
     
     
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
     
     #n_tp = len(epochs.times)
+    tmin = decoding_windows[experiment][0]
+    tmax = decoding_windows[experiment][1]
     
     # extract data from epochs
-    X = epochs.get_data(tmin=baseline_end)
+    X = epochs.get_data(tmin=tmin, tmax=tmax)
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
     scores = slider(X.copy(),y.copy())
     
-    permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
+    #permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
     
     # save scores to file
     np.save(os.path.join(model_folder, f"{forking_path.translate(translation_table)}.npy"), scores)
     # save permutation scores to file
-    np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
+    #np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
     
     
     #return scores, permut_scores

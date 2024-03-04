@@ -1,0 +1,23 @@
+---
+title: My R Markdown File
+author: Your Name
+date: Today's Date
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+# Introduction
+
+This is my R Markdown file. It can contain text, code, and visualizations.
+
+## Code Chunk
+
+Here is an example of a code chunk:
+
+```{r}
+library(ggplot2)
+```
+
+Test
