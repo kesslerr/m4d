@@ -10,8 +10,8 @@ library(tarchetypes) # e.g. for tar_map
 
 # Set target options:
 tar_option_set(
-  packages = c("dplyr", "ggplot2", "ggsignif", "readr", "lmerTest", "emmeans", "magrittr", "ggpubr",
-               "tidyverse", "tidyquant", "ggdist", "ggthemes", "broom", "dplyr", "purrr", "rstatix") # packages that your targets use
+  packages = c("dplyr", "ggplot2", "ggsignif", "readr", "lmerTest", "emmeans", "magrittr", "ggpubr", "data.table",
+               "tidyverse", "tidyquant", "ggdist", "ggthemes", "broom", "dplyr", "purrr", "rstatix", "tidyr") # packages that your targets use
   # format = "qs", # Optionally set the default storage format. qs is fast.
   #
   # Pipelines that take a long time to run may benefit from
@@ -59,20 +59,80 @@ source("R/functions.R")
 
 # Replace the target list below with your own:
 list(
+  # define raw data files
   tar_target(
-    name = file,
-    #command = "ERPCORE_eegnet.csv",
+    name = eegnet_file,
     command = "eegnet.csv",
     format = "file"
   ),
   tar_target(
-    name = data,
-    command = get_preprocess_data(file)
+    name = sliding_file,
+    command = "sliding.csv",
+    format = "file"
   ),
-
+  tar_target(
+    name = tsum_file,
+    command = "sliding_tsums.csv",
+    format = "file"
+  ),
+  
+  # import and recode datasets
+  tar_target(
+    name = data_eegnet,
+    command = get_preprocess_data(eegnet_file)
+  ),
+  # for now, SLIDING only in ERPCORE, because MIPDB has errors, TODO later: tar_group_by and include MIPDB
+  tar_target(
+    name = data_sliding,
+    command = {get_preprocess_data(sliding_file) %>% filter(dataset == "erpcore") %>% select(-c(forking_path, dataset))}
+  ),
+  tar_target(
+    name = data_tsum,
+    command = {get_preprocess_data(tsum_file) %>% filter(dataset == "erpcore") %>% select(-c(forking_path, dataset))}
+  ),
+  
+  #### Example results of Luck forking path
+  tar_target(
+    name = timeresolved_luck,
+    command = timeresolved_plot(data_sliding)
+  ),
+  
+  #### sliding processing ####
+  
+  # calculation of marginal means (total and per experiment)
+  tar_target(
+    name = results_sliding,
+    command = estimate_marginal_means_sliding(data_tsum, per_exp=FALSE)
+  ),
+  tar_target(
+    name = results_sliding_experiment,
+    command = estimate_marginal_means_sliding(data_tsum, per_exp=TRUE)
+  ),
+  
+  # calculation of t values
+  
+  
+  # plotting
+  tar_target(
+    name = plot_sliding,
+    command = sliding_plot_all(results_sliding)
+  ),
+  tar_target(
+    name = plot_sliding_experiment,
+    command = sliding_plot_experiment(results_sliding_experiment)
+  ),
+  tar_target(
+    name = plot_ecdf,
+    command = ecdf(data_tsum)
+  ),
+  
+  
+  
+  
+  #### eegnet processing ####
   tar_group_by(
     data_dataset, 
-    data, 
+    data_eegnet, 
     dataset # this groups the dataframe by experiment, for later single evaluation
   ),  
 
@@ -135,57 +195,5 @@ list(
   )
 )
 
-# # TODO: check model assumptions HLM: https://stats.stackexchange.com/questions/376273/assumptions-for-lmer-models
-# 
-# # tar_target(
-# #   name = model,
-# #   command = fit_model(data)
-# #   #description = "Regression of ozone vs temp" # requires development targets >= 1.5.0.9001: remotes::install_github("ropensci/targets")
-# # ),
-# #description = "Regression of ozone vs temp" # requires development targets >= 1.5.0.9001: remotes::install_github("ropensci/targets")
-# 
-# # tar_target(
-# #   name = model,
-# #   command = fit_model(data)
-# #   #description = "Regression of ozone vs temp" # requires development targets >= 1.5.0.9001: remotes::install_github("ropensci/targets")
-# # ),
-# # tar_target(
-# #   name = plot,
-# #   command = plot_model(model, data)
-# #   #description = "Scatterplot of model & data" # requires development targets >= 1.5.0.9001: remotes::install_github("ropensci/targets")
-# # )
-# 
-# 
-# # tar_target(
-# #   name = hlm_all,
-# #   command = lmer(data=data, formula="accuracy ~ ref + hpf + lpf + base + det + ar + emc + mac + experiment + (1 | subject)")
-# #   #(formula, data = data)
-# # ),
-# # tar_target(
-# #   name = emm_all_exp,
-# #   command = est_emm(hlm_all, variables = c("ref","hpf","lpf","base","det","ar","emc","mac","experiment"))
-# # ),
-# #tar_target(
-# #  name = emm_all_exp_plots,
-# #  command = plot_emm(emm_all_exp, feature="experiment") # or without ""
-# #),
-# 
-# 
-# 
-# # tar_target(hlm_single, 
-# #            hlm(single_exp_data, formula = "accuracy ~ ref + hpf + lpf + base + det + ar + emc + mac + (1 | subject)"), 
-# #            pattern = map(single_exp_data),
-# #            iteration = "list" # make each a list element, else it can not be read properly later, but maybe without, it can better be processed/merged later? TODO Test
-# #            )
-# 
-# # tar_target(single_coefs, 
-# #            get_ffx_coefs(hlm_single), 
-# #            pattern = map(hlm_single), #single_exp_data
-# #            iteration = "list" # make each a list element, else it can not be read properly later, but maybe without, it can better be processed/merged later? TODO Test
-# #)
-# 
-# 
-# #tar_target(
-# #  name = filtered_data,
-# #  command = filter_experiment(factorized_data)
-# #)
+
+

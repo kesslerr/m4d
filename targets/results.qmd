@@ -36,6 +36,10 @@ The Paired-Plots are not pretty, but there one can nicely see why comparisons ge
 tar_visnetwork()
 ```
 
+```{r}
+tar_visnetwork(targets_only=TRUE, label=c("description", "branches"))
+```
+
 ## Across all experiments or age_groups
 
 ### ERPCORE
