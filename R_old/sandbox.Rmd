@@ -1,0 +1,27 @@
+---
+title: "Sandbox, Helpers, etc."
+output: html_notebook
+---
+
+to start with a project, say use_targets()
+```{r}
+library(targets)
+use_targets()
+```
+
+
+
+check if pipeline has obvious errors
+
+```{r}
+tar_manifest(fields = all_of("command"))
+
+```
+
+
+visualize network
+
+```{r}
+tar_visnetwork()
+```
+

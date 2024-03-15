@@ -43,6 +43,12 @@
 **/*.xlsx
 **/*.ods
 
+# R stuff
+**.*.RData
+**.*.Rhistory
+**.*.Rprofile
+**.*.Rproj
+
 # errors and logs from slurm
 **/*.err
 **/*.out
