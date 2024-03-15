@@ -31,14 +31,11 @@ for (experiment_val in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
 #  geom_histogram()
 
 
-ggplot(best_data, aes(x=tsum, # index as x
-                      #y=idx
-                      )) +
+ggplot(best_data, aes(x=tsum)) +
   geom_hline(data =filter(best_data, performance==TRUE),
              aes(yintercept = idx),
              color="darkgrey",
              ) +
-  #geom_point(size=1) +
   stat_ecdf() +
   facet_wrap(experiment ~., scales = "free_x")
 
