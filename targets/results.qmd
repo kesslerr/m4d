@@ -40,24 +40,37 @@ tar_visnetwork()
 tar_visnetwork(targets_only=TRUE, label=c("description", "branches"))
 ```
 
-## Across all experiments or age_groups
+## Overview of decoding performances
 
 ### ERPCORE
 
 ```{r}
 #| echo: false
-tar_read(raincloud_all, branches = 1)
-tar_read(paired_all, branches = 1)
-tar_read(stats_all, branches = 1)
+tar_read(overview)
+
 ```
 
-### MIPDB
+### 
+
+## Influence of analysis choises
 
 ```{r}
 #| echo: false
-tar_read(raincloud_all, branches = 2)
-tar_read(paired_all, branches = 2)
-tar_read(stats_all, branches = 2) %>% print(n = nrow(.))
+tar_read(eegnet_heatmap)
+```
+
+##  \### QQ plots of HLMs
+
+```{r}
+#| echo: false
+tar_read(eegnet_HLM_qq_comb)
+```
+
+## Time resolved
+
+```{r}
+#| echo: false
+tar_read(timeresolved_luck)
 ```
 
 ## For each single experiments or age_group

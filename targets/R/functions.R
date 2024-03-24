@@ -164,24 +164,24 @@ paired_tests <- function(data, study="ERPCORE"){
   # therefore, delete the experiment variable, and make an unpaired test for it
   # 1. only try by removing experiment in MIPDB
   
-  if (study=="MIPDB"){
-    data_exp <- data %>% filter(variable == "experiment") # NEW
-    data <- data %>% filter(variable != "experiment")
-  }
+  #if (study=="MIPDB"){
+  #  data_exp <- data %>% filter(variable == "experiment") # NEW
+  #  data <- data %>% filter(variable != "experiment")
+  #}
   
   results <- data %>%
     group_by(variable) %>%
     pairwise_t_test(accuracy ~ factor, paired = TRUE, p.adjust.method = "BY",
                     pool.sd = FALSE, detailed = TRUE)
 
-  if (study=="MIPDB"){
-    results_exp <- data_exp %>%
-      group_by(variable) %>%
-      pairwise_t_test(accuracy ~ factor, paired = FALSE, p.adjust.method = "BY",
-                      pool.sd = FALSE, detailed = TRUE) %>%
-      select(-estimate1, -estimate2)
-    results <- rbind(results, results_exp)
-  }
+  #if (study=="MIPDB"){
+  #  results_exp <- data_exp %>%
+  #    group_by(variable) %>%
+  #    pairwise_t_test(accuracy ~ factor, paired = FALSE, p.adjust.method = "BY",
+  #                    pool.sd = FALSE, detailed = TRUE) %>%
+  #    select(-estimate1, -estimate2)
+  #  results <- rbind(results, results_exp)
+  #}
   
   results
 }
@@ -251,6 +251,41 @@ raincloud_mm <- function(data, title = ""){
 
 }
 
+# raw accuracies in a raincloud plot
+raincloud_acc <- function(data, title = ""){
+  names(data)[1] <- str_to_title(names(data)[1])
+  DV <- names(data)[1]
+  
+  # https://rpubs.com/rana2hin/raincloud
+  p <- ggplot(data, aes(x = experiment, y = !!sym(DV) )) +
+    # DEPRECATED: aes_string(x = "Experiment", y = DV))
+    # add half-violin from {ggdist} package
+    stat_halfeye(
+      # adjust bandwidth
+      adjust = 0.5,
+      # move to the right
+      justification = -0.2,
+      # remove the slub interval
+      .width = 0,
+      point_colour = NA,
+      scale = 0.5 ##  <(**new parameter**)
+    ) +
+    geom_boxplot(
+      width = 0.12,
+      # removing outliers
+      outlier.color = NA,
+      alpha = 0.5
+    ) +
+    labs(title = title,
+         x="Experiment",
+         y=DV)
+  if (DV=="Accuracy"){
+    p <- p + geom_hline(yintercept=0.5, lty="dashed")
+  }
+  p
+}
+
+
 paired_box <- function(data, title=""){
   # Apply replacements batchwise across all columns
   data <- data %>%
@@ -291,14 +326,111 @@ filter_experiment <- function(data){
 #  lmer(formula, data = data)
 #}
 
-# est_emm <- function(model, variables){
-#   for (variable in variables){
-#     # MAIN EFFECTS (1 factor)
-#     emm <- emmeans(hlm, specs = formula(paste0(c("pairwise ~ ",variable)))) # ref, within exp
-#     emm$emmeans %>% as.data.frame() # leaving out contrasts for now
-#   }
-# }
-# 
+est_emm <- function(model, variables){
+  # DEBUG
+  #variables = c("ref", "hpf","lpf","base","det","ar","emc","mac","experiment")
+  
+  means = data.frame()
+  contra = data.frame()
+  
+  for (variable in variables){
+    # MAIN EFFECTS (1 factor)
+    emm <- emmeans(model, 
+                   specs = formula(paste0(c("pairwise ~ ",variable))), 
+                   #lmerTest.limit = 322560,
+                   #pbkrtest.limit = 322560) # to not have inf df
+    )
+    
+    # get means
+    dfw <- emm$emmeans %>% 
+      as.data.frame() # leaving out contrasts for now
+    dfw$variable <- names(dfw)[1]
+    names(dfw)[1] <- "level"
+    dfw <- dfw[, c(7, 1, 2)]  # CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+    means <- rbind(means, dfw)
+    
+    # get contrasts
+    dfc <- emm$contrasts %>% 
+      as.data.frame() %>% # leaving out contrasts for now
+      mutate(variable = variable) %>%
+      separate(contrast, c("level.1", "level.2"), " - ")
+    dfc <- dfc[, c(8, 1, 2, 3, 4, 5, 6, 7)]
+    contra <- rbind(contra, dfc)
+    
+  }
+  # significance asterisks
+  contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
+  
+  return(list(means,contra))
+  
+}
+
+# ungroup targets across all branches
+ungrouping <- function(input){
+  data = data.frame()
+  i <- 0
+  for (experiment in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
+    i <- i + 1
+    #tmp <- tar_read(eegnet_HLM_exp_emm_means, branches=i)[[1]]
+    tmp <- input[[i]]
+    tmp[["experiment"]] <- experiment
+    data <- rbind(data, tmp)
+  }
+  data
+}
+
+# concatenate experiment and whole 
+combine_single_whole <- function(single, whole){
+  whole$experiment = "ALL"
+  rbind(whole, single)
+}
+
+# heatmap of emms
+heatmap <- function(data){
+  data <- data %>% 
+    # delete the experiment compairson in the full data
+    filter(!(experiment == "ALL" & variable == "experiment")) %>% 
+  # center around zero for better comparability
+    group_by(experiment) %>%
+    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+
+  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+    geom_tile() +
+    facet_grid(experiment~variable, scales="free") +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()) +
+    scale_fill_continuous_diverging(palette = "Blue-Red 3", 
+                                    l1 = 45, # luminance at endpoints
+                                    l2 = 100, # luminance at midpoints
+                                    p1 = .9, 
+                                    p2 = 1.2) +
+    labs(x="processing level",
+         y="",
+         fill="relative\ndifference\nfrom\nmarginal\nmean\n(%)")  
+        # Percentage marginal mean discrepancy
+        # Distance from average (in %)
+        # Percent above/below average
+}
+
+qqplot.data <- function (model, data="", title="") # argument: vector of numbers
+{
+  if (is.data.frame(data)){
+    title=unique(data$experiment)
+  }
+  vec <- resid(model)
+  # following four lines from base R's qqline()
+  y <- quantile(vec[!is.na(vec)], c(0.25, 0.75))
+  x <- qnorm(c(0.25, 0.75))
+  slope <- diff(y)/diff(x)
+  int <- y[1L] - slope * x[1L]
+  d <- data.frame(resids = vec)
+  ggplot(d, aes(sample = resids)) + 
+    stat_qq() + 
+    geom_abline(slope = slope, intercept = int) +
+    labs(title=title)
+  
+}
+
 # plot_emm <- function(model, variables){
 #   
 #   
@@ -338,3 +470,30 @@ filter_experiment <- function(data){
 #   }
 #   return(significant_combinations)
 # }
+
+# hlm_simulations<- function(data, iterations=1000){
+#   data = tar_read(data_eegnet) %>% filter(experiment=="N170")
+#   # TODO shuffle labels per sub
+#   for (i in 1:iterations){
+#     mod_i <- lmer(formula="accuracy ~ hpf + lpf + emc + mac + base + det + ar + (hpf + lpf + emc + mac + base + det + ar | subject)", #experiment + RFX SlOPES
+#          control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
+#          data = data)
+#     # TODO: extract ps or write it into large df
+#   }
+# }
+
+check_convergence <- function(model){
+  models <- summary(model)
+  
+  # correlations between fixed effects should be not exactly 0, -1 or 1
+  corrs <- models$vcov %>% 
+    cov2cor()
+  if (any(corrs) == 0){
+    stop("Some model fixed effect parameter shows a Correlation of either 0, 1, or -1 !")
+  }
+  
+  # stdev of fixed effects estimates should not be exactly 0
+  if (any(models$coefficients[, "Std. Error"]) == 0){
+    stop("Some model fixed effect parameter shows a Std. Error of 0 !")
+  }
+}
