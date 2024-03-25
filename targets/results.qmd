@@ -44,56 +44,56 @@ tar_visnetwork(targets_only=TRUE, label=c("description", "branches"))
 
 ### ERPCORE
 
-```{r}
+```{r, fig.width=8,fig.height=6}
 #| echo: false
 tar_read(overview)
 
 ```
 
-### 
+## Sliding Window - Example UNIVERSE result
 
-## Influence of analysis choises
-
-```{r}
-#| echo: false
-tar_read(eegnet_heatmap)
-```
-
-##  \### QQ plots of HLMs
-
-```{r}
-#| echo: false
-tar_read(eegnet_HLM_qq_comb)
-```
-
-## Time resolved
-
-```{r}
+```{r, fig.width=7,fig.height=10}
 #| echo: false
 tar_read(timeresolved_luck)
 ```
 
-## For each single experiments or age_group
+## Influence of analysis choises - (M)LM and EMM
 
-### ERPCORE
+### Estimated Marginal Means & Pairwise differences
 
-```{r}
-#| echo: false
-for (branch in c(1,2,3,4,5,6,7)){
-  tar_read(raincloud_single, branches = branch) %>% print()
-  tar_read(paired_single, branches = branch) %>% print()
-  tar_read(stats_single, branches = branch) %>% print()
-}
-
-```
-
-### MIPDB
+#### EEGNET
 
 ```{r}
-#| echo: false
-for (branch in c(8,9,10,11,12)){
-  tar_read(raincloud_single, branches = branch) %>% print()
-  tar_read(paired_single, branches = branch) %>% print()
-  tar_read(stats_single, branches = branch) %>% print()
-}
+tar_read(eegnet_HLM_emm_means_comb)
 ```
+
+```{r}
+tar_read(eegnet_HLM_emm_contrasts_comb)
+```
+
+#### Sliding Window
+
+```{r}
+tar_read(sliding_LM_emm_means_comb)
+```
+
+```{r}
+tar_read(sliding_LM_emm_contrasts_comb)
+```
+
+### Relative performance differences
+
+```{r, fig.width=10,fig.height=10}
+#| echo: false
+tar_read(heatmaps)
+```
+
+##  Model diagnostics
+
+```{r, fig.width=7,fig.height=7}
+#| echo: false
+tar_read(eegnet_HLM_qq_comb)
+tar_read(sliding_LM_qq_comb)
+```
+
+## 

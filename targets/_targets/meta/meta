@@ -1,19 +1,37 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
 .Random.seed|object|e2ec636647059122|||||||||||||||
-check_convergence|function|2c84f8fea4b9fc68|||||||||||||||
+check_convergence|function|5648df5664e4d447|||||||||||||||
 combine_single_whole|function|9648121f1b0c766d|||||||||||||||
+convergence_checks|pattern|ffeb98d477d44b83|c7e08a02acb627cb||1139449904||||2500|rds|local|list||convergence_checks_b9740066*convergence_checks_b27a6dc4*convergence_checks_e9abb01b*convergence_checks_ef69a956*convergence_checks_762682f8*convergence_checks_fac5da98*convergence_checks_1baac71a*convergence_checks_596d2ede*convergence_checks_5143af08*convergence_checks_a3223636*convergence_checks_6852be04*convergence_checks_6a6cff86*convergence_checks_e3e22c91*convergence_checks_f2404857*convergence_checks_c25f433b*convergence_checks_e7b4f40a|0.881||
+convergence_checks_1baac71a|branch|2fc027f1a3a9f9d2|c7e08a02acb627cb|f690b457189fbc41|155986507||t19807.5568027515s|e209d753280b6d62|157|rds|local|list|convergence_checks||0.052|coercing argument of type double to logical|
+convergence_checks_5143af08|branch|cf0232c4e38d96d2|c7e08a02acb627cb|f690b457189fbc41|2132427841||t19807.556803421s|e209d753280b6d62|157|rds|local|list|convergence_checks||0.003|coercing argument of type double to logical|
+convergence_checks_596d2ede|branch|de068e883a1b86e0|c7e08a02acb627cb|f690b457189fbc41|1439364503||t19807.5568033451s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.049|coercing argument of type double to logical|
+convergence_checks_6852be04|branch|2e60fe897c894026|c7e08a02acb627cb|f690b457189fbc41|-1836453764||t19807.5568034988s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.001|coercing argument of type double to logical|
+convergence_checks_6a6cff86|branch|2a039f3fb80f2874|c7e08a02acb627cb|f690b457189fbc41|1421575616||t19807.5568035344s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.001|coercing argument of type double to logical|
+convergence_checks_762682f8|branch|955640fe242dacf1|c7e08a02acb627cb|f690b457189fbc41|103928773||t19807.5568015185s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.061|coercing argument of type double to logical|
+convergence_checks_a3223636|branch|5f1434965ae3bf79|c7e08a02acb627cb|f690b457189fbc41|860280643||t19807.5568034578s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0|coercing argument of type double to logical|
+convergence_checks_b27a6dc4|branch|466ead147a25825b|c7e08a02acb627cb|f690b457189fbc41|1993553102||t19807.556799559s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.055|coercing argument of type double to logical|
+convergence_checks_b9740066|branch|0129e159faf6fdeb|c7e08a02acb627cb|f690b457189fbc41|263764320||t19807.5567989018s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.507|coercing argument of type double to logical|
+convergence_checks_c25f433b|branch|bb3d186bfd1c35e4|c7e08a02acb627cb|f690b457189fbc41|-1158329008||t19807.5568036404s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0|coercing argument of type double to logical|
+convergence_checks_e3e22c91|branch|bfe38bc64dbfbefc|c7e08a02acb627cb|f690b457189fbc41|1723567316||t19807.5568035719s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0|coercing argument of type double to logical|
+convergence_checks_e7b4f40a|branch|c44c7294ccd8d0c4|c7e08a02acb627cb|f690b457189fbc41|1396693752||t19807.5568036769s|e209d753280b6d62|157|rds|local|list|convergence_checks||0|coercing argument of type double to logical|
+convergence_checks_e9abb01b|branch|80cc6fce9288cf43|c7e08a02acb627cb|f690b457189fbc41|324029204||t19807.5568001859s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.052|coercing argument of type double to logical|
+convergence_checks_ef69a956|branch|4b99c5db98170f7f|c7e08a02acb627cb|f690b457189fbc41|-1684558537||t19807.556800789s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.05|coercing argument of type double to logical|
+convergence_checks_f2404857|branch|5e59ccfa9964b739|c7e08a02acb627cb|f690b457189fbc41|1549444224||t19807.5568036059s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0|coercing argument of type double to logical|
+convergence_checks_f9db4a6e|branch||c7e08a02acb627cb|3c5d3fb08bd58766|24574694||t19807.5492836204s||0|rds|local|vector|convergence_checks||0.005||V is not a square numeric matrix
+convergence_checks_fac5da98|branch|476ae10c6ea8a42b|c7e08a02acb627cb|f690b457189fbc41|2022226440||t19807.5568021178s|e209d753280b6d62|157|rds|local|list|convergence_checks||0.05|coercing argument of type double to logical|
 data|stem|8658c8e683ba09cf|bac7abbea7d8d75a|fd33445d32500ff8|33550471||t19782.642511655s|580ba418ba2009d6|1854448|rds|local|vector|||0.646||
 data_dataset|stem|6eb6721dcb394f5c|79537db4311e9e17|1c09174eadcce0b6|-366594174||t19787.752231113s|f624a7c7681eca68|1856108|rds|local|group||data_dataset_c912561b*data_dataset_f61d0bbf|0.007||
-data_eegnet|stem|c02bb5d47cafe763|61f6bfb52c5bdb99|f24be58a7da61787|1854822894||t19802.5401175937s|689653e5dce789ca|1550341|rds|local|vector|||0.329||
-data_eegnet_exp|stem|05257e7eab073fa4|b230a15b76cb988a|33b770527afef325|1103114998||t19802.6692903634s|025b00a81150b7f0|1552268|rds|local|group||data_eegnet_exp_9ae3e910*data_eegnet_exp_0c1c8b6f*data_eegnet_exp_b057df1e*data_eegnet_exp_4e1af8b1*data_eegnet_exp_f3758fcd*data_eegnet_exp_81309d69*data_eegnet_exp_c15cfe75|0.005||
-data_sliding|stem|f19ecbfea0f355ad|93d4f807fbe6bb4f|008dedb33a0c22c0|-2143636913||t19802.6677305686s|321b8b3cca791275|11298281|rds|local|vector|||3.013||
-data_tsum|stem|7bf03aa9c2535977|cc47d13706e9abfb|3f435b01491c7303|1926789164||t19802.6676767575s|c766a577cd9d82a6|58978|rds|local|vector|||0.417||
-data_tsum_exp|stem|4f561bca1496968c|c7a06489d7e56b3e|2b8dc2b17adec8a8|329676867||t19802.6692427709s|348304b94041139f|59137|rds|local|group||data_tsum_exp_7ee2bb7f*data_tsum_exp_d8644dea*data_tsum_exp_e29fe34c*data_tsum_exp_22212039*data_tsum_exp_7a1794f5*data_tsum_exp_2049d7b8*data_tsum_exp_f815ed43|0.13||
+data_eegnet|stem|c02bb5d47cafe763|61f6bfb52c5bdb99|f24be58a7da61787|1854822894||t19807.4719790815s|689653e5dce789ca|1550341|rds|local|vector|||2.481||
+data_eegnet_exp|stem|05257e7eab073fa4|b230a15b76cb988a|33b770527afef325|1103114998||t19807.4720363847s|025b00a81150b7f0|1552268|rds|local|group||data_eegnet_exp_9ae3e910*data_eegnet_exp_0c1c8b6f*data_eegnet_exp_b057df1e*data_eegnet_exp_4e1af8b1*data_eegnet_exp_f3758fcd*data_eegnet_exp_81309d69*data_eegnet_exp_c15cfe75|1.589||
+data_sliding|stem|f19ecbfea0f355ad|93d4f807fbe6bb4f|008dedb33a0c22c0|-2143636913||t19807.4720221774s|321b8b3cca791275|11298281|rds|local|vector|||4.96||
+data_tsum|stem|7bf03aa9c2535977|cc47d13706e9abfb|3f435b01491c7303|1926789164||t19807.4719584505s|c766a577cd9d82a6|58978|rds|local|vector|||1.848||
+data_tsum_exp|stem|4f561bca1496968c|c7a06489d7e56b3e|2b8dc2b17adec8a8|329676867||t19807.4720268224s|348304b94041139f|59137|rds|local|group||data_tsum_exp_7ee2bb7f*data_tsum_exp_d8644dea*data_tsum_exp_e29fe34c*data_tsum_exp_22212039*data_tsum_exp_7a1794f5*data_tsum_exp_2049d7b8*data_tsum_exp_f815ed43|1.691||
 ecdf|function|9e21093127ace394|||||||||||||||
 eegnet_file|stem|fd3c95e6db9997ea|3beb03ea38f21c1a|ef46db3751d8e999|412366697|eegnet.csv|t19802.522010786s|5786f064c6d6de05|31206155|file|local|vector|||0||
-eegnet_heatmap|stem|2dff18a2e8e5c568|03b3e5a91798e15b|5f9506b55861db33|-804051026||t19806.8952342812s|dec878ddeaeb46d8|179750|rds|local|vector|||0.054||
+eegnet_heatmap|stem|193dbe8b13528b9a|03b3e5a91798e15b|46819252c5a5c0fe|-804051026||t19807.4291576217s|42ea351f602bc809|181826|rds|local|vector|||0.055||
 eegnet_HLM|stem|61acca3a2e270a78|c8e9e6c600a68b18|33b770527afef325|-1121325005||t19805.1192160103s|21af5f6b04afd168|29342910|rds|local|vector|||17105.483|convergence code 1 from optimx none|
-eegnet_HLM_check|stem|3fe873ceaa51890e|31802937457459a3|e23da452ad65d80e|1685617962||t19805.1192438949s|a1c456b03adbfbf8|44|rds|local|vector|||0.538|coercing argument of type double to logical. coercing argument of type double to logical|
+eegnet_HLM_check|stem|0129e159faf6fdeb|31802937457459a3|ffb795bf5ed0f367|1685617962||t19807.5567584561s|c303d0aa7a9c897f|156|rds|local|vector|||0.526|coercing argument of type double to logical|
 eegnet_HLM_emm|stem|e2f52fd880b16643|be0d41d36d2e6397|5d083f21e690ba9d|-484332659||t19805.3279759968s|a9e52167b9bd8d00|2127|rds|local|vector|||59.223|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
 eegnet_HLM_emm_contrasts|stem|581a68f9a21790a4|c627e638daf68609|2649e1488353a20f|-801159400||t19805.3279761734s|f671a400543030db|1714|rds|local|vector|||0||
 eegnet_HLM_emm_contrasts_comb|stem|1d3a3e6044935926|dba3b0feb1c51953|011701767addf09a|1006718726||t19805.8078739231s|42bdefd27517eaa7|5624|rds|local|vector|||0.001||
@@ -25,14 +43,14 @@ eegnet_HLM_exp_29f6416a|branch|9354d1ddabf77553|263e1f659dd96166|ef46db3751d8e99
 eegnet_HLM_exp_8d83e99a|branch|2fd0a8bde4c4c76a|263e1f659dd96166|ef46db3751d8e999|807497487||t19804.9340530191s|08bfd4d0aa61dd38|4017869|rds|local|list|eegnet_HLM_exp||1105.91|convergence code 1 from optimx none|
 eegnet_HLM_exp_8db25150|branch|67239056c00e02d0|263e1f659dd96166|ef46db3751d8e999|446846205||t19804.9353031817s|8291a8288dc2bb08|3938697|rds|local|list|eegnet_HLM_exp||1215.318|convergence code 1 from optimx none|
 eegnet_HLM_exp_b824abcd|branch|f0dbba26aae5e8e2|263e1f659dd96166|ef46db3751d8e999|585935134||t19804.9349380411s|d4f5a726beea803a|4032513|rds|local|list|eegnet_HLM_exp||1181.841|convergence code 1 from optimx none|
-eegnet_HLM_exp_check|pattern|f175ef38d46916d8|7d40deb672c01ad6||-1254562300||||308|rds|local|list||eegnet_HLM_exp_check_ff099055*eegnet_HLM_exp_check_2a0fa424*eegnet_HLM_exp_check_6207c8da*eegnet_HLM_exp_check_1218c3b2*eegnet_HLM_exp_check_12476351*eegnet_HLM_exp_check_d040ff17*eegnet_HLM_exp_check_b9ba3c19|4.631||
-eegnet_HLM_exp_check_1218c3b2|branch|3fe873ceaa51890e|7d40deb672c01ad6|2531854361142a94|-1210341794||t19804.9353102367s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.062|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_12476351|branch|3fe873ceaa51890e|7d40deb672c01ad6|612d126c786cc504|426672862||t19804.9341334243s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.098|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_2a0fa424|branch|3fe873ceaa51890e|7d40deb672c01ad6|b2e96a28249ab13c|-592005722||t19804.9343474828s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.123|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_6207c8da|branch|3fe873ceaa51890e|7d40deb672c01ad6|a3f26182d042acfe|-1211258||t19804.9357786832s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.055|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_b9ba3c19|branch|3fe873ceaa51890e|7d40deb672c01ad6|5eb02a648f092e62|1117631731||t19804.9352832752s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.062|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_d040ff17|branch|3fe873ceaa51890e|7d40deb672c01ad6|c4264b794db53c55|-1130915902||t19804.9349429739s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.069|coercing argument of type double to logical. coercing argument of type double to logical|
-eegnet_HLM_exp_check_ff099055|branch|3fe873ceaa51890e|7d40deb672c01ad6|287623169c7bd857|-1589464169||t19804.9348566757s|a1c456b03adbfbf8|44|rds|local|list|eegnet_HLM_exp_check||0.141|coercing argument of type double to logical. coercing argument of type double to logical|
+eegnet_HLM_exp_check|pattern|b4a45658716c200a|7d40deb672c01ad6||-1254562300||||1094|rds|local|list||eegnet_HLM_exp_check_ff099055*eegnet_HLM_exp_check_2a0fa424*eegnet_HLM_exp_check_6207c8da*eegnet_HLM_exp_check_1218c3b2*eegnet_HLM_exp_check_12476351*eegnet_HLM_exp_check_d040ff17*eegnet_HLM_exp_check_b9ba3c19|0.346||
+eegnet_HLM_exp_check_1218c3b2|branch|955640fe242dacf1|7d40deb672c01ad6|efb30f0bedd08558|-1210341794||t19807.5567680774s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.05|coercing argument of type double to logical|
+eegnet_HLM_exp_check_12476351|branch|476ae10c6ea8a42b|7d40deb672c01ad6|d60a2c1c9f8467d5|426672862||t19807.5567697282s|e209d753280b6d62|157|rds|local|list|eegnet_HLM_exp_check||0.048|coercing argument of type double to logical|
+eegnet_HLM_exp_check_2a0fa424|branch|80cc6fce9288cf43|7d40deb672c01ad6|21ceccfba9ce5290|-592005722||t19807.5567635108s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.047|coercing argument of type double to logical|
+eegnet_HLM_exp_check_6207c8da|branch|4b99c5db98170f7f|7d40deb672c01ad6|7c437b9fba9f2d05|-1211258||t19807.5567665267s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.048|coercing argument of type double to logical|
+eegnet_HLM_exp_check_b9ba3c19|branch|de068e883a1b86e0|7d40deb672c01ad6|cca83a6ecaeacac7|1117631731||t19807.5567743029s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.049|coercing argument of type double to logical|
+eegnet_HLM_exp_check_d040ff17|branch|2fc027f1a3a9f9d2|7d40deb672c01ad6|3f63971797d1adbe|-1130915902||t19807.5567727356s|e209d753280b6d62|157|rds|local|list|eegnet_HLM_exp_check||0.045|coercing argument of type double to logical|
+eegnet_HLM_exp_check_ff099055|branch|466ead147a25825b|7d40deb672c01ad6|c42f81d4fca094f2|-1589464169||t19807.5567619506s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.059|coercing argument of type double to logical|
 eegnet_HLM_exp_emm|pattern|8d263a5dcf234b78|3217c09f200a0aca||371918506||||9408|rds|local|list||eegnet_HLM_exp_emm_ff099055*eegnet_HLM_exp_emm_2a0fa424*eegnet_HLM_exp_emm_6207c8da*eegnet_HLM_exp_emm_1218c3b2*eegnet_HLM_exp_emm_12476351*eegnet_HLM_exp_emm_d040ff17*eegnet_HLM_exp_emm_b9ba3c19|13.362||
 eegnet_HLM_exp_emm_1218c3b2|branch|670da7c85931e93a|3217c09f200a0aca|0b1cdb5158ad3ac1|579503079||t19805.3280688779s|1cb530921e860557|1348|rds|local|list|eegnet_HLM_exp_emm||1.889|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
 eegnet_HLM_exp_emm_12476351|branch|9fb46468850e4401|3217c09f200a0aca|506f8bb6f830a652|233114993||t19805.3280931474s|166cb8fe18782198|1340|rds|local|list|eegnet_HLM_exp_emm||2.011|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
@@ -72,7 +90,7 @@ eegnet_HLM_exp_qq_f02ac99a|branch|5e6205ab0c10461f|1c3ce06c1bae2c26|e604c682e4b3
 eegnet_HLM_exp_qq_f5aec000|branch|e3892286930d09c4|1c3ce06c1bae2c26|1917af8dbfaa89e0|5962841||t19806.7996962511s|4ff5ac8b49d2d2bf|6699414|rds|local|list|eegnet_HLM_exp_qq||0.033||
 eegnet_HLM_exp_qq_ff099055|branch||ad12d917a4d55f27|734884c5768f78e0|-1943703510||t19806.7826647343s||0|rds|local|list|eegnet_HLM_exp_qq||0.035||argument .f is missing, with no default
 eegnet_HLM_qq|stem|93b52f953d02d303|2b909953b9ed5953|8379da5be56f3912|188323006||t19806.7919904785s|475122ffba7623c3|41472320|rds|local|vector|||0.159||
-eegnet_HLM_qq_comb|stem|ae2eda3fd97ec4e2|bdacc48553140067|c602f8e2b37763c1|-236752218||t19806.8239916311s|4378054c472af01b|167885630|rds|local|vector|||0.852||
+eegnet_HLM_qq_comb|stem|58655871bb3f12a4|399745412b1f5f49|c602f8e2b37763c1|-236752218||t19807.8176441691s|afd32ff7d908e9af|52785374|rds|local|vector|||0.87||
 eegnet_HLM_qq_comb_18d38a9e|branch|e92fa2a12ecee58a|69e993818fce2f09|0a6d31dea271a4c4|-1603555424||t19806.8026635718s|3a66e533faf8812b|6722031|rds|local|vector|eegnet_HLM_qq_comb||0||
 eegnet_HLM_qq_comb_2700e11a|branch|7ea93c781e853145|69e993818fce2f09|72b59c5208130f7b|-81476062||t19806.8027433626s|4c66285d2ecd9e34|6009156|rds|local|vector|eegnet_HLM_qq_comb||0||
 eegnet_HLM_qq_comb_8d934f78|branch|2423bac892eb25b1|69e993818fce2f09|3c191e901391195d|-429044916||t19806.8026909341s|0b46ffd73fa6d47b|6594251|rds|local|vector|eegnet_HLM_qq_comb||0||
@@ -99,7 +117,8 @@ get_coefficients|function|ca0844d63aaf27bf|||||||||||||||
 get_data|function|2d6039203ac586f4|||||||||||||||
 get_ffx_coefs|function|f0417d6c08bbecf6|||||||||||||||
 get_preprocess_data|function|8375f739dbc3aaff|||||||||||||||
-heatmap|function|a4774c75769c734a|||||||||||||||
+heatmap|function|cf7b6dc99b8d779b|||||||||||||||
+heatmaps|stem|eff2f72b42ac1807|d9c09e47f40b5866|e137e56a771ae73d|1172197873||t19807.4779969797s|38d220e8912e58f4|798016|rds|local|vector|||0.948||
 hlm|function|913ebce40178f990|||||||||||||||
 hlm_all|stem|ffe6c4fc5b1d800d|c6f9144787ae4406|93127c4c235e6e5e|-671465387||t19775.8793608343s|53b5f93bb2c7b1cc|13334819|rds|local|vector|||8.37||
 hlm_all_experiments|stem|b907472c136e5a4d|9e66c377146e3bb7|21da7834e9f7c056|1640404324||t19774.5853479383s|bf75f8fa612aff24|13334898|rds|local|vector|||8.641||
@@ -112,7 +131,7 @@ hlm_single_8201a9a7|branch|e42185f2b42511ff|127b73a18d6b6bce|4bccaac7332c76f3|30
 hlm_single_b311e5d6|branch|d523b2b1cdd23b48|127b73a18d6b6bce|4bccaac7332c76f3|1698768864||t19774.7191671736s|d249503a7200c8bf|2672375|rds|local|list|hlm_single||0.895||
 hlm_single_c23e5de7|branch|c8eaeae52f68dcc0|127b73a18d6b6bce|4bccaac7332c76f3|-1973329093||t19774.7192175325s|77d813e4d2e00263|1755967|rds|local|list|hlm_single||0.764||
 luckfps|object|811fc228cb8edaef|||||||||||||||
-marginal_means|stem|24cd0b9b9cacfa77|8fba43621e948087|9754dee9af7a069e|-48339942||t19802.5401323351s|aec99c5a2abc0f72|11865|rds|local|vector|||0.175||
+marginal_means|stem|24cd0b9b9cacfa77|8fba43621e948087|9754dee9af7a069e|-48339942||t19807.4720291158s|aec99c5a2abc0f72|11865|rds|local|vector|||0.435||
 marginal_means_083d8130|branch|3a02b3ddacf5f7e2|a744525c5f8bc755|0c821b0f0d3ce0bf|-735913030||t19782.6182323893s|e4206639e0cce271|27292|rds|local|vector|marginal_means||0.31||
 marginal_means_0abedbcb|branch|2f2325af429656e2|a744525c5f8bc755|0c821b0f0d3ce0bf|1317802975||t19787.7522370007s|c907f214f692dca6|15265|rds|local|vector|marginal_means||0.241||
 marginal_means_3eeebe7a|branch|e64c7fd5a599ff60|a744525c5f8bc755|0c821b0f0d3ce0bf|-349449070||t19782.6425234726s|f969b706d3fd4fd7|11846|rds|local|vector|marginal_means||0.286||
@@ -157,10 +176,11 @@ marginal_means_single_exp_c7a4bab9|branch|4b9681048b22642a|aa5751f8b554ad88|0c82
 marginal_means_single_exp_ca6716d6|branch|b65d3804cc1cb74f|aa5751f8b554ad88|0c821b0f0d3ce0bf|1763741568||t19787.7522564006s|12275a32d16f49f4|9052|rds|local|vector|marginal_means_single_exp||0.096||
 marginal_means_single_exp_d5f83a24|branch|e2c1a22a5c27fd10|aa5751f8b554ad88|0c821b0f0d3ce0bf|-303307939||t19783.390243794s|01b3de39cce5c37d|8952|rds|local|vector|marginal_means_single_exp||0.096||
 marginal_means_single_exp_d7a3bcf6|branch|2f19389c6c0d97d1|aa5751f8b554ad88|0c821b0f0d3ce0bf|676923435||t19783.3902425659s|b84420dfe357d532|9086|rds|local|vector|marginal_means_single_exp||0.106||
-overview|stem|03e44c96d5c8e320|7f68bfae7780351a|37e4dd182b781891|919504987||t19806.4340238941s|5defb91072ecfcb7|10900012|rds|local|vector|||1.241||
-overview_accuracy|stem|eb3e617fcea06ddc|5c61d57fc09aa050|15e41b82da9ecd65|-198863082||t19806.433972426s|fb2415956b66ac72|7928206|rds|local|vector|||0.019||
-overview_tsum|stem|d4caf74fcb312a1b|8d5c654eb110cc32|6162512869209d16|-1895038338||t19806.4339745666s|0678ec2961afdb80|475898|rds|local|vector|||0.002||
-paired_all|stem|02a0d82a45052801|bafbbcc092985ab6|0a7de4dda3eee5f5|1186418913||t19802.6701984028s|b6cbea0e0d520da3|469348|rds|local|vector|||0.034||
+models_combined|stem|51743702adb1de4e|2d490275ed5c9128|c5ad8f2e78bb23ce|709449580||t19807.5512732088s|cfe1cd65a0161c81|60546163|rds|local|vector||models_combined_a9d7c6ab*models_combined_ae7c7cb2*models_combined_75e98dfb*models_combined_ecfbb17a*models_combined_69b0f927*models_combined_beabb5ea*models_combined_8785690f*models_combined_4ed3ed04*models_combined_4f602eb0*models_combined_67cee112*models_combined_ee122b6d*models_combined_bc3cfee5*models_combined_a9a8d7f9*models_combined_049c0242*models_combined_c1e1137a*models_combined_03433a13|0||
+overview|stem|c00ef2e801943ccb|7f68bfae7780351a|29b9b460c3179ac0|919504987||t19807.4721608016s|97835c0972b3a8d3|11133851|rds|local|vector|||1.208||
+overview_accuracy|stem|58133d61508eb983|5c61d57fc09aa050|15e41b82da9ecd65|-198863082||t19807.4721021291s|c891793abf79e02e|7928195|rds|local|vector|||0.037||
+overview_tsum|stem|2c02d044d471c968|8d5c654eb110cc32|6162512869209d16|-1895038338||t19807.4720267098s|751e1ef2400f2792|475912|rds|local|vector|||1.66||
+paired_all|stem|e639b8bec29ab5d3|bafbbcc092985ab6|869f5825c454bb3a|1186418913||t19806.8985195874s|3a3b178c51143856|467677|rds|local|vector|||0.051||
 paired_all_083d8130|branch|d5ea2d06d6b931aa|987c8db7a33c4b21|95751aec176613bf|-917203296||t19782.6194685799s|176619ef80c3b77c|829958|rds|local|list|paired_all||0.161||
 paired_all_2a6c533c|branch|e18fac283a0d5ac7|8526b1bb94b8f039|84c59f13a0e72294|223063999||t19788.6830661313s|bae65c6d85370057|534038|rds|local|list|paired_all||0.05||
 paired_all_3eeebe7a|branch|8bfc63a8e9b9900a|987c8db7a33c4b21|b63df596118cd112|-831644921||t19782.6425297298s|ddf197e459e14cdd|827114|rds|local|list|paired_all||0.064||
@@ -170,7 +190,7 @@ paired_all_b0f09ebd|branch|be99a6a9e652d22b|8526b1bb94b8f039|164923092ebac845|67
 paired_all_b8642496|branch|1dd4182f4c281eef|987c8db7a33c4b21|bbe22669ffeafe04|-1152572748||t19782.6461741338s|1d886bad26229d97|401810|rds|local|list|paired_all||0.032||
 paired_all_bf1e970d|branch|2d64729cab14c5eb|987c8db7a33c4b21|b63df596118cd112|385217649||t19782.6425316382s|246016fe147fde02|827134|rds|local|list|paired_all||0.054||
 paired_all_ed64757d|branch|5ae4eacd523d3e6c|987c8db7a33c4b21|e9a605fe13633e05|-1347323491||t19782.6461756385s|a94cd9ae7bb626fb|532928|rds|local|list|paired_all||0.046||
-paired_box|function|86204fdac4b8faef|||||||||||||||
+paired_box|function|a7b5536e8be715c1|||||||||||||||
 paired_single|pattern|0bc0fb98bc53aaf3|a579f8d5c2600ae2||630805837||||3055697|rds|local|list||paired_single_d32ef653*paired_single_c12fa668*paired_single_c7358802*paired_single_0d0d41f3*paired_single_b118c8fe*paired_single_81e4a484*paired_single_9d9f772c*paired_single_27e0cdc1*paired_single_eeb30ea4*paired_single_ba77658c*paired_single_5f8a7e86*paired_single_704ffaf5|0.263||
 paired_single_0d0d41f3|branch|e481a1e415b981ec|a579f8d5c2600ae2|e3dcb75ca1db0249|-1978618942||t19788.6830993967s|0bd14dc4de60e741|265386|rds|local|list|paired_single||0.023||
 paired_single_1ac9880e|branch|016026ef5a7b0791|e3f7b248b61e767f|8f231527c95e395e|1653131020||t19781.9113319342s|3e9b8e6337e67f92|393329|rds|local|list|paired_single||0.028||
@@ -233,7 +253,7 @@ plot_sliding|stem|ebce1bb170e7cd4a|c968eee39df0643a|99fd0260aa568e9c|410022930||
 plot_sliding_experiment|stem|f42a870deb204725|b01932b767881ed9|691d8d607c0f5c51|838117195||t19789.3839369076s|2428eccdc429a8a6|63427|rds|local|vector|||0.005||
 qqplot.data|function|d7f00cef7166d464|||||||||||||||
 raincloud_acc|function|2684ed4caf889861|||||||||||||||
-raincloud_all|stem|54e698e294c9642a|60dff565c9fb337c|7d08e04a96e48f8b|260600452||t19802.6701971369s|e9bc38747353fa69|267144|rds|local|vector|||0.169||
+raincloud_all|stem|6500af51a3cc94be|60dff565c9fb337c|bc1fbe28e574a392|260600452||t19806.8985206788s|60c21470214cdf04|266921|rds|local|vector|||0.027||
 raincloud_all_083d8130|branch|82d9fcdb01aef4cf|cd1bb8a838bad716|9ac41fb0425115be|1273889522||t19782.6194654084s|315a76f28cd1fddc|220278|rds|local|list|raincloud_all||0.068||
 raincloud_all_2a6c533c|branch|0a0122edc6200794|8a120513fe86f2ec|9073b5a3e3bd9275|579136250||t19788.6830633525s|c27463150e973df6|194781|rds|local|list|raincloud_all||0.04||
 raincloud_all_3eeebe7a|branch|68908d76838596c8|cd1bb8a838bad716|ba626e21fc07319a|430969415||t19782.6425264806s|20586d780e371136|219735|rds|local|list|raincloud_all||0.066||
@@ -243,7 +263,7 @@ raincloud_all_b0f09ebd|branch|f7e4dc5084ce6ba2|8a120513fe86f2ec|c9e04cbef5c3b4fb
 raincloud_all_b8642496|branch|00ae4bebdcc286f0|cd1bb8a838bad716|cc649c96d98d38f8|-385044982||t19782.6461716814s|1fdcb954c425a960|187862|rds|local|list|raincloud_all||0.044||
 raincloud_all_bf1e970d|branch|44407a79de15d096|cd1bb8a838bad716|ba626e21fc07319a|1311575836||t19782.6425276844s|e239ca4a42ba05e1|219752|rds|local|list|raincloud_all||0.052||
 raincloud_all_ed64757d|branch|b688672f2d2a0341|cd1bb8a838bad716|fe3ab614636bc4a8|-862540251||t19782.6461727091s|53e19b0854f12751|194675|rds|local|list|raincloud_all||0.038||
-raincloud_mm|function|54c8fea6328641ad|||||||||||||||
+raincloud_mm|function|717d02bd0f0b9968|||||||||||||||
 raincloud_single|pattern|3726cda300f96edb|4bcf31adf8366d12||-1080433250||||2086877|rds|local|list||raincloud_single_d32ef653*raincloud_single_c12fa668*raincloud_single_c7358802*raincloud_single_0d0d41f3*raincloud_single_b118c8fe*raincloud_single_81e4a484*raincloud_single_9d9f772c*raincloud_single_27e0cdc1*raincloud_single_eeb30ea4*raincloud_single_ba77658c*raincloud_single_5f8a7e86*raincloud_single_704ffaf5|0.203||
 raincloud_single_0d0d41f3|branch|ebdb571a4ddb4c26|4bcf31adf8366d12|150ef9f9ab9e2f72|1317819445||t19788.6831094099s|d3b3456eb7a6032b|174119|rds|local|list|raincloud_single||0.02||
 raincloud_single_1ac9880e|branch|392a0bd59f399cda|c46374281db6ac37|5b969945e277ee84|787227431||t19781.4851042762s|8e99d7c91b7b4e07|181360|rds|local|list|raincloud_single||0.019||
@@ -290,7 +310,7 @@ raincloud_single_eeb30ea4|branch|01d20c74ffaca783|4bcf31adf8366d12|32a10a44fa90c
 raincloud_single_f0ad381a|branch|41c1a266af81edc4|4bcf31adf8366d12|a6c146f4e4087ade|-329196588||t19783.6220856336s|49aa7c4ebad4661b|169063|rds|local|list|raincloud_single||0.012||
 raincloud_single_fcee70aa|branch|0fa24c2536fefe9d|c46374281db6ac37|3f4fe17e6048c56d|-240697089||t19781.4851034795s|160a1089150691ba|181820|rds|local|list|raincloud_single||0.025||
 raincloud_single_fd82a93b|branch|3e5290af068765c0|4bcf31adf8366d12|ffb3aa8c09f7f51d|-1453990324||t19782.3893500024s|955581239c6d380a|181918|rds|local|list|raincloud_single||0.03||
-replacements|object|e6f610d5421808e7|||||||||||||||
+replacements|object|b0bee23bc810e466|||||||||||||||
 results_sliding|stem|d4a38e0797a8967a|6c4840314b4b782d|6ef6a7dd58cf1d08|1588513367||t19802.540129566s|2c02ccb1d6d3878b|191|rds|local|vector|||0.117||
 results_sliding_experiment|stem|0f5e169db588657f|60ecb92cfe8472be|6ef6a7dd58cf1d08|718759758||t19802.5401281772s|85f9d15331713ebb|203|rds|local|vector|||0.856|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectvariable   Now  data  selectall_ofvariableSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.|
 reults_sliding|stem|8ba5e97e3ce44dc9|6c4840314b4b782d|0fbc1860a52bdce0|-47874146||t19788.6374215635s|8fdac5baae0b04f8|526|rds|local|vector|||0.315|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectvariable   Now  data  selectall_ofvariableSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.|
@@ -322,18 +342,25 @@ single_hlms_8201a9a7|branch|e42185f2b42511ff|127b73a18d6b6bce|4bccaac7332c76f3|2
 single_hlms_b311e5d6|branch|d523b2b1cdd23b48|127b73a18d6b6bce|4bccaac7332c76f3|-2013321498||t19774.6699625549s|d249503a7200c8bf|2672375|rds|local|list|single_hlms||0.87||
 single_hlms_c23e5de7|branch|c8eaeae52f68dcc0|127b73a18d6b6bce|4bccaac7332c76f3|166487117||t19774.6700130669s|77d813e4d2e00263|1755967|rds|local|list|single_hlms||0.761||
 sliding_file|stem|8d01b890fb839c4f|ff0ec1db0593c479|ef46db3751d8e999|-1152424228|sliding.csv|t19802.6579603062s|0fb756e87cd23dac|333913730|file|local|vector|||0||
-sliding_heatmap|stem|f463b55e27cb7621|6e6ec9e426a58667|17b3104919edbc9d|-359771424||t19806.89523502s|e18fc84cec7f5841|179723|rds|local|vector|||0.006||
-sliding_LM|stem|d330d853e3b8d26e|0015ab81b5d87d31|2b8dc2b17adec8a8|532959776||t19804.3481427809s|af0cb509f209f1fc|701547|rds|local|vector|||1.465||
-sliding_LM_emm|stem|c6c79b369ea33907|0712004ca4b31d3e|f206aea7306396d6|1806082865||t19806.8795167183s|18847aa1e5524d82|1787|rds|local|vector|||5.371|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
-sliding_LM_emm_contrasts|stem|022583adbfa6899e|7e3a123a84ea3b6e|99f3a0738210ebb0|-1746409014||t19806.8795169697s|279168da361054c9|1369|rds|local|vector|||0.001||
+sliding_heatmap|stem|bf13bd913397828b|6e6ec9e426a58667|19481c0b28e3def5|-359771424||t19807.4291583775s|d13fba14a3169124|181805|rds|local|vector|||0.008||
+sliding_LM|stem|d330d853e3b8d26e|0015ab81b5d87d31|2b8dc2b17adec8a8|532959776||t19807.4719801499s|af0cb509f209f1fc|701547|rds|local|vector|||0.009||
+sliding_LM_emm|stem|c6c79b369ea33907|0712004ca4b31d3e|f206aea7306396d6|1806082865||t19807.4720637401s|18847aa1e5524d82|1787|rds|local|vector|||5.669|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
+sliding_LM_emm_contrasts|stem|022583adbfa6899e|7e3a123a84ea3b6e|99f3a0738210ebb0|-1746409014||t19807.4720642585s|279168da361054c9|1369|rds|local|vector|||0||
 sliding_LM_emm_contrasts_comb|stem|42f8d75e7c462a1a|3b7ac6465e87dfda|c422ccd3ffcadaff|106389085||t19806.8849200853s|df446457e9875fd5|4394|rds|local|vector|||0.002||
 sliding_LM_emm_means|stem|f9059e4ff09486b5|5ec0594804eeab83|99f3a0738210ebb0|-1316942423||t19806.8795169913s|6e6b72c416bc55f8|635|rds|local|vector|||0.001||
 sliding_LM_emm_means_comb|stem|0c40fa61c3452568|b4a1a612878e7788|9b9d1fc312747d66|-525757738||t19806.8849200268s|22c51b4e29abbe37|1849|rds|local|vector|||0||
-sliding_LM_exp|pattern|5e8a249069af093e|9b1dd8422fd5d824||494350917||||166003|rds|local|list||sliding_LM_exp_3b823c44*sliding_LM_exp_49926f57*sliding_LM_exp_eb229738*sliding_LM_exp_e65a8103*sliding_LM_exp_d772be32*sliding_LM_exp_9c3f7fef*sliding_LM_exp_4a1e4da4|2.848||
+sliding_LM_exp|pattern|5e8a249069af093e|9b1dd8422fd5d824||494350917||||0|rds|local|list||sliding_LM_exp_3b823c44*sliding_LM_exp_49926f57*sliding_LM_exp_eb229738*sliding_LM_exp_e65a8103*sliding_LM_exp_d772be32*sliding_LM_exp_9c3f7fef*sliding_LM_exp_4a1e4da4|0||
 sliding_LM_exp_3b823c44|branch|eca3b9ddf1562947|9b1dd8422fd5d824|ef46db3751d8e999|1565899430||t19804.3481495166s|4481fbfeb3ee9745|83267|rds|local|list|sliding_LM_exp||3.131||
 sliding_LM_exp_49926f57|branch|c09651165eb3149b|9b1dd8422fd5d824|ef46db3751d8e999|1498054745||t19804.348146544s|cca8d0e08fc15531|83194|rds|local|list|sliding_LM_exp||2.006||
 sliding_LM_exp_4a1e4da4|branch|1fc327d9cb5a9b23|9b1dd8422fd5d824|ef46db3751d8e999|1909378596||t19804.3481485203s|dbcdf2f3e5ed214f|83011|rds|local|list|sliding_LM_exp||0.002||
+sliding_LM_exp_4d16e619|branch|13b6bfcad37d00d1|9b1dd8422fd5d824|ef46db3751d8e999|2129675517||t19807.4666404563s|11712eb8438897e0|83034|rds|local|list|sliding_LM_exp||2.961||
+sliding_LM_exp_73d530f4|branch|6752a3f4d112f7bb|9b1dd8422fd5d824|ef46db3751d8e999|1798961684||t19807.4667213733s|1cb4770126bcd1eb|82992|rds|local|list|sliding_LM_exp||12.308||
+sliding_LM_exp_819ae46e|branch|25ee2b352d044846|9b1dd8422fd5d824|ef46db3751d8e999|201152946||t19807.4666445628s|d5607d27f28288ca|82658|rds|local|list|sliding_LM_exp||0.005||
+sliding_LM_exp_9ac6fc6d|branch|a3218d2d6b271856|9b1dd8422fd5d824|ef46db3751d8e999|-261931554||t19807.4666434375s|cee141557902d145|82920|rds|local|list|sliding_LM_exp||0.014||
 sliding_LM_exp_9c3f7fef|branch|3d046b68e898efd1|9b1dd8422fd5d824|ef46db3751d8e999|2081914734||t19804.3494501614s|998ef4b8be96da20|82878|rds|local|list|sliding_LM_exp||1.434||
+sliding_LM_exp_b36e762c|branch|23d1ed068a3d0a55|9b1dd8422fd5d824|ef46db3751d8e999|-1951478686||t19807.4666420638s|5d7011bc713b7359|83653|rds|local|list|sliding_LM_exp||2.023||
+sliding_LM_exp_c25a2432|branch|95d6e5abeaec65c1|9b1dd8422fd5d824|ef46db3751d8e999|642194385||t19807.4666459593s|2c0139334e780044|82790|rds|local|list|sliding_LM_exp||0.003||
+sliding_LM_exp_cbcb1b00|branch|d79ac25cd420aed9|9b1dd8422fd5d824|ef46db3751d8e999|-1067664042||t19807.4666421755s|336797f3904afa92|82291|rds|local|list|sliding_LM_exp||0.063||
 sliding_LM_exp_d772be32|branch|0a3c5dd5842853ec|9b1dd8422fd5d824|ef46db3751d8e999|-1302375695||t19804.3494448694s|d2207541ebc10a03|83125|rds|local|list|sliding_LM_exp||1.414||
 sliding_LM_exp_e65a8103|branch|1b5b652e6dd49a55|9b1dd8422fd5d824|ef46db3751d8e999|-1573650396||t19804.3481688929s|efcab80aba222c09|82524|rds|local|list|sliding_LM_exp||2.563||
 sliding_LM_exp_eb229738|branch|971167b220f63955|9b1dd8422fd5d824|ef46db3751d8e999|1216459387||t19804.3481622267s|93a3ce33f3dadffb|83871|rds|local|list|sliding_LM_exp||2.458||
@@ -363,9 +390,21 @@ sliding_LM_exp_emm_means_a5486ee7|branch|aa1cedc97b1ac45f|7e8b0ea057b65dc9|da83c
 sliding_LM_exp_emm_means_e97efa47|branch|5dc0086550fa140e|7e8b0ea057b65dc9|a15d2e5e178fce74|863903715||t19806.8795544362s|8144ee769374523f|514|rds|local|list|sliding_LM_exp_emm_means||0||
 sliding_LM_exp_emm_means_ff7d3933|branch|9f56ad25cfbea6c1|7e8b0ea057b65dc9|80dbe0baf7ba298a|726071897||t19806.8795543294s|5113d0056c90d5c1|518|rds|local|list|sliding_LM_exp_emm_means||0.001||
 sliding_LM_exp_emm_means_ungrouped|stem|e392ef1b0d890f36|0ac440ffa4db8abd|9fae54b6bdc9d0b7|761374131||t19806.8849199002s|fb0c44f9f7b3e424|1554|rds|local|vector|||0.004||
-sliding_plot_all|function|71cba8a8467bac79|||||||||||||||
+sliding_LM_exp_qq|pattern|bcd32dc60eabb86c|ce94a011cd3f33ee||54983904||||1430867|rds|local|list||sliding_LM_exp_qq_a7c39d9d*sliding_LM_exp_qq_ea2f895b*sliding_LM_exp_qq_8c05768d*sliding_LM_exp_qq_e9da1a46*sliding_LM_exp_qq_5ea72709*sliding_LM_exp_qq_af72c0be*sliding_LM_exp_qq_486bb023|0.038||
+sliding_LM_exp_qq_486bb023|branch|7819bafb9f68f63e|ce94a011cd3f33ee|d33c5c47119814fd|-2140697129||t19807.8076853454s|351ef1ccc602693c|204171|rds|local|list|sliding_LM_exp_qq||0.003||
+sliding_LM_exp_qq_5ea72709|branch|18d13bb56215d5ac|ce94a011cd3f33ee|d16170b4268ae1f6|1363661393||t19807.8076844106s|255eab5aed178095|204460|rds|local|list|sliding_LM_exp_qq||0.002||
+sliding_LM_exp_qq_8c05768d|branch|3fe58c60a23ed495|ce94a011cd3f33ee|af39a7d8337500cd|-998679230||t19807.8076835309s|5077625f93363ce7|205443|rds|local|list|sliding_LM_exp_qq||0.002||
+sliding_LM_exp_qq_a7c39d9d|branch|2a9c948b365029dd|ce94a011cd3f33ee|06d60c1ce7035d4c|-1336779277||t19807.8076826509s|138a86343a608885|204627|rds|local|list|sliding_LM_exp_qq||0.023||
+sliding_LM_exp_qq_af72c0be|branch|1b34407338681611|ce94a011cd3f33ee|57d5cdaa60fa6b90|-360762803||t19807.807684899s|9592dbd1b8645269|204085|rds|local|list|sliding_LM_exp_qq||0.003||
+sliding_LM_exp_qq_agg|stem|c03736756729c9b1|91712e1dfce7b239|a50f106def871368|-297558040||t19807.8076864731s|94748d9743149481|836647|rds|local|vector|||0||
+sliding_LM_exp_qq_comb|stem|70dbd17fd57fd382|08f9f328d9d63988|7af8536e257139a3|49767887||t19807.8114690102s|59e1697e9292852d|1809575|rds|local|vector|||0.434||
+sliding_LM_exp_qq_e9da1a46|branch|69884feb20488834|ce94a011cd3f33ee|2babb1032431cced|-770893067||t19807.807683968s|b1b95d44a2af6d47|203504|rds|local|list|sliding_LM_exp_qq||0.002||
+sliding_LM_exp_qq_ea2f895b|branch|0e3d62ab5b4e50dc|ce94a011cd3f33ee|fe192e810b423cba|530448330||t19807.8076830955s|8e539d18e2e76fc5|204577|rds|local|list|sliding_LM_exp_qq||0.003||
+sliding_LM_qq|stem|c489f9bb1bdd94a6|d38ecdd2207bad2c|2e1c7649d3c89a23|1786252528||t19807.8068552348s|7529cb7b6ff16d22|1103863|rds|local|vector|||0.026||
+sliding_LM_qq_comb|stem|033b9f68e5ade321|094f0d8dbafe7ac6|7af8536e257139a3|-733308117||t19807.8129473858s|89b899e490a5b682|1806975|rds|local|vector|||0.406||
+sliding_plot_all|function|3fab407ae9c7b5ab|||||||||||||||
 sliding_plot_expeirment|function|22ff33b1cba159cd|||||||||||||||
-sliding_plot_experiment|function|4dcdfede03f2b441|||||||||||||||
+sliding_plot_experiment|function|f630b08e23ac41a7|||||||||||||||
 stats_all|stem|0857f3c40d0ff51c|424e7b4fc0b65043|ac42356c3079936f|20753526||t19802.670201489s|d5de7511bbeb8d73|63599|rds|local|vector|||0.257||
 stats_all_083d8130|branch||de968553500c86af|ca57a030abd4b5c4|-1873055332||t19782.6182389163s||0|rds|local|vector|stats_all||0.263||ℹ In argument data  map.datadata, .f, ....Caused by error in mapℹ In index 9.Caused by error in mapℹ In index 7.ℹ With name V7.Caused by error in complete.cases not all arguments have the same length
 stats_all_2a6c533c|branch|3d626c76e29af89d|424e7b4fc0b65043|f018839177f0f8d5|-680797325||t19788.6830730077s|8927807d98fa036b|63115|rds|local|list|stats_all||0.195||
@@ -414,8 +453,8 @@ stats_single_ee387d20|branch|ed553dbc519609c7|60e2e9e99f53954c|a07547163f915acc|
 stats_single_f0e234cf|branch|8f8c73b1cc2b744b|60e2e9e99f53954c|41bfc6da2f3dcaea|-1862783207||t19788.6830763088s|acc0506881f8c54d|38079|rds|local|list|stats_single||0.123||
 stats_single_f3701d0f|branch|aebc2c430d11b883|60e2e9e99f53954c|94ecf183fb2d761a|1365034394||t19783.5050062589s|0a4eb10d6a839753|37973|rds|local|list|stats_single||0.156||
 stats_single_fcee70aa|branch|b12edc9f469915e3|60e2e9e99f53954c|bc26b6fc894c21db|-1404102969||t19781.9050493595s|811b11f3a126d0dc|28148|rds|local|list|stats_single||0.136||
-timeresolved_luck|stem|faf3d161809b5d3e|7e885eb6e74cf014|f605988cfc640ec4|-1888973947||t19802.6692836424s|1b283480c24b0064|11565674|rds|local|vector|||1.177||
-timeresolved_plot|function|b2e59a2dbf7608df|||||||||||||||
+timeresolved_luck|stem|bb9fcd326b1eac2a|7e885eb6e74cf014|e62f6e7b7da91784|-1888973947||t19807.8347063494s|4afd2af6c0ec8393|11566997|rds|local|vector|||1.149||
+timeresolved_plot|function|302e22af89837b8c|||||||||||||||
 tsum_file|stem|c2cce8a72d05c0db|f02e8b9e6327693e|ef46db3751d8e999|2115584499|sliding_tsums.csv|t19802.6562676128s|5b9e787af3023097|905293|file|local|vector|||1.225||
 ungrouping|function|dba99142121dc49f|||||||||||||||
 variable|object|c5a9e5584c3f223f|||||||||||||||

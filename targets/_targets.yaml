@@ -1,0 +1,3 @@
+m4d:
+  as_job: yes
+  script: _targets.R

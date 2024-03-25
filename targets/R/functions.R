@@ -2,7 +2,7 @@ get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
   # new, preprocess already
   data$hpf <- factor(data$hpf, levels = c("None", "0.1", "0.5"))
-  data$lpf <- factor(data$lpf, levels = c("None", "6", "20", "45"))
+  data$lpf <- factor(data$lpf, levels = c("None", "6", "20", "45")) # TODO: put None to last level, this will however rerun the pipeline
   data$ref <- factor(data$ref, levels = c("average", "Cz", "P9P10"))
   data$emc <- factor(data$emc, levels = c("None", "ica"))
   data$mac <- factor(data$mac, levels = c("None", "ica"))
@@ -112,15 +112,15 @@ timeresolved_plot <- function(data){
     geom_hline(yintercept=0.5, linetype="solid") +
     geom_vline(xintercept=0, linetype="dashed") +
     geom_point(data=filter(data_fp, significance=="TRUE"),
-               aes(
-                 x=times,
-                 y=0.48),
-               color="darkred",
-               size=1,
+               aes(x=times, y=0.48),
+               color="aquamarine4",
+               size=1
     ) +
+
     facet_wrap(experiment~., scales = "free_x", ncol=1) +
     scale_x_continuous(breaks = seq(-8, 8, by = 2)/10, 
-                       labels = seq(-8, 8, by = 2)/10) 
+                       labels = seq(-8, 8, by = 2)/10) +
+    labs(x="Time", y="Accuracy", title="Examplary Sliding Window Results - 1 UNIVERSE")
   
   
 }
@@ -191,13 +191,13 @@ paired_tests <- function(data, study="ERPCORE"){
 
 # rename variables
 replacements <- list(
-  "hpf" = "high pass filter (Hz)",
-  "lpf" = "low pass filter (Hz)",
-  "ref" = "reference electrode",
+  "hpf" = "high pass (Hz)",
+  "lpf" = "low pass (Hz)",
+  "ref" = "reference",
   "ar" = "autoreject",
-  "mac" = "muscle artifact correction",
-  "emc" = "eye movement correction",
-  "base" = "baseline correction",
+  "mac" = "muscle artifact corr.",
+  "emc" = "eye movement corr.",
+  "base" = "baseline corr.",
   "det" = "detrending",
   "0.1" = "0.1Hz",
   "0.5" = "0.1Hz",
@@ -388,9 +388,11 @@ combine_single_whole <- function(single, whole){
 # heatmap of emms
 heatmap <- function(data){
   data <- data %>% 
+    # Apply replacements batchwise across all columns
+    mutate(variable = recode(variable, !!!replacements)) %>%
     # delete the experiment compairson in the full data
     filter(!(experiment == "ALL" & variable == "experiment")) %>% 
-  # center around zero for better comparability
+    # center around zero for better comparability
     group_by(experiment) %>%
     mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
 
@@ -406,7 +408,7 @@ heatmap <- function(data){
                                     p2 = 1.2) +
     labs(x="processing level",
          y="",
-         fill="relative\ndifference\nfrom\nmarginal\nmean\n(%)")  
+         fill="delta\nfrom\nmarginal\nmean\n(%)")  
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
@@ -483,17 +485,27 @@ qqplot.data <- function (model, data="", title="") # argument: vector of numbers
 # }
 
 check_convergence <- function(model){
+  if (class(model) == "list"){model <- model[[1]]}
   models <- summary(model)
   
-  # correlations between fixed effects should be not exactly 0, -1 or 1
-  corrs <- models$vcov %>% 
-    cov2cor()
-  if (any(corrs) == 0){
-    stop("Some model fixed effect parameter shows a Correlation of either 0, 1, or -1 !")
+  ## correlations between fixed effects should be not exactly 0, -1 or 1
+  corrs <- 
+    {if (class(model) == "lmerMod") models$vcov else
+    if (class(model) == "lm") models$cov.unscaled} %>%
+    cov2cor() %>%
+    { .[lower.tri(., diag = FALSE)] }
+  
+  if (any(corrs %in% c(0, 1, -1))) {
+    stop("Some model fixed effect parameter shows a correlation of either 0, 1, or -1!")
   }
   
-  # stdev of fixed effects estimates should not be exactly 0
+  ## stdev of fixed effects estimates should not be exactly 0
   if (any(models$coefficients[, "Std. Error"]) == 0){
     stop("Some model fixed effect parameter shows a Std. Error of 0 !")
   }
+  
+  # output some diagnosticts
+  data.frame(CORR = c("ok"),
+             SE = c("ok"),
+             check_ignore = c(models$coefficients[, "Std. Error"][3]))
 }

@@ -110,102 +110,6 @@ list(
                 ncol = 1, nrow = 2)
     }
   ),  
-  #### sliding processing ####
-  
-  # calculation of marginal means (total and per experiment)
-  #tar_target(
-  #  name = results_sliding,
-  #  command = estimate_marginal_means_sliding(data_tsum, per_exp=FALSE)
-  #),
-  #tar_target(
-  #  name = results_sliding_experiment,
-  #  command = estimate_marginal_means_sliding(data_tsum, per_exp=TRUE)
-  #),
-  
-  # calculation of t values
-  
-  
-  # plotting
-  #tar_target(
-  #  name = plot_sliding,
-  #  command = sliding_plot_all(results_sliding)
-  #),
-  #tar_target(
-  #  name = plot_sliding_experiment,
-  #  command = sliding_plot_experiment(results_sliding_experiment)
-  #),
-  #tar_target(
-  #  name = plot_ecdf,
-  #  command = ecdf(data_tsum)
-  #),
-  
-  
-  
-  
-  #### eegnet processing ####
-  #tar_group_by(
-  #  data_dataset, 
-  #  data_eegnet, 
-  #  dataset # this groups the dataframe by experiment, for later single evaluation
-  #),  
-
-  tar_target(
-    name = marginal_means,
-    command = estimate_marginal_means(data_eegnet, 
-                                      variables = c("ref","hpf","lpf","base","det","ar","emc","mac","experiment"))
-    #pattern = map(data_dataset)
-  ),
-  tar_target(
-    name=stats_all,
-    command=paired_tests(marginal_means, study=unique(data_dataset$dataset)[1])
-    #pattern = map(marginal_means, data_dataset),
-    #iteration = "list"
-  ),
-  tar_target(
-    name=raincloud_all,
-    command = raincloud_mm(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)),
-    #pattern = map(marginal_means, data_dataset),
-    #iteration = "list"
-  ),
-  tar_target(
-    name=paired_all,
-    command = paired_box(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)) #,
-    #pattern = map(marginal_means, data_dataset),
-    #iteration = "list"
-  ),
-
-  # single analyses per experiment
-  # tar_group_by(
-  #   single_exp_data,
-  #   data_dataset,
-  #   experiment # this groups the dataframe by experiment, for later single evaluation
-  # ),
-  # tar_target(
-  #   name = marginal_means_single_exp,
-  #   command = estimate_marginal_means(single_exp_data,
-  #                                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac")),
-  #   pattern = map(single_exp_data)
-  # ),
-  # tar_target(
-  #   name=stats_single,
-  #   command=paired_tests(marginal_means_single_exp),
-  #   pattern = map(marginal_means_single_exp),
-  #   iteration = "list"
-  # ),
-  # tar_target(
-  #   name=raincloud_single,
-  #   command = raincloud_mm(marginal_means_single_exp,
-  #                          title=unique(single_exp_data$experiment)),
-  #   pattern = map(marginal_means_single_exp, single_exp_data),
-  #   iteration = "list"
-  # ),
-  # tar_target(
-  #   name=paired_single,
-  #   command = paired_box(marginal_means_single_exp,
-  #                        title = unique(single_exp_data$experiment)),
-  #   pattern = map(marginal_means_single_exp, single_exp_data),
-  #   iteration = "list"
-  # ),
   
   # HLM + HLM simulations  
   
@@ -217,16 +121,27 @@ list(
                  control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
                  data = data_eegnet)
   ),
-  tar_target(
-    name=eegnet_HLM_check,
-    command=check_convergence(eegnet_HLM)
-  ),
+  
+  # convergense checks for all models (HLM, LM, ALL and experiment wise)
+  tar_target( 
+    name=models_combined,
+    command=c(list(eegnet_HLM), eegnet_HLM_exp, 
+              list(sliding_LM), sliding_LM_exp)
+  ), # convergence checks for all models
+  tar_target( 
+    name=convergence_checks,
+    command=check_convergence(models_combined),
+    pattern=map(models_combined),
+    iteration="list"
+  ), 
   tar_target(
     name=eegnet_HLM_qq,
     command = qqplot.data(model=eegnet_HLM, 
                           data="",
                           title="ALL")
   ),
+
+  
   # marginal means
   tar_target(
     name=eegnet_HLM_emm,
@@ -255,12 +170,6 @@ list(
   ),
 
   tar_target(
-    name=eegnet_HLM_exp_check,
-    command=check_convergence(eegnet_HLM_exp),
-    pattern = map(eegnet_HLM_exp),
-    iteration = "list"
-  ),
-  tar_target(
     name=eegnet_HLM_exp_qq,
     command = qqplot.data(model=eegnet_HLM_exp, 
                           data=data_eegnet_exp,
@@ -274,7 +183,12 @@ list(
   ),
   tar_target(
     name=eegnet_HLM_qq_comb,
-    command = {ggarrange(plotlist = c(list(eegnet_HLM_qq),eegnet_HLM_exp_qq_agg))},
+    command = {
+      plt <- ggarrange(plotlist = c(list(eegnet_HLM_qq),eegnet_HLM_exp_qq_agg))
+      annotate_figure(plt, 
+          top = text_grob("Quantile-Quantile Plots - EEGNET", 
+          color = "darkred", face = "bold", size = 16))
+    },
   ),
   
   tar_target(
@@ -302,29 +216,23 @@ list(
   
   # heatmap of results
   tar_target(eegnet_heatmap,
-            heatmap(eegnet_HLM_emm_means_comb)),
-    
+            command=heatmap(eegnet_HLM_emm_means_comb)),
   
-  #tar_combine(
-  #  name = eegnet_HLM_emm_mean_comb,
-  #  list(eegnet_HLM_emm_means,
-  #       eegnet_HLM_exp_emm_means),
-  #  pattern = map(eegnet_HLM_emm_means, eegnet_HLM_exp_emm_means),
-  #  command = bind_rows(!!!.x)
-  #),
-  
-  # TODO: merge exp and full emm results
-  # TODO: heatmap of all experiments (and together) in one map, showing the MM improvement of each level
-  
-  
-  ## LM for Sliding --> TODO, this can't be right, all signifi
+  ## LM for Sliding
   tar_target(
     name=sliding_LM,
-    # TODO: are specifications correct?
     command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar + experiment",
                  #control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
                  data = data_tsum)
   ),
+  tar_target(
+    name=sliding_LM_qq,
+    command = qqplot.data(model=sliding_LM, 
+                          data="",
+                          title="ALL")
+  ),
+  
+  
   # marginal means
   tar_target(
     name=sliding_LM_emm,
@@ -351,6 +259,29 @@ list(
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
+  tar_target(
+    name=sliding_LM_exp_qq,
+    command = qqplot.data(model=sliding_LM_exp, 
+                          data=data_tsum_exp,
+                          title=""),
+    pattern = map(sliding_LM_exp, data_tsum_exp),
+    iteration ="list" # "vector"
+  ),
+  tar_target(
+    name=sliding_LM_exp_qq_agg,
+    command = sliding_LM_exp_qq
+  ),
+  tar_target(
+    name=sliding_LM_qq_comb,
+    command = {
+      plt <- ggarrange(plotlist = c(list(sliding_LM_qq),sliding_LM_exp_qq_agg))
+      annotate_figure(plt, 
+               top = text_grob("Quantile-Quantile Plots - Sliding", 
+               color = "darkred", face = "bold", size = 16))
+      },
+  ),
+  
+  
   # MM
   tar_target(
     name=sliding_LM_exp_emm,
@@ -377,21 +308,131 @@ list(
   
   # heatmap of results
   tar_target(sliding_heatmap,
-             heatmap(sliding_LM_emm_means_comb))
+             heatmap(sliding_LM_emm_means_comb)),
+
+  # combined heatmap
+  tar_target(
+    name = heatmaps,
+    command = {
+      ggarrange(eegnet_heatmap + labs(title="EEGNET"), 
+                sliding_heatmap + labs(title="Sliding Window"), 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+    }
+  )  
   
   
   
 #  tar_target(
 #    name=eegnet_HLM_simulations,
-#    # TODO: add random slopes of all variables: hpf + lpf + emc + mac + base + det + ar + experiment
 #    command=lmer(formula="accuracy ~ hpf + lpf + emc + mac + base + det + ar + experiment + (1 | subject)",
 #                 control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
 #                 data = data_eegnet)
 #  ),
   
   # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
-  
-  
+
+
+
+## OLD ################################################################
+
+#### sliding processing ####
+
+# calculation of marginal means (total and per experiment)
+#tar_target(
+#  name = results_sliding,
+#  command = estimate_marginal_means_sliding(data_tsum, per_exp=FALSE)
+#),
+#tar_target(
+#  name = results_sliding_experiment,
+#  command = estimate_marginal_means_sliding(data_tsum, per_exp=TRUE)
+#),
+
+# calculation of t values
+
+
+# plotting
+#tar_target(
+#  name = plot_sliding,
+#  command = sliding_plot_all(results_sliding)
+#),
+#tar_target(
+#  name = plot_sliding_experiment,
+#  command = sliding_plot_experiment(results_sliding_experiment)
+#),
+#tar_target(
+#  name = plot_ecdf,
+#  command = ecdf(data_tsum)
+#),
+
+
+
+
+#### eegnet processing ####
+#tar_group_by(
+#  data_dataset, 
+#  data_eegnet, 
+#  dataset # this groups the dataframe by experiment, for later single evaluation
+#),  
+
+# tar_target(
+#   name = marginal_means,
+#   command = estimate_marginal_means(data_eegnet, 
+#                                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac","experiment"))
+#   #pattern = map(data_dataset)
+# ),
+# tar_target(
+#   name=stats_all,
+#   command=paired_tests(marginal_means, study=unique(data_dataset$dataset)[1])
+#   #pattern = map(marginal_means, data_dataset),
+#   #iteration = "list"
+# ),
+# tar_target(
+#   name=raincloud_all,
+#   command = raincloud_mm(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)),
+#   #pattern = map(marginal_means, data_dataset),
+#   #iteration = "list"
+# ),
+# tar_target(
+#   name=paired_all,
+#   command = paired_box(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)) #,
+#   #pattern = map(marginal_means, data_dataset),
+#   #iteration = "list"
+# ),
+
+# single analyses per experiment
+# tar_group_by(
+#   single_exp_data,
+#   data_dataset,
+#   experiment # this groups the dataframe by experiment, for later single evaluation
+# ),
+# tar_target(
+#   name = marginal_means_single_exp,
+#   command = estimate_marginal_means(single_exp_data,
+#                                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac")),
+#   pattern = map(single_exp_data)
+# ),
+# tar_target(
+#   name=stats_single,
+#   command=paired_tests(marginal_means_single_exp),
+#   pattern = map(marginal_means_single_exp),
+#   iteration = "list"
+# ),
+# tar_target(
+#   name=raincloud_single,
+#   command = raincloud_mm(marginal_means_single_exp,
+#                          title=unique(single_exp_data$experiment)),
+#   pattern = map(marginal_means_single_exp, single_exp_data),
+#   iteration = "list"
+# ),
+# tar_target(
+#   name=paired_single,
+#   command = paired_box(marginal_means_single_exp,
+#                        title = unique(single_exp_data$experiment)),
+#   pattern = map(marginal_means_single_exp, single_exp_data),
+#   iteration = "list"
+# ),
+
 
 )
 
