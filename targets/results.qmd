@@ -17,20 +17,7 @@ options(dplyr.print_max = 1e9)
 
 In short, decoding accuracies have been calculated for each participant, each experiment, and each variation in the pipeline. Marginal means have been calculated and plotted in the following.
 
-The original idea was to replicate the HLM from Clayson et al (2021, Neuroimage). However, the HLM might be faulty, and significances were probably overestimated in Clayson. This needs further investigation with HLM Experts to find out.
-
-For now, statistics has been done by averaging over 2 levels of a variable (e.g., variable "autoreject", levels "TRUE" and "FALSE"), by marginalizing out all other variables. Then, one value for each subjects and level is put into a (paired-)t-test (depending on the data structure). Benjamini Yekutieli FDR correction is applied for all pairwise comparisons within a variable (p.adj, not shown in printed table).
-
-The T-Test might be replaced by something non-parametric.
-
-Tests have been calculated across experiments and age groups within a dataset, or for each single experiment and age group (below).
-
--   ERPCORE: adult data set containing experiments (ERN, LRP, MMN, N170, N2pc, N400, P3)
--   MIPDB: children / teenagers (experiment LRP, for different age groups)
-
-The Raincloud plots show general data distributions.
-
-The Paired-Plots are not pretty, but there one can nicely see why comparisons get significant, because for some variations of steps, there is a very systematic but tiny difference in accuracy for each participant.
+After careful consideration, I re-decided to use the MLM approach from Clayson et al (2021, Neuroimage) anyways, despite initial concerns.
 
 ```{r}
 tar_visnetwork()
@@ -108,6 +95,16 @@ tar_read(sliding_LM_emm_omni_comb)
 ```{r, fig.width=10,fig.height=10}
 #| echo: false
 tar_read(heatmaps)
+```
+
+## Random Effects
+
+Inspection of RFX parameter estimates (Intercept corresponds to Random Intercept (Subject), and the remaining terms are random slopes by subject.
+
+```{r, fig.width=7,fig.height=7}
+#| echo: false
+tar_read(eegnet_RFX_plot)
+
 ```
 
 ## Model diagnostics

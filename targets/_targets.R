@@ -33,12 +33,11 @@ tar_option_set( # packages that your targets use
                "tidyquant", 
                "ggdist", 
                "ggthemes", 
-               "broom", 
-               "dplyr", 
+               "dplyr", # e.g. pipe functions
                "purrr", 
                "rstatix", 
                "stringr", 
-               "tidyr",
+               "tidyr", # e.g. wide to long transform
                "performance") 
   # format = "qs", # Optionally set the default storage format. qs is fast.
 )
@@ -372,7 +371,7 @@ list(
              command = eegnet_HLM_exp_sasrvf),
   tar_target(eegnet_HLM_sasrvf_comb,
              {plt <- ggarrange(plotlist = c(list(eegnet_HLM_sasrvf),eegnet_HLM_exp_sasrvf_agg))
-             annotate_figure(plt, top = text_grob("sqrt(abs(Residual)) vs. Fitted Plots - EEGNET", 
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - EEGNET", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -386,9 +385,30 @@ list(
              command = sliding_LM_exp_sasrvf),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = c(list(sliding_LM_sasrvf),sliding_LM_exp_sasrvf_agg))
-             annotate_figure(plt, top = text_grob("sqrt(abs(Residual)) Plots - Sliding", 
-                             color = "black", face = "bold", size = 16))})
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Sliding", 
+                             color = "black", face = "bold", size = 16))}),
   
+  
+  ## RFX Boxplots
+  tar_target(eegnet_RFX_all,
+             rfx_vis(eegnet_HLM, data_eegnet)),
+  tar_target(eegnet_RFX_exp,
+             rfx_vis(eegnet_HLM_exp, data_eegnet_exp),
+             pattern=map(eegnet_HLM_exp, data_eegnet_exp),
+             iteration="list"),
+  tar_target(eegnet_RFX_exp_agg,
+             eegnet_RFX_exp),
+  tar_target(eegnet_RFX_plot,
+             {
+               plt <- ggarrange(plotlist = c(list(eegnet_RFX_all),eegnet_RFX_exp_agg))
+               # plt <- ggarrange(eegnet_RFX_all + theme(plot.margin = margin(0, 0, 0, 0)), # Remove margins from plot1
+               #                  ggarrange(plotlist=eegnet_RFX_exp_agg, 
+               #                            ncol = 2, nrow = 5), 
+               #        # Arrange remaining plots in one column
+               #                  ncol = 1, nrow=4)
+               annotate_figure(plt, top = text_grob("Random Effects - EEGNET", 
+                               color = "black", face = "bold", size = 16))
+             })
   
 #  tar_target(
 #    name=eegnet_HLM_simulations,

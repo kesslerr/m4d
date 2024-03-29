@@ -465,6 +465,9 @@ rvfplot <- function (model, data="") # argument: vector of numbers
     title="ALL"
   }
   amodel <- augment(model)
+  if (dim(amodel)[1] > 1000){
+    amodel <- sample_n(amodel, 1000) # NEW: reduce number of datapoints for computational reasons
+  }
   ggplot(data = amodel, aes(x = .fitted, y = .resid)) +
     geom_point() +
     geom_smooth(method = "loess", se = FALSE) +
@@ -480,10 +483,37 @@ sasrvfplot <- function (model, data="") # argument: vector of numbers
     title="ALL"
   }
   amodel <- augment(model)
+  if (dim(amodel)[1] > 1000){
+    amodel <- sample_n(amodel, 1000) # NEW: reduce number of datapoints for computational reasons
+  }
   ggplot(data = amodel, aes(x = .fitted, y = sqrt(abs(.resid)))) +
     geom_point() +
     geom_smooth(method = "loess", se = FALSE) +
     labs(x = "Fitted Values", y = "sqrt ( abs ( Standardized Residuals ) )", title=title)
+}
+
+
+# RFX vis
+rfx_vis <- function(model, orig_data){
+  data <- ranef(model)$subject
+  
+  data_long <- data %>%
+    pivot_longer(
+      cols = names(.), #-c("subject"), #, # Select columns starting with "est"
+      names_to = "level",         # Create the "level" column
+      values_to = "mean" # Create the "conditional mean" column
+    ) 
+  if (any(startsWith(data_long$level, "experiment"))) {
+    title <- "ALL" 
+  } else {
+    title <- unique(orig_data$experiment)
+  } # TODO: can I get the experiment information from somewhere in the model?
+  ggplot(data_long,
+         aes(y=mean, x=level)) +
+    geom_boxplot() +
+    labs(y="Conditional Mean", x="Random Effects Term", title=title) +
+    theme(axis.text.x = element_text(angle=90))
+  
 }
 
 # plot_emm <- function(model, variables){
