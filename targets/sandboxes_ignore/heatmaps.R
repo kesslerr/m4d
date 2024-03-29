@@ -27,7 +27,7 @@ data$significance[1:10] <- "Yes"
 
 # PLOT
 
-ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+ggplot(data, aes(y = 0, x = level, fill = emmean, alpha=significance)) +
   geom_tile() +
   # in aes: , pattern=significance
   # geom_tile_pattern(pattern_color = NA,
@@ -44,11 +44,12 @@ ggplot(data, aes(y = 0, x = level, fill = emmean)) +
         axis.ticks.y = element_blank()) +
   #scale_fill_continuous_diverging(palette = "Purple-Green") +
   #scale_fill_continuous_diverging() +
-  scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-                                  l1 = 45, # luminance at endpoints
-                                  l2 = 100, # luminance at midpoints
-                                  p1 = .9, 
-                                  p2 = 1.2) +
+  scale_fill_continuous_diverging(palette = "Blue-Red 3",
+                                 l1 = 45, # luminance at endpoints
+                                 l2 = 100, # luminance at midpoints
+                                 p1 = .9,
+                                 p2 = 1.2,
+                                 mid=0) + # TODO NEW
   labs(x="processing level",
        y="",
        fill="relative\nmarginal\nmeans")

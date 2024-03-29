@@ -159,6 +159,22 @@ ecdf <- function(data){
 }
 
 
+# # merge MM, contrasts, OMNI
+# # DEBUG
+# emm <-  tar_read(eegnet_HLM_emm_means_comb)
+# con <-  tar_read(eegnet_HLM_emm_contrasts_comb)
+# #omn <-  tar_read(eegnet_HLM_emm_omni_comb)
+# 
+# # combine dataframes
+# merged_df <- con %>% 
+#   left_join(., emm, by = c("experiment", "variable", "level.1" = "level")) %>% 
+#   rename(emmean.1 = emmean) %>%
+#   left_join(., emm, by = c("experiment", "variable", "level.2" = "level")) %>% 
+#   rename(emmean.2 = emmean)
+# 
+
+
+
 paired_tests <- function(data, study="ERPCORE"){
   # if we are in the MIPDB data, then for the experiment variable can not be grouped for tests,
   # therefore, delete the experiment variable, and make an unpaired test for it
@@ -332,7 +348,7 @@ est_emm <- function(model, variables){
   
   means = data.frame()
   contra = data.frame()
-  
+  fs = data.frame()
   for (variable in variables){
     # MAIN EFFECTS (1 factor)
     emm <- emmeans(model, 
@@ -357,11 +373,15 @@ est_emm <- function(model, variables){
     dfc <- dfc[, c(8, 1, 2, 3, 4, 5, 6, 7)]
     contra <- rbind(contra, dfc)
     
+    # omnibus tests for each factor
+    f <- joint_tests(emm)
+    fs <- rbind(fs, f)
+    
   }
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
   
-  return(list(means,contra))
+  return(list(means,contra, fs))
   
 }
 
@@ -414,10 +434,13 @@ heatmap <- function(data){
         # Percent above/below average
 }
 
-qqplot.data <- function (model, data="", title="") # argument: vector of numbers
+qqplot <- function (model, data="") # argument: vector of numbers
 {
   if (is.data.frame(data)){
     title=unique(data$experiment)
+  }
+  if (length(title) > 1){
+    title="ALL"
   }
   vec <- resid(model)
   # following four lines from base R's qqline()
@@ -431,6 +454,36 @@ qqplot.data <- function (model, data="", title="") # argument: vector of numbers
     geom_abline(slope = slope, intercept = int) +
     labs(title=title)
   
+}
+
+rvfplot <- function (model, data="") # argument: vector of numbers
+{
+  if (is.data.frame(data)){
+    title=unique(data$experiment)
+  }
+  if (length(title) > 1){
+    title="ALL"
+  }
+  amodel <- augment(model)
+  ggplot(data = amodel, aes(x = .fitted, y = .resid)) +
+    geom_point() +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(x = "Fitted Values", y = "Residuals", title = title)
+}
+
+sasrvfplot <- function (model, data="") # argument: vector of numbers
+{
+  if (is.data.frame(data)){
+    title=unique(data$experiment)
+  }
+  if (length(title) > 1){
+    title="ALL"
+  }
+  amodel <- augment(model)
+  ggplot(data = amodel, aes(x = .fitted, y = sqrt(abs(.resid)))) +
+    geom_point() +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(x = "Fitted Values", y = "sqrt ( abs ( Standardized Residuals ) )", title=title)
 }
 
 # plot_emm <- function(model, variables){

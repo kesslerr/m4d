@@ -14,6 +14,8 @@ plan(multisession)
 # Set target options:
 tar_option_set( # packages that your targets use
   packages = c("colorspace", # nice colormaps
+               "broom",
+               "broom.mixed", # mixed effects functions, e.g. augment for mixed effects models
                "dplyr", 
                "ggplot2", 
                "ggsignif", 
@@ -50,11 +52,20 @@ source("R/functions.R")
 
 # tar_source("other_functions.R") # Source other scripts as needed.
 
-experiments = c("ERN","LRP","MMN","N170","N2pc","N400","P3")
-
-# Replace the target list below with your own:
 list(
-  # define raw data files
+  ## define some variables in targets TODO: targets doesnt accept it, maybe use as normal list
+  # tar_target(
+  #   experiments,
+  #   command=as.list(c("ERN","LRP","MMN","N170","N2pc","N400","P3")),
+  #   iteration = "list"
+  # ),
+  # tar_target(
+  #   model_types,
+  #   c("EEGNET","Sliding Window")
+  # ),
+  # 
+  
+  ## define raw data files
   tar_target(
     name = eegnet_file,
     command = "eegnet.csv",
@@ -71,9 +82,7 @@ list(
     format = "file"
   ),
   
-  # import and recode datasets
-
-  # for now, only in ERPCORE, because MIPDB has errors, TODO later: tar_group_by and include MIPDB
+  ## import and recode datasets
   tar_target(
     name = data_eegnet,
     command = {get_preprocess_data(eegnet_file) %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))} #forking_path, 
@@ -87,13 +96,13 @@ list(
     command = {get_preprocess_data(tsum_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} #forking_path, 
   ),
   
-  #### Example results of Luck forking path
+  ## Example results of Luck forking path
   tar_target(
     name = timeresolved_luck,
     command = timeresolved_plot(data_sliding)
   ),
   
-  #### Overview of decoding accuracies for each pipeline
+  ## Overview of decoding accuracies for each pipeline
   tar_target(
     name = overview_accuracy,
     command = raincloud_acc(data_eegnet, title = "EEGNET")
@@ -111,9 +120,21 @@ list(
     }
   ),  
   
-  # HLM + HLM simulations  
+  # TODO: HLM simulations in pipeline?
   
-  ## HLM
+  ## GROUPINGS
+  tar_group_by(
+    data_eegnet_exp, 
+    data_eegnet, 
+    experiment,
+  ),    
+  tar_group_by(
+    data_tsum_exp, 
+    data_tsum, 
+    experiment 
+  ),  
+  
+  ## HLM for EEGNET
   
   tar_target(
     name=eegnet_HLM,
@@ -121,28 +142,32 @@ list(
                  control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
                  data = data_eegnet)
   ),
-  
-  # convergense checks for all models (HLM, LM, ALL and experiment wise)
-  tar_target( 
-    name=models_combined,
-    command=c(list(eegnet_HLM), eegnet_HLM_exp, 
-              list(sliding_LM), sliding_LM_exp)
-  ), # convergence checks for all models
-  tar_target( 
-    name=convergence_checks,
-    command=check_convergence(models_combined),
-    pattern=map(models_combined),
-    iteration="list"
-  ), 
   tar_target(
-    name=eegnet_HLM_qq,
-    command = qqplot.data(model=eegnet_HLM, 
-                          data="",
-                          title="ALL")
-  ),
+    name = eegnet_HLM_exp,
+    command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
+                       control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
+                       data = data_eegnet_exp),
+    pattern = map(data_eegnet_exp),
+    iteration = "list"
+  ),  
 
+  ## LM for sliding
+  tar_target(
+    name=sliding_LM,
+    command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar + experiment",
+               data = data_tsum)
+  ),
+  tar_target(
+    name = sliding_LM_exp,
+    command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
+               data = data_tsum_exp),
+    pattern = map(data_tsum_exp),
+    iteration = "list"
+  ),
   
-  # marginal means
+  ## Estimated marginal means
+  
+  ### EEGNET
   tar_target(
     name=eegnet_HLM_emm,
     command=est_emm(eegnet_HLM, 
@@ -151,45 +176,9 @@ list(
   # split means and contrasts
   tar_target(eegnet_HLM_emm_means, eegnet_HLM_emm[[1]]),
   tar_target(eegnet_HLM_emm_contrasts, eegnet_HLM_emm[[2]]),
+  tar_target(eegnet_HLM_emm_omni, eegnet_HLM_emm[[3]]),
   
   # TODO: var explained of random slopes and random subject intercepts?
-  
-  ## for each experiment
-  tar_group_by(
-    data_eegnet_exp, 
-    data_eegnet, 
-    experiment # this groups the dataframe by experiment, for later single evaluation
-  ),  
-  tar_target(
-    name = eegnet_HLM_exp,
-    command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
-                 control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-                 data = data_eegnet_exp),
-    pattern = map(data_eegnet_exp),
-    iteration = "list"
-  ),
-
-  tar_target(
-    name=eegnet_HLM_exp_qq,
-    command = qqplot.data(model=eegnet_HLM_exp, 
-                          data=data_eegnet_exp,
-                          title=""),
-    pattern = map(eegnet_HLM_exp, data_eegnet_exp),
-    iteration ="list" # "vector"
-  ),
-  tar_target(
-    name=eegnet_HLM_exp_qq_agg,
-    command = eegnet_HLM_exp_qq
-  ),
-  tar_target(
-    name=eegnet_HLM_qq_comb,
-    command = {
-      plt <- ggarrange(plotlist = c(list(eegnet_HLM_qq),eegnet_HLM_exp_qq_agg))
-      annotate_figure(plt, 
-          top = text_grob("Quantile-Quantile Plots - EEGNET", 
-          color = "darkred", face = "bold", size = 16))
-    },
-  ),
   
   tar_target(
     name=eegnet_HLM_exp_emm,
@@ -201,6 +190,7 @@ list(
   # split means and contrasts
   tar_target(eegnet_HLM_exp_emm_means, eegnet_HLM_exp_emm[[1]], pattern=map(eegnet_HLM_exp_emm), iteration="list"),
   tar_target(eegnet_HLM_exp_emm_contrasts, eegnet_HLM_exp_emm[[2]], pattern=map(eegnet_HLM_exp_emm), iteration="list"),
+  tar_target(eegnet_HLM_exp_emm_omni, eegnet_HLM_exp_emm[[3]], pattern=map(eegnet_HLM_exp_emm), iteration="list"),
   
   # combine ALL and EXP
   tar_target(eegnet_HLM_exp_emm_means_ungrouped,
@@ -213,76 +203,28 @@ list(
   tar_target(eegnet_HLM_emm_contrasts_comb,
              command = combine_single_whole(eegnet_HLM_exp_emm_contrasts_ungrouped,
                                             eegnet_HLM_emm_contrasts)),
+  tar_target(eegnet_HLM_exp_emm_omni_ungrouped,
+             command = ungrouping(eegnet_HLM_exp_emm_omni)),
+  tar_target(eegnet_HLM_emm_omni_comb,
+             command = {
+               combine_single_whole(eegnet_HLM_exp_emm_omni_ungrouped,
+                                    eegnet_HLM_emm_omni) %>%
+                 mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>%
+                 mutate(sign.unc = stars.pval(.$p.value)) %>%
+                 mutate(sign.fdr = stars.pval(.$p.fdr))
+               }
+             ),  
   
-  # heatmap of results
-  tar_target(eegnet_heatmap,
-            command=heatmap(eegnet_HLM_emm_means_comb)),
-  
-  ## LM for Sliding
-  tar_target(
-    name=sliding_LM,
-    command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar + experiment",
-                 #control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-                 data = data_tsum)
-  ),
-  tar_target(
-    name=sliding_LM_qq,
-    command = qqplot.data(model=sliding_LM, 
-                          data="",
-                          title="ALL")
-  ),
-  
-  
-  # marginal means
+  ### SLIDING
   tar_target(
     name=sliding_LM_emm,
     command=est_emm(sliding_LM, 
                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac","experiment"))
   ),
-  # split means and contrasts
   tar_target(sliding_LM_emm_means, sliding_LM_emm[[1]]),
   tar_target(sliding_LM_emm_contrasts, sliding_LM_emm[[2]]),
+  tar_target(sliding_LM_emm_omni, sliding_LM_emm[[3]]),
   
-  
-  # for each experiment
-  tar_group_by(
-    data_tsum_exp, 
-    data_tsum, 
-    experiment # this groups the dataframe by experiment, for later single evaluation
-  ),  
-  
-  tar_target(
-    name = sliding_LM_exp,
-    command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
-               #control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-               data = data_tsum_exp),
-    pattern = map(data_tsum_exp),
-    iteration = "list"
-  ),
-  tar_target(
-    name=sliding_LM_exp_qq,
-    command = qqplot.data(model=sliding_LM_exp, 
-                          data=data_tsum_exp,
-                          title=""),
-    pattern = map(sliding_LM_exp, data_tsum_exp),
-    iteration ="list" # "vector"
-  ),
-  tar_target(
-    name=sliding_LM_exp_qq_agg,
-    command = sliding_LM_exp_qq
-  ),
-  tar_target(
-    name=sliding_LM_qq_comb,
-    command = {
-      plt <- ggarrange(plotlist = c(list(sliding_LM_qq),sliding_LM_exp_qq_agg))
-      annotate_figure(plt, 
-               top = text_grob("Quantile-Quantile Plots - Sliding", 
-               color = "darkred", face = "bold", size = 16))
-      },
-  ),
-  
-  
-  # MM
   tar_target(
     name=sliding_LM_exp_emm,
     command=est_emm(sliding_LM_exp, 
@@ -290,9 +232,11 @@ list(
     pattern = map(sliding_LM_exp),
     iteration = "list"
   ),
-  # split means and contrasts
   tar_target(sliding_LM_exp_emm_means, sliding_LM_exp_emm[[1]], pattern=map(sliding_LM_exp_emm), iteration="list"),
   tar_target(sliding_LM_exp_emm_contrasts, sliding_LM_exp_emm[[2]], pattern=map(sliding_LM_exp_emm), iteration="list"),
+  tar_target(sliding_LM_exp_emm_omni, sliding_LM_exp_emm[[3]], pattern=map(sliding_LM_exp_emm), iteration="list"),
+  
+  # TODO Omni, also other models, and maybe combine it with the targets using dyn branching?
   
   # combine ALL and EXP
   tar_target(sliding_LM_exp_emm_means_ungrouped,
@@ -305,12 +249,27 @@ list(
   tar_target(sliding_LM_emm_contrasts_comb,
              command = combine_single_whole(sliding_LM_exp_emm_contrasts_ungrouped,
                                             sliding_LM_emm_contrasts)),
+  tar_target(sliding_LM_exp_emm_omni_ungrouped,
+             command = ungrouping(sliding_LM_exp_emm_omni)),
+  tar_target(sliding_LM_emm_omni_comb,
+             command = {
+               combine_single_whole(sliding_LM_exp_emm_omni_ungrouped,
+                                    sliding_LM_emm_omni) %>%
+                 mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>%
+                 mutate(sign.unc = stars.pval(.$p.value)) %>%
+                 mutate(sign.fdr = stars.pval(.$p.fdr))
+             }
+  ),    
   
-  # heatmap of results
+  
+  
+  
+  ## heatmaps of EMMs
+  # TODO: use the omni test significances to highlight the facets
+  tar_target(eegnet_heatmap,
+            command=heatmap(eegnet_HLM_emm_means_comb)),
   tar_target(sliding_heatmap,
              heatmap(sliding_LM_emm_means_comb)),
-
-  # combined heatmap
   tar_target(
     name = heatmaps,
     command = {
@@ -318,9 +277,117 @@ list(
                 sliding_heatmap + labs(title="Sliding Window"), 
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
-    }
-  )  
+    }),
   
+  ## ECDF with best models marked
+  
+
+    
+  ## concatenate all models and datas in one target
+  tar_target( 
+    name=models_combined,
+    command=c(list(eegnet_HLM), eegnet_HLM_exp, list(sliding_LM), sliding_LM_exp)
+  ), 
+  # tar_target( # this does not work !!
+  #   name=data_combined,
+  #   command=c(list(data_eegnet), data_eegnet_exp_list, list(data_tsum), data_tsum_exp_list)
+  # ), 
+  
+  ## diagnostics for all models (HLM, LM, ALL and experiment wise)
+  ### convergence check
+  tar_target( 
+    name=convergence_checks,
+    command=check_convergence(models_combined),
+    pattern=map(models_combined),
+    iteration="list"
+  ), 
+  
+  ### qq plots
+  #### EEGNET
+  tar_target(eegnet_HLM_qq,
+    command = qqplot(model=eegnet_HLM, data=data_eegnet)),
+  tar_target(eegnet_HLM_exp_qq,
+    command = qqplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
+    pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+    iteration ="list"),
+  tar_target(eegnet_HLM_exp_qq_agg,
+    command = eegnet_HLM_exp_qq),
+  tar_target(eegnet_HLM_qq_comb,
+    {plt <- ggarrange(plotlist = c(list(eegnet_HLM_qq),eegnet_HLM_exp_qq_agg))
+     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNET", 
+                     color = "black", face = "bold", size = 16))}),
+  
+  #### SLIDING
+  tar_target(sliding_LM_qq,
+             command = qqplot(model=sliding_LM, data=data_tsum)),
+  tar_target(sliding_LM_exp_qq,
+    qqplot(model=sliding_LM_exp, data=data_tsum_exp),
+    pattern = map(sliding_LM_exp, data_tsum_exp),
+    iteration ="list"),
+  tar_target(sliding_LM_exp_qq_agg,
+    command = sliding_LM_exp_qq),
+  tar_target(sliding_LM_qq_comb,
+    {plt <- ggarrange(plotlist = c(list(sliding_LM_qq),sliding_LM_exp_qq_agg))
+    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Sliding", 
+                    color = "black", face = "bold", size = 16))}),
+  
+  ### res_vs_fitted plots
+  #### EEGNET
+  tar_target(eegnet_HLM_rvf,
+             command = rvfplot(model=eegnet_HLM, data=data_eegnet)),
+  tar_target(eegnet_HLM_exp_rvf,
+             command = rvfplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
+             pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+             iteration ="list"),
+  tar_target(eegnet_HLM_exp_rvf_agg,
+             command = eegnet_HLM_exp_rvf),
+  tar_target(eegnet_HLM_rvf_comb,
+             {plt <- ggarrange(plotlist = c(list(eegnet_HLM_rvf),eegnet_HLM_exp_rvf_agg))
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - EEGNET", 
+                             color = "black", face = "bold", size = 16))}),
+  
+  #### SLIDING
+  tar_target(sliding_LM_rvf,
+             command = rvfplot(model=sliding_LM, data=data_tsum)),
+  tar_target(sliding_LM_exp_rvf,
+             rvfplot(model=sliding_LM_exp, data=data_tsum_exp),
+             pattern = map(sliding_LM_exp, data_tsum_exp),
+             iteration ="list"),
+  tar_target(sliding_LM_exp_rvf_agg,
+             command = sliding_LM_exp_rvf),
+  tar_target(sliding_LM_rvf_comb,
+             {plt <- ggarrange(plotlist = c(list(sliding_LM_rvf),sliding_LM_exp_rvf_agg))
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Sliding", 
+                             color = "black", face = "bold", size = 16))}),
+
+  ### sqrt abs std res_vs_fitted plots
+  #### EEGNET
+  tar_target(eegnet_HLM_sasrvf,
+             command = sasrvfplot(model=eegnet_HLM, data=data_eegnet)),
+  tar_target(eegnet_HLM_exp_sasrvf,
+             command = sasrvfplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
+             pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+             iteration ="list"),
+  tar_target(eegnet_HLM_exp_sasrvf_agg,
+             command = eegnet_HLM_exp_sasrvf),
+  tar_target(eegnet_HLM_sasrvf_comb,
+             {plt <- ggarrange(plotlist = c(list(eegnet_HLM_sasrvf),eegnet_HLM_exp_sasrvf_agg))
+             annotate_figure(plt, top = text_grob("sqrt(abs(Residual)) vs. Fitted Plots - EEGNET", 
+                             color = "black", face = "bold", size = 16))}),
+  
+  #### SLIDING
+  tar_target(sliding_LM_sasrvf,
+             command = sasrvfplot(model=sliding_LM, data=data_tsum)),
+  tar_target(sliding_LM_exp_sasrvf,
+             sasrvfplot(model=sliding_LM_exp, data=data_tsum_exp),
+             pattern = map(sliding_LM_exp, data_tsum_exp),
+             iteration ="list"),
+  tar_target(sliding_LM_exp_sasrvf_agg,
+             command = sliding_LM_exp_sasrvf),
+  tar_target(sliding_LM_sasrvf_comb,
+             {plt <- ggarrange(plotlist = c(list(sliding_LM_sasrvf),sliding_LM_exp_sasrvf_agg))
+             annotate_figure(plt, top = text_grob("sqrt(abs(Residual)) Plots - Sliding", 
+                             color = "black", face = "bold", size = 16))})
   
   
 #  tar_target(
@@ -332,7 +399,7 @@ list(
   
   # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
 
-
+# TODO: add another dataset (infants)
 
 ## OLD ################################################################
 

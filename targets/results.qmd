@@ -59,27 +59,49 @@ tar_read(timeresolved_luck)
 
 ## Influence of analysis choises - (M)LM and EMM
 
-### Estimated Marginal Means & Pairwise differences
+### Estimated Marginal Means & Differences
 
 #### EEGNET
+
+##### Means
 
 ```{r}
 tar_read(eegnet_HLM_emm_means_comb)
 ```
 
+##### Contrasts / Pairwise differences
+
 ```{r}
 tar_read(eegnet_HLM_emm_contrasts_comb)
 ```
 
+##### Omnibus F-Test per facet (Experiment-Model and Preprocessing Step)
+
+```{r}
+tar_read(eegnet_HLM_emm_omni_comb)
+```
+
 #### Sliding Window
+
+##### Means
 
 ```{r}
 tar_read(sliding_LM_emm_means_comb)
 ```
 
+##### Contrasts / Pairwise differences
+
 ```{r}
 tar_read(sliding_LM_emm_contrasts_comb)
 ```
+
+##### Omnibus F-Test per facet (Experiment-Model and Preprocessing Step)
+
+```{r}
+tar_read(sliding_LM_emm_omni_comb)
+```
+
+#### 
 
 ### Relative performance differences
 
@@ -88,12 +110,68 @@ tar_read(sliding_LM_emm_contrasts_comb)
 tar_read(heatmaps)
 ```
 
-##  Model diagnostics
+## Model diagnostics
+
+-   Mixed-effects models are somewhat robust to mild deviations from normality, especially with more random effects.
+
+-   Visual inspection of diagnostic plots is often more informative than relying solely on p-values from these tests.
+
+-   Tests often focus on residuals at the observation level, whereas mixed-effects models also have random effects variability to consider.
+
+### QQ-Plots
+
+-   **What to look for:**
+
+    -   Ideally, the majority of the residuals should fall close to the straight diagonal line. This indicates that the residuals are approximately normally distributed.
+
+-   **What you shouldn't see:**
+
+    -   Substantial deviations from the diagonal line, especially in the tails of the distribution. This suggests the normality assumption of the model might be violated.
 
 ```{r, fig.width=7,fig.height=7}
 #| echo: false
 tar_read(eegnet_HLM_qq_comb)
 tar_read(sliding_LM_qq_comb)
+```
+
+### Residuals vs Fitted - Plots
+
+-   **What to look for:**
+
+    -   **Linearity:** Ideally, there should be no clear pattern in the residuals (they should be randomly scattered around zero). A curved pattern might indicate a nonlinear relationship you haven't modeled.
+
+    -   **Homoscedasticity:** The spread of the residuals should be relatively constant across fitted values. If the spread increases or decreases, it suggests non-constant variance (heteroscedasticity).
+
+    -   **Outliers:** Look for points that lie far away from the majority of the residuals. These could be influential observations.
+
+-   **What you shouldn't see:**
+
+    -   Clear patterns (e.g., U-shapes, funnel shapes).
+
+    -   Significant changes in the spread of residuals across fitted values.
+
+    -   Extreme outliers.
+
+```{r, fig.width=7,fig.height=7}
+#| echo: false
+tar_read(eegnet_HLM_rvf_comb)
+tar_read(sliding_LM_rvf_comb)
+```
+
+### Scale-Location-Plots
+
+-   **What to look for:**
+
+    -   Ideally, the line should be relatively horizontal, indicating constant variance (homoscedasticity).
+
+-   **What you shouldn't see:**
+
+    -   Strong trends or patterns in the line suggesting changing variance across fitted values (heteroscedasticity).
+
+```{r, fig.width=7,fig.height=7}
+#| echo: false
+tar_read(eegnet_HLM_sasrvf_comb)
+tar_read(sliding_LM_sasrvf_comb)
 ```
 
 ## 
