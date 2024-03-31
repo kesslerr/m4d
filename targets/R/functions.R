@@ -516,6 +516,49 @@ rfx_vis <- function(model, orig_data){
   
 }
 
+
+# LATEX OUTPUTs
+output.table.f <- function(data, filename="", thisLabel="", thisCaption=""){
+  output <- data %>%
+    select(c(`model term`, experiment, sign.fdr)) %>%
+    pivot_wider(
+      names_from = experiment, 
+      values_from = sign.fdr
+    ) %>%
+    mutate(across(everything(), ~ if_else(is.na(.x), "/", .x))) %>%
+    xtable(type="latex",
+           label=thisLabel,
+           caption=thisCaption)
+  
+  print(output, # this command saves the xtable to file
+        #digits=5,
+        include.rownames=FALSE, # row numbers not printed to file
+        caption.placement = "top", # caption on top of table
+        file = filename)
+  filename # it seems that the filename should be printed last for targets
+}
+
+output.table.con <- function(data, filename="", thisLabel="", thisCaption=""){
+  output <- data %>%
+    select(c(variable, level.1, level.2, experiment, significance)) %>%
+    pivot_wider(
+      names_from = experiment, 
+      values_from = significance
+    ) %>%
+    mutate(across(everything(), ~ if_else(is.na(.x), "/", .x))) %>%
+    xtable(type="latex",
+           label=thisLabel,
+           caption=thisCaption)
+  
+  print(output, # this command saves the xtable to file
+        #digits=5,
+        include.rownames=FALSE, # row numbers not printed to file
+        caption.placement = "top", # caption on top of table
+        latex.environments = "widestuff", # this uses the widestuff environment which I have designed in latex to adjust the width of the table (move left)
+        file = filename)
+  filename # it seems that the filename should be printed last for targets
+}
+
 # plot_emm <- function(model, variables){
 #   
 #   

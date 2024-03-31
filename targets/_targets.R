@@ -38,7 +38,9 @@ tar_option_set( # packages that your targets use
                "rstatix", 
                "stringr", 
                "tidyr", # e.g. wide to long transform
-               "performance") 
+               "performance",
+               "xtable" # export R tables to latex files
+               ) 
   # format = "qs", # Optionally set the default storage format. qs is fast.
 )
 
@@ -48,6 +50,9 @@ renv::snapshot()
 # Run the R scripts in the R/ folder with your custom functions:
 tar_source()
 source("R/functions.R")
+
+table_output_dir = "../manuscript/tables/"
+figure_output_dir = "../manuscript/plots/"
 
 # tar_source("other_functions.R") # Source other scripts as needed.
 
@@ -408,7 +413,47 @@ list(
                #                  ncol = 1, nrow=4)
                annotate_figure(plt, top = text_grob("Random Effects - EEGNET", 
                                color = "black", face = "bold", size = 16))
-             })
+             }),
+  
+  ## Exports for Paper
+  ### Tables
+  tar_target(
+    name = table_f_eegnet,
+    command = output.table.f(eegnet_HLM_emm_omni_comb,
+                             filename=paste0(table_output_dir, "eegnet_omni.tex"),
+                             thisLabel = "eegnet_omni",
+                             thisCaption = "Significant differences in EEGNET performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
+                             ),
+    format = "file"
+  ),
+  tar_target(
+    name = table_f_sliding,
+    command = output.table.f(sliding_LM_emm_omni_comb,
+                             filename=paste0(table_output_dir, "sliding_omni.tex"),
+                             thisLabel = "sliding_omni",
+                             thisCaption = "Significant differences in Sliding Window decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
+    ),
+    format = "file"
+  ),
+
+  tar_target(
+    name = table_con_eegnet,
+    command = output.table.con(eegnet_HLM_emm_contrasts_comb,
+                             filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
+                             thisLabel = "eegnet_contrasts",
+                             thisCaption = "Significant differences in EEGNET performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. T-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were corrected using Tukey method. Correction was applied only within each processing step and experiment."
+    ),
+    format = "file"
+  ),
+  tar_target(
+    name = table_con_sliding,
+    command = output.table.con(sliding_LM_emm_contrasts_comb,
+                             filename=paste0(table_output_dir, "sliding_contrasts.tex"),
+                             thisLabel = "sliding_contrasts",
+                             thisCaption = "Significant differences in Sliding Window decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. T-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were corrected using Tukey method. Correction was applied only within each processing step and experiment."
+    ),
+    format = "file"
+  )
   
 #  tar_target(
 #    name=eegnet_HLM_simulations,

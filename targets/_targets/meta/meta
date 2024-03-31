@@ -1,5 +1,24 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
 .Random.seed|object|e2ec636647059122|||||||||||||||
+\begin{table}[ht]|||||||||||||||||
+\begin{tabular}{rlllllllll}|||||||||||||||||
+\caption{}|||||||||||||||||
+\centering|||||||||||||||||
+\end{table}|||||||||||||||||
+\end{tabular}|||||||||||||||||
+\hline|||||||||||||||||
+\label{}|||||||||||||||||
+& model term & ALL & ERN & LRP & MMN & N170 & N2pc & N400 & P3 \\|||||||||||||||||
+% Sun Mar 31 12:50:58 2024|||||||||||||||||
+"1 & ref & *** & *** & *** &   & *** &   & ** &   \\"|||||||||||||||||
+"2 & hpf & *** & *** &   & *** & ** &   &   &   \\"|||||||||||||||||
+"3 & lpf & *** & ** & *** & ** & ** & . &   &   \\"|||||||||||||||||
+4 & base &   &   &   &   &   &   &   &   \\|||||||||||||||||
+"5 & det &   &   & * & *** & *** &   &   &   \\"|||||||||||||||||
+"6 & ar & *** & ** & *** & *** & *** & ** & . & *** \\"|||||||||||||||||
+"7 & emc & *** &   &   &   &   & ** &   &   \\"|||||||||||||||||
+"8 & mac & *** &   & *** & ** &   & ** & * &   \\"|||||||||||||||||
+"9 & experiment & *** & - & - & - & - & - & - & - \\"|||||||||||||||||
 check_convergence|function|5648df5664e4d447|||||||||||||||
 combine_single_whole|function|9648121f1b0c766d|||||||||||||||
 convergence_checks|pattern|ffeb98d477d44b83|c7e08a02acb627cb||1139449904||||2500|rds|local|list||convergence_checks_b9740066*convergence_checks_b27a6dc4*convergence_checks_e9abb01b*convergence_checks_ef69a956*convergence_checks_762682f8*convergence_checks_fac5da98*convergence_checks_1baac71a*convergence_checks_596d2ede*convergence_checks_5143af08*convergence_checks_a3223636*convergence_checks_6852be04*convergence_checks_6a6cff86*convergence_checks_e3e22c91*convergence_checks_f2404857*convergence_checks_c25f433b*convergence_checks_e7b4f40a|0.881||
@@ -155,6 +174,7 @@ experiments|object|5b0e7225eb82c206|||||||||||||||
 factorize|function|9265221b7e87d24e|||||||||||||||
 factorize_data|function|b6beda07083ddd28|||||||||||||||
 factorized_data|stem|40350891e4122086|b6f1d975dad734a8|fcf1a27b7efea09a|1171269741||t19774.5852213453s|c1a27c650e2e9d04|786344|rds|local|vector|||0.156||
+figure_output_dir|object|4c8c1c37f830e0c0|||||||||||||||
 file|stem|fd3c95e6db9997ea|3beb03ea38f21c1a|ef46db3751d8e999|1735323524|eegnet.csv|t19782.6421565337s|5786f064c6d6de05|31206155|file|local|vector|||1.139||
 filter_experiment|function|7eff20fb7943367c|||||||||||||||
 filtered_data|stem|e2176f8a0195ce8e|d351f0e715c95ba8|7c92111f669e544c|1185767870||t19774.6173786749s|e9e3f4b99f3ac804|5505964|rds|local|vector|||0.308||
@@ -224,6 +244,8 @@ marginal_means_single_exp_ca6716d6|branch|b65d3804cc1cb74f|aa5751f8b554ad88|0c82
 marginal_means_single_exp_d5f83a24|branch|e2c1a22a5c27fd10|aa5751f8b554ad88|0c821b0f0d3ce0bf|-303307939||t19783.390243794s|01b3de39cce5c37d|8952|rds|local|vector|marginal_means_single_exp||0.096||
 marginal_means_single_exp_d7a3bcf6|branch|2f19389c6c0d97d1|aa5751f8b554ad88|0c821b0f0d3ce0bf|676923435||t19783.3902425659s|b84420dfe357d532|9086|rds|local|vector|marginal_means_single_exp||0.106||
 models_combined|stem|51743702adb1de4e|2d490275ed5c9128|c5ad8f2e78bb23ce|709449580||t19807.5512732088s|cfe1cd65a0161c81|60546163|rds|local|vector||models_combined_a9d7c6ab*models_combined_ae7c7cb2*models_combined_75e98dfb*models_combined_ecfbb17a*models_combined_69b0f927*models_combined_beabb5ea*models_combined_8785690f*models_combined_4ed3ed04*models_combined_4f602eb0*models_combined_67cee112*models_combined_ee122b6d*models_combined_bc3cfee5*models_combined_a9a8d7f9*models_combined_049c0242*models_combined_c1e1137a*models_combined_03433a13|0||
+output.table.con|function|336aeef581926a9e|||||||||||||||
+output.table.f|function|04d46688c5a41f1a|||||||||||||||
 overview|stem|c00ef2e801943ccb|7f68bfae7780351a|29b9b460c3179ac0|919504987||t19807.4721608016s|97835c0972b3a8d3|11133851|rds|local|vector|||1.208||
 overview_accuracy|stem|58133d61508eb983|5c61d57fc09aa050|15e41b82da9ecd65|-198863082||t19807.4721021291s|c891793abf79e02e|7928195|rds|local|vector|||0.037||
 overview_tsum|stem|2c02d044d471c968|8d5c654eb110cc32|6162512869209d16|-1895038338||t19807.4720267098s|751e1ef2400f2792|475912|rds|local|vector|||1.66||
@@ -539,8 +561,14 @@ stats_single_ee387d20|branch|ed553dbc519609c7|60e2e9e99f53954c|a07547163f915acc|
 stats_single_f0e234cf|branch|8f8c73b1cc2b744b|60e2e9e99f53954c|41bfc6da2f3dcaea|-1862783207||t19788.6830763088s|acc0506881f8c54d|38079|rds|local|list|stats_single||0.123||
 stats_single_f3701d0f|branch|aebc2c430d11b883|60e2e9e99f53954c|94ecf183fb2d761a|1365034394||t19783.5050062589s|0a4eb10d6a839753|37973|rds|local|list|stats_single||0.156||
 stats_single_fcee70aa|branch|b12edc9f469915e3|60e2e9e99f53954c|bc26b6fc894c21db|-1404102969||t19781.9050493595s|811b11f3a126d0dc|28148|rds|local|list|stats_single||0.136||
+table_con_eegnet|stem|237a7a8e5d389439|13ba710c0e56e5c9|315809196a6dd606|-689369856|../manuscript/tables/eegnet_contrasts.tex|t19813.4950657716s|b22360a289e2e551|3146|file|local|vector|||0.012||
+table_con_sliding|stem|3d7e4e84b528c283|5d185622fad20b0c|0368f09f7bdfbb7a|1658000080|../manuscript/tables/sliding_contrasts.tex|t19813.4950654651s|53fbc909a25c0235|3305|file|local|vector|||0.021||
+table_f_eegnet|stem|c830de49edab305c|a27532214ab89ed3|db0ec3917110a5b9|1208825893|../manuscript/tables/eegnet_omni.tex|t19813.4950659235s|0de0dd66aa5b7fd3|1184|file|local|vector|||0.011||
+table_f_sliding|stem|188548e3d7f75b73|41ee3248550ace05|2155bc1f666129fb|1757267929|../manuscript/tables/sliding_omni.tex|t19813.4950655885s|154d3de23c95490f|1267|file|local|vector|||0.007||
+table_output_dir|object|bd49f6058c3ad146|||||||||||||||
 timeresolved_luck|stem|bb9fcd326b1eac2a|7e885eb6e74cf014|e62f6e7b7da91784|-1888973947||t19807.8347063494s|4afd2af6c0ec8393|11566997|rds|local|vector|||1.149||
 timeresolved_plot|function|302e22af89837b8c|||||||||||||||
 tsum_file|stem|c2cce8a72d05c0db|f02e8b9e6327693e|ef46db3751d8e999|2115584499|sliding_tsums.csv|t19802.6562676128s|5b9e787af3023097|905293|file|local|vector|||1.225||
 ungrouping|function|dba99142121dc49f|||||||||||||||
 variable|object|c5a9e5584c3f223f|||||||||||||||
+|t19813.4520669439s||0|file|local|vector|||||_paths_ missing files  latex table generated in R 4.2.2 by xtable 1.84 package Sun Mar 31 125058 2024\begintableht\centering\begintabularrlllllllll  \hline  model term  ALL  ERN  LRP  MMN  N170  N2pc  N400  P3 \\   \hline1  ref                    \\   2  hpf                     \\   3  lpf            .       \\   4  base                         \\   5  det                      \\   6  ar              .   \\   7  emc                       \\   8  mac                    \\   9  experiment                 \\    \hline\endtabular\caption \label\endtable||||||

@@ -9,7 +9,10 @@ editor: visual
 library(targets)
 library(tarchetypes)
 library(dplyr)
+library(xtable)
 options(dplyr.print_max = 1e9)
+base_dir = "/Users/roman/GitHub/m4d/"
+manuscript_dir = paste0(base_dir,"manuscript/")
 
 ```
 
@@ -66,6 +69,7 @@ tar_read(eegnet_HLM_emm_contrasts_comb)
 
 ```{r}
 tar_read(eegnet_HLM_emm_omni_comb)
+
 ```
 
 #### Sliding Window
