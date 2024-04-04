@@ -22,11 +22,12 @@ tar_option_set( # packages that your targets use
                "ggpattern", # allows to make patterns into tiles or bars
                "gtools", # to convert p values into asterisks
                "ggpubr", # ggplots publication ready, e.g. labeling plots and arranging mutliple plots
+               "GGally", # e.g. pairwise correlation plots (ggpairs)
                "readr", 
                #"lmerTest", # has p value estimations
                "lme4", # seems to be 20% faster
                "emmeans", 
-               "magrittr", 
+               "magrittr", # for double pipe operator %<>%
                "ggpubr", 
                "data.table",
                "tidyverse", 
@@ -65,14 +66,14 @@ list(
   # ),
   # tar_target(
   #   model_types,
-  #   c("EEGNET","Sliding Window")
+  #   c("EEGNET","Time-Resolved")
   # ),
   # 
   
   ## define raw data files
   tar_target(
     name = eegnet_file,
-    command = "eegnet.csv",
+    command = "eegnet.csv", # TODO: put this into a different folder
     format = "file"
   ),
   tar_target(
@@ -83,6 +84,11 @@ list(
   tar_target(
     name = tsum_file,
     command = "sliding_tsums.csv",
+    format = "file"
+  ),
+  tar_target(
+    name = demographics_file,
+    command = '../data/erpcore/participants.tsv',
     format = "file"
   ),
   
@@ -99,6 +105,10 @@ list(
     name = data_tsum,
     command = {get_preprocess_data(tsum_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} #forking_path, 
   ),
+  tar_target(
+    name = demographics,
+    command = {read_tsv(demographics_file) %>% mutate_if(is.character, as.factor)}
+  ),
   
   ## Example results of Luck forking path
   tar_target(
@@ -109,11 +119,11 @@ list(
   ## Overview of decoding accuracies for each pipeline
   tar_target(
     name = overview_accuracy,
-    command = raincloud_acc(data_eegnet, title = "EEGNET")
+    command = raincloud_acc(data_eegnet, title = "EEGNet")
   ),
   tar_target(
     name = overview_tsum,
-    command = raincloud_acc(data_tsum, title = "Sliding Window")
+    command = raincloud_acc(data_tsum, title = "Time-Resolved")
   ),
   tar_target(
     name = overview,
@@ -122,8 +132,7 @@ list(
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }
-  ),  
-  
+  ), 
   # TODO: HLM simulations in pipeline?
   
   ## GROUPINGS
@@ -138,7 +147,7 @@ list(
     experiment 
   ),  
   
-  ## HLM for EEGNET
+  ## HLM for EEGNet
   
   tar_target(
     name=eegnet_HLM,
@@ -277,7 +286,7 @@ list(
   tar_target(
     name = heatmaps,
     command = {
-      ggarrange(eegnet_heatmap + labs(title="EEGNET"), 
+      ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
                 sliding_heatmap + labs(title="Sliding Window"), 
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
@@ -307,7 +316,7 @@ list(
   ), 
   
   ### qq plots
-  #### EEGNET
+  #### EEGNet
   tar_target(eegnet_HLM_qq,
     command = qqplot(model=eegnet_HLM, data=data_eegnet)),
   tar_target(eegnet_HLM_exp_qq,
@@ -318,7 +327,7 @@ list(
     command = eegnet_HLM_exp_qq),
   tar_target(eegnet_HLM_qq_comb,
     {plt <- ggarrange(plotlist = c(list(eegnet_HLM_qq),eegnet_HLM_exp_qq_agg))
-     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNET", 
+     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNet", 
                      color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -332,11 +341,11 @@ list(
     command = sliding_LM_exp_qq),
   tar_target(sliding_LM_qq_comb,
     {plt <- ggarrange(plotlist = c(list(sliding_LM_qq),sliding_LM_exp_qq_agg))
-    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Sliding", 
+    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
                     color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
-  #### EEGNET
+  #### EEGNet
   tar_target(eegnet_HLM_rvf,
              command = rvfplot(model=eegnet_HLM, data=data_eegnet)),
   tar_target(eegnet_HLM_exp_rvf,
@@ -347,7 +356,7 @@ list(
              command = eegnet_HLM_exp_rvf),
   tar_target(eegnet_HLM_rvf_comb,
              {plt <- ggarrange(plotlist = c(list(eegnet_HLM_rvf),eegnet_HLM_exp_rvf_agg))
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - EEGNET", 
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -361,11 +370,11 @@ list(
              command = sliding_LM_exp_rvf),
   tar_target(sliding_LM_rvf_comb,
              {plt <- ggarrange(plotlist = c(list(sliding_LM_rvf),sliding_LM_exp_rvf_agg))
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Sliding", 
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
 
   ### sqrt abs std res_vs_fitted plots
-  #### EEGNET
+  #### EEGNet
   tar_target(eegnet_HLM_sasrvf,
              command = sasrvfplot(model=eegnet_HLM, data=data_eegnet)),
   tar_target(eegnet_HLM_exp_sasrvf,
@@ -376,7 +385,7 @@ list(
              command = eegnet_HLM_exp_sasrvf),
   tar_target(eegnet_HLM_sasrvf_comb,
              {plt <- ggarrange(plotlist = c(list(eegnet_HLM_sasrvf),eegnet_HLM_exp_sasrvf_agg))
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - EEGNET", 
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -390,7 +399,7 @@ list(
              command = sliding_LM_exp_sasrvf),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = c(list(sliding_LM_sasrvf),sliding_LM_exp_sasrvf_agg))
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Sliding", 
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   
@@ -411,18 +420,103 @@ list(
                #                            ncol = 2, nrow = 5), 
                #        # Arrange remaining plots in one column
                #                  ncol = 1, nrow=4)
-               annotate_figure(plt, top = text_grob("Random Effects - EEGNET", 
+               annotate_figure(plt, top = text_grob("Random Effects - EEGNet", 
                                color = "black", face = "bold", size = 16))
              }),
+
+  ## RFX Intercepts and Participant Demographics
+  tar_target(rfx_demographics,
+             plot_rfx_demographics(eegnet_HLM, demographics),
+             #pattern = map(eegnet_HLM, demographics)
+             ),
+  
+  ## RFX Intercepts per Experiment
+  tar_target(rfx_exp,
+             extract_rfx_exp(eegnet_HLM_exp, data_eegnet_exp),
+             pattern=map(eegnet_HLM_exp, data_eegnet_exp),
+             # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
+             ),
+  tar_target(rfx_exp_plot,
+             {
+               wide_data <- rfx_exp %>% 
+                 pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
+                 select(-c("Subject")) # remove sub for now
+               
+               ggpairs(wide_data) + labs(title="RFX Correlation Between Experiments")
+             }
+  ),
+  
   
   ## Exports for Paper
+
+  ### Figures
+  
+  tar_target(
+    name = overview_file,
+    command = {
+      ggsave(plot=overview,
+             filename="overview.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=9,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  
+  tar_target(
+    name = timeresolved_luck_file,
+    command = {
+      ggsave(plot=timeresolved_luck,
+             filename="timeresolved_luck.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=16,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  
+  tar_target(
+    name =heatmaps_file,
+    command = {
+      ggsave(plot=heatmaps,
+             filename="heatmaps.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=12,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  
+  tar_target(
+    name = eegnet_RFX_plot_file,
+    command = {
+      ggsave(plot=eegnet_RFX_plot,
+             filename="RFX.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=12,
+             units="cm",
+             dpi=500)
+    },
+    format="file"),
+
   ### Tables
   tar_target(
     name = table_f_eegnet,
     command = output.table.f(eegnet_HLM_emm_omni_comb,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant differences in EEGNET performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
+                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
                              ),
     format = "file"
   ),
@@ -431,7 +525,7 @@ list(
     command = output.table.f(sliding_LM_emm_omni_comb,
                              filename=paste0(table_output_dir, "sliding_omni.tex"),
                              thisLabel = "sliding_omni",
-                             thisCaption = "Significant differences in Sliding Window decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
+                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -441,7 +535,7 @@ list(
     command = output.table.con(eegnet_HLM_emm_contrasts_comb,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
-                             thisCaption = "Significant differences in EEGNET performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. T-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were corrected using Tukey method. Correction was applied only within each processing step and experiment."
+                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -450,7 +544,7 @@ list(
     command = output.table.con(sliding_LM_emm_contrasts_comb,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
-                             thisCaption = "Significant differences in Sliding Window decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. T-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were corrected using Tukey method. Correction was applied only within each processing step and experiment."
+                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   )
@@ -500,7 +594,7 @@ list(
 
 
 
-#### eegnet processing ####
+#### EEGNet processing ####
 #tar_group_by(
 #  data_dataset, 
 #  data_eegnet, 

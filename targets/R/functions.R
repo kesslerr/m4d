@@ -1,31 +1,32 @@
 get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
+  
+  # change column order for arbitrary reason: None in LPF should be last, but because None is a factor both in hpf in lpf, lpf should come first with none as last entry, then later in the analyses when putting both in a long dataframe it will be ordered correctly
+  #data <- data %>%
+  #  select(names(data)[1:2], lpf, hpf, everything()) 
+  # but keep None first here, because this will be the reference for HLM, and makes it therefore easier to interpret
+  # recode lpf levels later
+  # DOESNT work becuase the variables are ordered by name later and HPF will be BEFORE LPF...
+  
   # new, preprocess already
   data$hpf <- factor(data$hpf, levels = c("None", "0.1", "0.5"))
-  data$lpf <- factor(data$lpf, levels = c("None", "6", "20", "45")) # TODO: put None to last level, this will however rerun the pipeline
+  data$lpf <- factor(data$lpf, levels = c("None", "6", "20", "45"))
   data$ref <- factor(data$ref, levels = c("average", "Cz", "P9P10"))
   data$emc <- factor(data$emc, levels = c("None", "ica"))
   data$mac <- factor(data$mac, levels = c("None", "ica"))
   data$base <- factor(data$base, levels = c("200ms", "400ms"))
   data$det <- factor(data$det, levels = c("offset", "linear"))
   data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
-  data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3", "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"))
+  data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
   data$dataset <- factor(data$dataset)
+  
+  # new: replace with paper-ready variable names / factor levels
+  # col names
+  #names(data) <- recode(names(data), !!!replacements)
+  # NOT DONE, as this would disrupt short variable naming during modeling
+  
   data
 }
-
-# factorize <- function(data) {
-#   data$hpf <- factor(data$hpf, levels = c("None", "0.1", "0.5"))
-#   data$lpf <- factor(data$lpf, levels = c("None", "6", "20", "45"))
-#   data$ref <- factor(data$ref, levels = c("average", "Cz", "P9P10"))
-#   data$emc <- factor(data$emc, levels = c("None", "ica"))
-#   data$mac <- factor(data$mac, levels = c("None", "ica"))
-#   data$base <- factor(data$base, levels = c("200ms", "400ms"))
-#   data$det <- factor(data$det, levels = c("offset", "linear"))
-#   data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
-#   data$experiment <- factor(data$experiment)
-#   data
-# }
 
 estimate_marginal_means <- function(data, variables){
   data_list <- list()
@@ -120,7 +121,7 @@ timeresolved_plot <- function(data){
     facet_wrap(experiment~., scales = "free_x", ncol=1) +
     scale_x_continuous(breaks = seq(-8, 8, by = 2)/10, 
                        labels = seq(-8, 8, by = 2)/10) +
-    labs(x="Time", y="Accuracy", title="Examplary Sliding Window Results - 1 UNIVERSE")
+    labs(x="Time [s]", y="Accuracy", title="Time-Resolved Decoding Results - Exemplary Single Forking Path")
   
   
 }
@@ -207,23 +208,26 @@ paired_tests <- function(data, study="ERPCORE"){
 
 # rename variables
 replacements <- list(
-  "hpf" = "high pass (Hz)",
-  "lpf" = "low pass (Hz)",
+  "hpf" = "high pass", # [Hz]
+  "lpf" = "low pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
-  "mac" = "muscle artifact corr.",
-  "emc" = "eye movement corr.",
-  "base" = "baseline corr.",
+  "mac" = "muscle art. corr.",
+  "emc" = "eye mov. corr.",
+  "base" = "baseline",
   "det" = "detrending",
-  "0.1" = "0.1Hz",
-  "0.5" = "0.1Hz",
-  "6" = "6Hz",
-  "20" = "20Hz",
-  "45" = "45Hz",
+  "0.1" = "0.1 Hz",
+  "0.5" = "0.5 Hz",
+  "6" = "6 Hz",
+  "20" = "20 Hz",
+  "45" = "45 Hz",
   "FALSE" = "False",
   "TRUE" = "True",
   "ica" = "ICA",
-  "P9P10" = "P9 / P10"
+  "200ms" = "200 ms",
+  "400ms" = "400 ms",
+  "ica" = "ICA",
+  "P9P10" = "P9/P10"
 )
 
 raincloud_mm <- function(data, title = ""){
@@ -410,6 +414,8 @@ heatmap <- function(data){
   data <- data %>% 
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements)) %>%
+    # NEW: replacements for each level
+    #mutate(level = recode(level, !!!replacements)) %>%
     # delete the experiment compairson in the full data
     filter(!(experiment == "ALL" & variable == "experiment")) %>% 
     # center around zero for better comparability
@@ -426,7 +432,7 @@ heatmap <- function(data){
                                     l2 = 100, # luminance at midpoints
                                     p1 = .9, 
                                     p2 = 1.2) +
-    labs(x="processing level",
+    labs(x="processing step",
          y="",
          fill="delta\nfrom\nmarginal\nmean\n(%)")  
         # Percentage marginal mean discrepancy
@@ -514,6 +520,50 @@ rfx_vis <- function(model, orig_data){
     labs(y="Conditional Mean", x="Random Effects Term", title=title) +
     theme(axis.text.x = element_text(angle=90))
   
+}
+
+# RFX and sociodemographics
+plot_rfx_demographics <- function(model, demographics){
+  # from rfx_vis function
+  data <- ranef(model)$subject %>%
+    mutate(Subject = rownames(.)) %>%
+    mutate(Intercept = `(Intercept)`) %>%
+    select(c(Intercept, Subject))
+  rownames(data) <- NULL
+  
+  # merge with demographics
+  data <- left_join(data, demographics, c("Subject" = "participant_id"))
+  
+  # plot age
+  p1 <- ggplot(data, aes(x=age, y=Intercept, color=sex)) +
+    geom_point() +
+    geom_hline(aes(yintercept=0), lty="dashed") +
+    labs(x="Age", y="Random Intercept")
+  
+  p2 <- ggplot(data, aes(x=sex, y=Intercept, fill=sex)) +
+    geom_boxplot(notch=TRUE) +
+    geom_hline(aes(yintercept=0), lty="dashed") +
+    labs(x="Sex", y="Random Intercept") +
+    guides(fill = "none") # remove legend for "fill"
+  
+  p3 <- ggplot(data, aes(x=Intercept, fill=handedness)) +
+    geom_histogram() + 
+    geom_vline(aes(xintercept=0), lty="dashed") +
+    labs(x="Random Intercept", y="Count") +
+    scale_fill_viridis_d()
+  
+  ggarrange(p1,p2,p3)
+}
+
+# extract ranef from all experiment HLM models
+extract_rfx_exp <- function(model, orig_data){
+  data <- ranef(model)$subject %>%
+    mutate(Subject = rownames(.)) %>%
+    mutate(Intercept = `(Intercept)`) %>%
+    mutate(Experiment = unique(orig_data$experiment)) %>%
+    select(c(Intercept, Subject, Experiment))
+  rownames(data) <- NULL
+  data
 }
 
 
