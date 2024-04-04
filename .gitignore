@@ -43,6 +43,12 @@
 **/*.xlsx
 **/*.ods
 
+# R stuff
+**.*.RData
+**.*.Rhistory
+**.*.Rprofile
+**.*.Rproj
+
 # errors and logs from slurm
 **/*.err
 **/*.out
@@ -52,3 +58,5 @@ adhered/*
 
 # folders which contain a lot of data
 models/*
+targets/.RData
+targets/.RData
