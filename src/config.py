@@ -163,18 +163,21 @@ baseline_windows = {
         },
     }    
 
-decoding_windows = {
-    # ERPCORE
-    'ERN':  [-.2, .6],
-    'LRP':  [-.4, .4],
-    'MMN':  [.0, .8],
-    'N170': [.0, .8],
-    'N2pc': [.0, .8],
-    'N400': [.0, .8],
-    'P3':   [.0, .8],
-    # MIPDB
-    'MIPDB': [-.4, .4],
-    }
+decoding_windows = epoch_windows.copy()
+
+# # if potential baseline should not be included
+# decoding_windows = {
+#     # ERPCORE
+#     'ERN':  [-.2, .6],
+#     'LRP':  [-.4, .4],
+#     'MMN':  [.0, .8],
+#     'N170': [.0, .8],
+#     'N2pc': [.0, .8],
+#     'N400': [.0, .8],
+#     'P3':   [.0, .8],
+#     # MIPDB
+#     'MIPDB': [-.4, .4],
+#     }
 
 # define multiverse parameter space
 multiverse_params = {
@@ -221,6 +224,18 @@ luck_forking_paths = { # these are not really the same, but some steps are compa
         'N2pc': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        'MIPDB': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
+        }
+
+luck_forking_paths_clean = { # without special characters
+        'ERN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'LRP': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'MMN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
+        'N2pc': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'N400': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'P3': "P9P10_0.1_None_ica_ica_200ms_offset_True",
+        'MIPDB': "P9P10_0.1_None_ica_ica_200ms_offset_True",
         }
 
 # difference waveforms, define the partners of subtraction

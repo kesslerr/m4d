@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 import json
 import mne
 from glob import glob
@@ -350,6 +351,17 @@ def get_forking_paths(
     return forking_paths, files, forking_paths_split
 
 
+""" 5b sliding groups and 4z-aggregate_results """
+
+def get_age():
+    dfage = pd.read_csv("/u/kroma/m4d/data/mipdb/participants.csv")
+    bins = [6, 9, 11, 13, 17, float('inf')]  # The last bin is for 18+
+    labels = ['6-9', '10-11', '12-13', '14-17', '18+'] # these are the official groups (without 25+ ers)
+    # Bin the 'Age' column
+    dfage['Age_Group'] = pd.cut(dfage['Age'], bins=bins, labels=labels)
+    return dfage
+
+
 """ 5b sliding groups """
 
 
@@ -369,5 +381,6 @@ def cluster_test(data, side=1):
                                                 stat_fun=None, adjacency=None, n_jobs=None, 
                                                 seed=None, max_step=1, exclude=None, step_down_p=0, 
                                                 t_power=1, out_type='indices', check_disjoint=False, 
-                                                buffer_size=1000, verbose=None)
+                                                buffer_size=1000, 
+                                                verbose='ERROR')
     return t_obs, clusters, cluster_pv, H0, times 

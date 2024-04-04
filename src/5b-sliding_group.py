@@ -39,8 +39,8 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
-from src.utils import get_forking_paths, cluster_test
-from src.config import translation_table, luck_forking_paths, subjects, experiments
+from src.utils import get_forking_paths, cluster_test, get_age
+from src.config import translation_table, luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, luck_forking_paths
 
 
 
@@ -50,126 +50,165 @@ forking_paths, files, forking_paths_split = get_forking_paths(
                             subject="sub-001", 
                             sample=None)
 
+## SUMMARIZE RESULTS AND STATS FOR EXPORT
 
+df_results = []
+df_tsums = []
 
-# TODO: across fps and experiments
-#experiment = "N170"
-results = []
-histo = {}
-for experiment in experiments:
-    times = mne.read_epochs(f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif").times
-    #histo[experiment] = []
-    #histo[experiment]['times'] = times # TODO: use this to convert indices to times
-    #histo[experiment]['significant'] = [] # TODO: fill this with the exact time points
-    print(f"Experiment: {experiment}")
-    for forking_path in forking_paths:
-        forking_path = forking_path.translate(translation_table)
-        dfs = []
-        for i, subject in enumerate(subjects):
-            model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
-            df = pd.DataFrame({'balanced accuracy': np.load(os.path.join(model_folder, f"{forking_path}.npy")),
-                            'times': times,
-                            'subject': [subject] * times.shape[0],
-                            'experiment': [experiment] * times.shape[0],
-                            })
-            dfs.append(df)
-        df = pd.concat(dfs)
-
-        # statistical test
-        t_obs, clusters, cluster_pv, H0, times = cluster_test(df[df.experiment==experiment], side=1) # right-sided test
-
-        # quantiy, how "strong" decoding was: 
-        # idea: for each "significant" time point, sum up the difference to 0.5
-        # window of interest? probably not, as there might be predictive time courses for a long period of time, which, for successfull decoding, should be helpful
-
-        mean_ba = df.groupby(['experiment', 'times']).agg({'balanced accuracy': 'mean'}).reset_index()
-
-        cumulative_decoding_accuracy = []
-        timepoints = []
+failed_subs = set()
+for dataset in ['erpcore']: # TODO: add 'mipdb', 
+    
+    if dataset == "erpcore":
+        experiments = experiments_erpcore
+        subjects = subjects_erpcore
+    elif dataset == "mipdb":
+        experiments = age_groups.keys()
+    
+    for experiment in experiments: # in MIPDB, experiment is in the subject group
         
-        #predictive_timepoints = []
-        for i_c, c in enumerate(clusters):
-            c = c[0] # get rid of the empty second element
-            if cluster_pv[i_c] <= 0.05:
-                print(f"{times[c[0]]}s - {times[c[-1]]}s: p={cluster_pv[i_c]:.3f}")
-                cumulative_decoding_accuracy.append(((mean_ba[(mean_ba.times >= times[c[0]]) & (mean_ba.times <= times[c[-1]])]['balanced accuracy']-0.5)*2).values)
-                timepoints.append((times[c[0]], times[c[-1]]))
-            break
-        break
-    break
-
-                # -.5, *2, to normalize between 0 and 1
-                #predictive_timepoints.append(len(cumulative_decoding_accuracy[-1]))
         
-        # Flatten the list of arrays to a 1D array
-        if len(cumulative_decoding_accuracy) > 1:
-            cumulative_decoding_accuracy = np.concatenate([arr.ravel() for arr in cumulative_decoding_accuracy])
-        else: 
-            cumulative_decoding_accuracy = cumulative_decoding_accuracy[0]
+        print(f"Experiment: {experiment}")
 
-        n_predictive_timepoints = cumulative_decoding_accuracy.shape[0]
-        
-        cumulative_decoding_accuracy = np.sum(cumulative_decoding_accuracy)
+        if dataset == "erpcore":
+            epoch_example_file = f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif"
+            tmin = decoding_windows[experiment][0]
+            tmax = decoding_windows[experiment][1]
+        elif dataset == "mipdb":
+            epoch_example_file = f"/ptmp/kroma/m4d/data/processed/MIPDB/A00053597/average_0.5_45_None_None_400ms_linear_False-epo.fif"
+            tmin = decoding_windows["MIPDB"][0]
+            tmax = decoding_windows["MIPDB"][1]
+            subjects = groups_subjects_mipdb[experiment]
+            
+        times = mne.read_epochs(
+            epoch_example_file).crop(
+            tmin=tmin,
+            tmax=tmax).times
 
-        results.append(pd.DataFrame({'experiment': [experiment], 
-                                                'forking path': [forking_path],
-                                                'cumulative decoding accuracy': [cumulative_decoding_accuracy], 
-                                                'predictive timepoints': [n_predictive_timepoints]}))
+        for forking_path, forking_paths_split_i in zip(forking_paths, forking_paths_split):
+            forking_path = forking_path.translate(translation_table) # might be redundant if all special characters are already removed
 
-results = pd.concat(results)
-results.to_csv(f"{base_dir}/models/sliding/results.csv", index=False)
+            dfs = []
+            for i, subject in enumerate(subjects):
+                if dataset == "erpcore":
+                    model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
+                elif dataset == "mipdb":
+                    model_folder = os.path.join(base_dir, "models", "sliding", "MIPDB", subject)
+                
+                if os.path.exists(os.path.join(model_folder, f"{forking_path}.npy")):
+                    df = pd.DataFrame({'balanced accuracy': np.load(os.path.join(model_folder, f"{forking_path}.npy")),
+                                    'times': times,
+                                    'subject': [subject] * times.shape[0],
+                                    'experiment': [experiment] * times.shape[0],
+                                    })
+                else:
+                    #print(f"\n \n !!! \n Missing file: {subject} \n !!! \n \n")
+                    failed_subs.add(subject)
+                    continue
+                dfs.append(df)
+            df = pd.concat(dfs)
+
+            # statistical test
+            t_obs, clusters, cluster_pv, H0, times = cluster_test(df, side=1) # right-sided test
+
+            # 1
+            tsum = 0
+            # 2
+            df_mean = df.groupby(['times']).agg({'balanced accuracy': 'mean'}).reset_index()
+            df_mean["significance"] = False
+            df_mean["p"] = np.nan
+            
+            
+            for i_c, c in enumerate(clusters):
+                c = c[0] # get rid of the empty second element which refers to frequency dimension
+                if cluster_pv[i_c] <= 0.05:
+                    #print(f"{times[c[0]]}s - {times[c[-1]]}s: p={cluster_pv[i_c]:.3f}")
+                    
+                    # sum of tvalues in cluster
+                    tsum += np.sum(t_obs[c])
+                    
+                    # write p value to df
+                    df_mean.loc[c[0]:c[-1]+1, "p"] = cluster_pv[i_c]
+                    df_mean.loc[c[0]:c[-1]+1, "significance"] = True
+
+            df_mean[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            df_mean['forking_path'] = forking_path
+            df_mean['experiment'] = experiment
+            df_mean['dataset'] = dataset
+            df_results.append(df_mean)      
+            
+            df_tsum = pd.DataFrame({
+                'tsum': tsum,
+                'experiment': experiment,
+                'dataset': dataset,
+                }, index=[0])
+            df_tsum[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            df_tsum['forking_path'] = forking_path
+            df_tsums.append(df_tsum)
+    
+df_results = pd.concat(df_results)
+df_results.to_csv(f"{base_dir}/models/sliding/sliding.csv", index=False)
+
+df_tsums = pd.concat(df_tsums)
+df_tsums.to_csv(f"{base_dir}/models/sliding/sliding_tsums.csv", index=False)
 
 
-# TODO: also write each predictive time point to results, so we can have a histogram across fps
-
+## PLOT exemplary FP results, and maybe stats
 
 # analyze and plot the performances only on the luck forking path for each experiment for exemplary visualization
+# TODO: continue here with some result plots
 
 
-# plot results with confidence intervals
-ci = 95
-n_subplots = len(experiments) 
-fig, ax = plt.subplots(ncols=1, nrows=n_subplots, figsize=(10, 20), sharex=True, sharey=True)
+# df_results = pd.read_csv(f"{base_dir}/models/sliding/sliding.csv")
+# df_results.head()
 
-for experiment in experiments:
-    times = mne.read_epochs(f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif").times
+# # select the forking path of Luck et al.
+# # DEBUG
+# #experiment = "N170"
+# dfs_single = []
+# for experiment in experiments:
 
-    forking_path = luck_forking_paths[experiment].translate(translation_table)
+#     forking_path = luck_forking_paths[experiment].translate(translation_table)
+#     df_single = df_results[df_results['forking_path'] == forking_path]
+#     df_single.shape
+#     dfs_single.append(df_single)
 
-    dfs = []
-    for i, subject in enumerate(subjects):
-        model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
-        df = pd.DataFrame({'balanced accuracy': np.load(os.path.join(model_folder, f"{forking_path}.npy")),
-                        'times': times,
-                        'subject': [subject] * times.shape[0],
-                        'experiment': [experiment] * times.shape[0],
-                        })
-        dfs.append(df)
-    df = pd.concat(dfs)
+# dfs_single = pd.concat(dfs_single)
 
-    # statistical test
-    t_obs, clusters, cluster_pv, H0, times = cluster_test(df[df.experiment==experiment], side=1)
+# for dataset in ['erpcore']: # TODO: add 'mipdb'
+#     fig, ax = plt.subplots(len(experiments), 1, figsize=(15, 5))
+#     for i, experiment in enumerate(experiments):
+#         g = sns.relplot(data=dfs_single[dfs_single.dataset==dataset], 
+#                     x='times', y='balanced accuracy', 
+#                     hue='significance',
+#                     #row='experiment',
+#                     ax=ax[i],
+#                     #kind='line'
+#                     )
+#         # ax[i].axhline(0.5, color='k')
+#         for ax in g.axes.flat:
+#             for line in ax.lines:
+#                 x = line.get_xdata()
+#                 y = line.get_ydata()
+#                 significance = dfs_single.loc[dfs_single['experiment'] == ax.get_title()].loc[(x >= min(x)) & (x <= max(x)), 'significance']
+#                 start = None
+#                 for i in range(len(significance)):
+#                     if significance.iloc[i]:
+#                         if start is None:
+#                             start = i
+#                     elif start is not None:
+#                         ax.fill_between(x[start:i], y[start:i], color='gray', alpha=0.3)
+#                         start = None
 
-    g = sns.lineplot(data=df[df.experiment==experiment], 
-                     x='times', y='balanced accuracy', 
-                     errorbar=("ci", ci), dashes=False, ax=ax[i]) #
-    ax[i].set_title(f"{experiment}")
-    ax[i].axhline(0.5, color='k')
-    ax[i].axvline(0.0, color='k')
+#     plt.show()
 
-    # plot statistics    
-    for i_c, c in enumerate(clusters):
-        c = c[0] # get rid of the empty second element
-        if cluster_pv[i_c] <= 0.05:
-            h = ax[i].axvspan(times[c[0]], times[c[-1]], color="r", alpha=0.3)
-        else:
-            ax[i].axvspan(times[c[0]], times[c[-1]], color=(0.3, 0.3, 0.3), alpha=0.3)
-        
-        # write cluster p-value as txt
-        if cluster_pv[i_c] <= 0.05:
-            ax[i].text(times[c[0]], 0.48, f"p={cluster_pv[i_c]:.3f}", fontsize=8)
-    
 
-plt.tight_layout()
-plt.savefig(f"{base_dir}/plots/sliding.png", dpi=300)
-plt.show()
+# sns.relplot(data=df, x='x', y='y', hue='color_var', col='facet_var', kind='line')
+
+
+
+
+
+
+
+
+

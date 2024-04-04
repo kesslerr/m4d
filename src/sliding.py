@@ -116,7 +116,7 @@ def slider_parallel(forking_path, file):
     tmax = decoding_windows[experiment][1]
     
     # extract data from epochs
-    X = epochs.get_data(tmin=tmin, tmax=tmax)
+    X = epochs.copy().crop(tmin=tmin, tmax=tmax).get_data()
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
     scores = slider(X.copy(),y.copy())
