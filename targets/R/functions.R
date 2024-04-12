@@ -16,7 +16,8 @@ get_preprocess_data <- function(file) {
   data$mac <- factor(data$mac, levels = c("None", "ica"))
   data$base <- factor(data$base, levels = c("200ms", "400ms"))
   data$det <- factor(data$det, levels = c("offset", "linear"))
-  data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
+  data$ar <- factor(tolower(data$ar), levels = c("false", "true"))
+  #data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
   data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
   data$dataset <- factor(data$dataset)
   
@@ -101,7 +102,8 @@ luckfps <- data.frame(
   mac = c('ica', 'ica', 'ica', 'ica', 'ica', 'ica', 'ica'),
   base = c('200ms', '200ms', '200ms', '200ms', '200ms', '200ms', '200ms'),
   det = c('offset', 'offset', 'offset', 'offset', 'offset', 'offset', 'offset'),
-  ar = c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE')
+  #ar = c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE')
+  ar = c('true', 'true', 'true', 'true', 'true', 'true', 'true')
 )
 
 timeresolved_plot <- function(data){
@@ -222,7 +224,9 @@ replacements <- list(
   "20" = "20 Hz",
   "45" = "45 Hz",
   "FALSE" = "False",
+  "false" = "False",
   "TRUE" = "True",
+  "true" = "True",
   "ica" = "ICA",
   "200ms" = "200 ms",
   "400ms" = "400 ms",
@@ -348,7 +352,8 @@ filter_experiment <- function(data){
 
 est_emm <- function(model, variables){
   # DEBUG
-  #variables = c("ref", "hpf","lpf","base","det","ar","emc","mac","experiment")
+  #model = return_model
+  #variables = c("ref", "hpf","lpf","emc","mac","base","det","ar") # "experiment"
   
   means = data.frame()
   contra = data.frame()
@@ -367,6 +372,10 @@ est_emm <- function(model, variables){
     dfw$variable <- names(dfw)[1]
     names(dfw)[1] <- "level"
     dfw <- dfw[, c(7, 1, 2)]  # CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+    if (class(dfw$level) == "logical"){ # to avoid TRUE and FALSE being converted to NA (in variable="ar")
+      dfw$level <- as.factor(dfw$level)
+    }
+    #dfw$level <- as.character(dfw$level) # to avoid TRUE and FALSE being converted to NA (in variable="ar")
     means <- rbind(means, dfw)
     
     # get contrasts
@@ -385,7 +394,7 @@ est_emm <- function(model, variables){
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
   
-  return(list(means,contra, fs))
+  return(list(means, contra, fs))
   
 }
 

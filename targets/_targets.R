@@ -21,19 +21,20 @@ tar_option_set( # packages that your targets use
                "ggsignif", 
                "ggpattern", # allows to make patterns into tiles or bars
                "gtools", # to convert p values into asterisks
-               "ggpubr", # ggplots publication ready, e.g. labeling plots and arranging mutliple plots
+               "ggpubr", # ggplots publication ready, e.g. labeling plots and arranging mutliple plots (ggarrange)
                "GGally", # e.g. pairwise correlation plots (ggpairs)
+               "ggdist", 
+               "ggthemes", 
                "readr", 
                #"lmerTest", # has p value estimations
                "lme4", # seems to be 20% faster
                "emmeans", 
+               "JuliaCall", # use Julia from within R
                "magrittr", # for double pipe operator %<>%
                "ggpubr", 
                "data.table",
                "tidyverse", 
                "tidyquant", 
-               "ggdist", 
-               "ggthemes", 
                "dplyr", # e.g. pipe functions
                "purrr", 
                "rstatix", 
@@ -121,6 +122,14 @@ list(
     name = overview_accuracy,
     command = raincloud_acc(data_eegnet, title = "EEGNet")
   ),
+  tar_target( # average across subjects for each pipeline
+    name = overview_accuracy_avgsub,
+    command = raincloud_acc(data_eegnet %>%
+                              group_by(ref, hpf, lpf, emc, mac, base, det, ar, experiment) %>%
+                              summarize(accuracy = mean(accuracy)) %>% 
+                              select(accuracy, everything()), # put the accuracy in the first column
+                            title = "EEGNet")
+  ),
   tar_target(
     name = overview_tsum,
     command = raincloud_acc(data_tsum, title = "Time-Resolved")
@@ -128,7 +137,7 @@ list(
   tar_target(
     name = overview,
     command = {
-      ggarrange(overview_accuracy, overview_tsum, 
+      ggarrange(overview_accuracy_avgsub, overview_tsum, 
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }
@@ -149,20 +158,63 @@ list(
   
   ## HLM for EEGNet
   
+  ## track julia MLM script
+  tar_file(
+    julia_mlm_script,
+    "/Users/roman/GitHub/m4d/julia/MLM.jl"
+  ),
+  
+  ### HLM within julia
   tar_target(
-    name=eegnet_HLM,
-    command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + experiment + ( ref + hpf + lpf + emc + mac + base + det + ar + experiment | subject)",
-                 control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-                 data = data_eegnet)
+    eegnet_HLM,
+    command = {
+      # random number (deterministic for this branch/target)
+      randint <- sample(0:10000, size = 1) 
+      
+      data_eegnet %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
+      julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # maybe without julia
+      julia_script <- julia_mlm_script
+      system2(command = julia_executable, args = c(julia_script, as.character(randint)), wait=TRUE)
+      model <- readRDS(paste0("../julia/model_",randint,".rds"))
+      file.remove(paste0("../julia/data_",randint,".csv"))
+      file.remove(paste0("../julia/model_",randint,".rds"))
+      model
+      },
   ),
   tar_target(
-    name = eegnet_HLM_exp,
-    command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
-                       control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-                       data = data_eegnet_exp),
+    eegnet_HLM_exp,
+    command = {
+      # random number (deterministic for this branch/target)
+      randint <- sample(0:10000, size = 1) 
+      
+      data_eegnet_exp %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
+      julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # maybe without julia
+      julia_script <- julia_mlm_script #"/Users/roman/GitHub/m4d/julia/MLM.jl" # TODO: track this script as target, then it is only run when changes are there
+      system2(command = julia_executable, args = c(julia_script, as.character(randint)), wait=TRUE)
+      model <- readRDS(paste0("../julia/model_",randint,".rds"))
+      file.remove(paste0("../julia/data_",randint,".csv"))
+      file.remove(paste0("../julia/model_",randint,".rds"))
+      model
+      # TODO: reduce output from julia script
+    },
     pattern = map(data_eegnet_exp),
     iteration = "list"
-  ),  
+  ),
+  
+  #tar_target(
+  #  name=eegnet_HLM,
+  #  command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + experiment + ( ref + hpf + lpf + emc + mac + base + det + ar + experiment | subject)",
+  #               control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
+  #               data = data_eegnet)
+  #),
+  #tar_target(
+  #  name = eegnet_HLM_exp,
+  #  command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
+  #                     control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
+  #                     data = data_eegnet_exp),
+  #  pattern = map(data_eegnet_exp),
+  #  iteration = "list"
+  #),  
 
   ## LM for sliding
   tar_target(
@@ -177,6 +229,22 @@ list(
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
+  
+  ### TODO: TEST: Sliding with all interactions
+  tar_target(
+    name = sliding_LMi2_exp,
+    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+               data = data_tsum_exp),
+    pattern = map(data_tsum_exp),
+    iteration = "list"
+  ),
+  tar_target(
+    name = sliding_LMi3_exp,
+    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 3", 
+               data = data_tsum_exp),
+    pattern = map(data_tsum_exp),
+    iteration = "list"
+  ),  
   
   ## Estimated marginal means
   
@@ -287,7 +355,7 @@ list(
     name = heatmaps,
     command = {
       ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
-                sliding_heatmap + labs(title="Sliding Window"), 
+                sliding_heatmap + labs(title="Time-resolved"), 
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
@@ -299,7 +367,7 @@ list(
   ## concatenate all models and datas in one target
   tar_target( 
     name=models_combined,
-    command=c(list(eegnet_HLM), eegnet_HLM_exp, list(sliding_LM), sliding_LM_exp)
+    command=c(list(eegnet_HLM), eegnet_HLM_exp, list(sliding_LM), sliding_LM_exp, sliding_LMi2_exp)
   ), 
   # tar_target( # this does not work !!
   #   name=data_combined,
@@ -344,6 +412,16 @@ list(
     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
                     color = "black", face = "bold", size = 16))}),
   
+  #### SLIDING WITH INTERACTIONS
+  tar_target(sliding_LMi2_exp_qq,
+             qqplot(model=sliding_LMi2_exp, data=data_tsum_exp),
+             pattern = map(sliding_LMi2_exp, data_tsum_exp),
+             iteration ="list"),
+  tar_target(sliding_LMi2_qq_comb,
+             {plt <- ggarrange(plotlist = sliding_LMi2_exp_qq)
+              annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
+                                                  color = "black", face = "bold", size = 16))}),
+  
   ### res_vs_fitted plots
   #### EEGNet
   tar_target(eegnet_HLM_rvf,
@@ -372,6 +450,16 @@ list(
              {plt <- ggarrange(plotlist = c(list(sliding_LM_rvf),sliding_LM_exp_rvf_agg))
              annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
+  
+  #### SLIDING WITH INTERACTIONS
+  tar_target(sliding_LMi2_exp_rvf,
+             rvfplot(model=sliding_LMi2_exp, data=data_tsum_exp),
+             pattern = map(sliding_LMi2_exp, data_tsum_exp),
+             iteration ="list"),
+  tar_target(sliding_LMi2_rvf_comb,
+             {plt <- ggarrange(plotlist = sliding_LMi2_exp_rvf)
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
+                                                  color = "black", face = "bold", size = 16))}),
 
   ### sqrt abs std res_vs_fitted plots
   #### EEGNet
@@ -460,6 +548,20 @@ list(
              scale=2,
              width=12,
              height=9,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  tar_target(
+    name = overview_eegnet_subjects_file,
+    command = {
+      ggsave(plot=overview_accuracy,
+             filename="overview_eegnet_subjects.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=5,
              units="cm",
              dpi=500)
     },

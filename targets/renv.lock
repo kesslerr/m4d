@@ -52,6 +52,25 @@
       ],
       "Hash": "b11ac45c916608b7d1374ff87da053d5"
     },
+    "JuliaCall": {
+      "Package": "JuliaCall",
+      "Version": "0.17.5",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "JuliaCall",
+      "RemoteUsername": "Non-Contradiction",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "c05473bea78a0197c639f7e82ab1c6f2e943e1cc",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "knitr",
+        "rjson",
+        "utils"
+      ],
+      "Hash": "90df1700fac03f6fa58fc5943231986c"
+    },
     "KernSmooth": {
       "Package": "KernSmooth",
       "Version": "2.23-20",
@@ -1760,9 +1779,9 @@
     },
     "knitr": {
       "Package": "knitr",
-      "Version": "1.45",
+      "Version": "1.46",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "evaluate",
@@ -1772,7 +1791,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "1ec462871063897135c1bcbe0fc8f07d"
+      "Hash": "6e008ab1d696a5283c79765fa7b56b47"
     },
     "labeling": {
       "Package": "labeling",
@@ -2690,6 +2709,16 @@
         "vctrs"
       ],
       "Hash": "a6b991ccde367ee08f18d0fe66751cfb"
+    },
+    "rjson": {
+      "Package": "rjson",
+      "Version": "0.2.21",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "f9da75e6444e95a1baf8ca24909d63b9"
     },
     "rlang": {
       "Package": "rlang",
