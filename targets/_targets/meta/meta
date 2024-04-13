@@ -109,7 +109,7 @@ demographics_file|stem|64a5477ad8d73202|6b1e2f0c17365de5|ef46db3751d8e999|135696
 ecdf|function|9e21093127ace394|||||||||||||||
 eegnet_file|stem|fd3c95e6db9997ea|3beb03ea38f21c1a|ef46db3751d8e999|412366697|eegnet.csv|t19802.522010786s|5786f064c6d6de05|31206155|file|local|vector|||0||
 eegnet_heatmap|stem|ea3e958d89df7ffb|03b3e5a91798e15b|6a4722c90ad7eedd|-804051026||t19825.4029304809s|63ec63669417c5ca|181784|rds|local|vector|||0.007||
-eegnet_HLM|stem|d1c662860eb56cbb|bf37b205d924b724|1aad8d6d940cc58e|-1121325005||t19825.4102603982s|13960fd8d5432aba|24715867|rds|local|vector|||111.896||
+eegnet_HLM|stem|d1c662860eb56cbb|4f7627833c2941e0|be141ef817768102|-1121325005||t19825.8209312615s|13960fd8d5432aba|24715867|rds|local|vector|||108.706||
 eegnet_HLM_check|stem|0129e159faf6fdeb|31802937457459a3|ffb795bf5ed0f367|1685617962||t19807.5567584561s|c303d0aa7a9c897f|156|rds|local|vector|||0.526|coercing argument of type double to logical|
 eegnet_HLM_emm|stem|59337b443323f0fc|be0d41d36d2e6397|1c7d0faa596cb44f|-484332659||t19825.3208942211s|26892481db728bf9|2578|rds|local|vector|||62.056|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
 eegnet_HLM_emm_contrasts|stem|f5bf8774dc298049|c627e638daf68609|44a785197990b28d|-801159400||t19825.3212337902s|e852174247017dae|1737|rds|local|vector|||0||
@@ -120,7 +120,7 @@ eegnet_HLM_emm_omni|stem|0b547fd6741e56f3|31ec35dd38f09eb9|44a785197990b28d|-891
 eegnet_HLM_emm_omni_comb|stem|372197fe22e9358a|0e1027d86a32602b|1502dd070c919fe3|-2029745761||t19825.3779582714s|35584c6b63d4466b|1964|rds|local|vector|||0.002||
 eegnet_HLM_exp|pattern|9b6fdf04c0e2d2d3|c29697348e65c096||525040348||||25079885|rds|local|list||eegnet_HLM_exp_a04d718d*eegnet_HLM_exp_fb71ec51*eegnet_HLM_exp_9fe717f1*eegnet_HLM_exp_105f77ae*eegnet_HLM_exp_95813302*eegnet_HLM_exp_c21a54cf*eegnet_HLM_exp_b7d9b6be|136.727||
 eegnet_HLM_exp_085f6600|branch|ab80af0234b4bd23|263e1f659dd96166|ef46db3751d8e999|506032469||t19804.9357757905s|b881d8de8f91a01c|4499636|rds|local|list|eegnet_HLM_exp||1257.902|convergence code 1 from optimx none|
-eegnet_HLM_exp_105f77ae|branch|5709afd1314443a7|5b1748ee9b679c78|f1052dd390c63ed7|-1174587123||t19825.4112498495s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||21.438||
+eegnet_HLM_exp_105f77ae|branch|5709afd1314443a7|d8cfae74f384cd1e|bca30b265b007aa7|-1174587123||t19825.8217825258s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||19.09||
 eegnet_HLM_exp_29f6416a|branch|9354d1ddabf77553|263e1f659dd96166|ef46db3751d8e999|1226368843||t19804.935279228s|3bacfa88275b6785|3994942|rds|local|list|eegnet_HLM_exp||1210.072|convergence code 1 from optimx none|
 eegnet_HLM_exp_30fa363a|branch|1f6ea10e2b8c5223|c29697348e65c096|48c36bf271663c1e|-1900148097||t19825.3766280481s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||20.797||
 eegnet_HLM_exp_4c7fc5d7|branch|5709afd1314443a7|c29697348e65c096|48c36bf271663c1e|288742189||t19825.3763813431s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||20.538||
@@ -128,14 +128,14 @@ eegnet_HLM_exp_56beca07|branch|705c0fe1e90196ab|c29697348e65c096|48c36bf271663c1
 eegnet_HLM_exp_6812cc65|branch|719998573e47d6e0|c29697348e65c096|48c36bf271663c1e|-1377641835||t19825.3759107868s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||18.165||
 eegnet_HLM_exp_8d83e99a|branch|2fd0a8bde4c4c76a|263e1f659dd96166|ef46db3751d8e999|807497487||t19804.9340530191s|08bfd4d0aa61dd38|4017869|rds|local|list|eegnet_HLM_exp||1105.91|convergence code 1 from optimx none|
 eegnet_HLM_exp_8db25150|branch|67239056c00e02d0|263e1f659dd96166|ef46db3751d8e999|446846205||t19804.9353031817s|8291a8288dc2bb08|3938697|rds|local|list|eegnet_HLM_exp||1215.318|convergence code 1 from optimx none|
-eegnet_HLM_exp_95813302|branch|1f6ea10e2b8c5223|5b1748ee9b679c78|f1052dd390c63ed7|-522110354||t19825.4114998729s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||21.08||
+eegnet_HLM_exp_95813302|branch|1f6ea10e2b8c5223|d8cfae74f384cd1e|bca30b265b007aa7|-522110354||t19825.822010881s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||19.2||
 eegnet_HLM_exp_9abaa6a9|branch|83957528e3f7dda7|c29697348e65c096|48c36bf271663c1e|1844709276||t19825.3761376695s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||19.089||
-eegnet_HLM_exp_9fe717f1|branch|83957528e3f7dda7|5b1748ee9b679c78|f1052dd390c63ed7|-1043988303||t19825.4109958163s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||19.799||
-eegnet_HLM_exp_a04d718d|branch|705c0fe1e90196ab|5b1748ee9b679c78|f1052dd390c63ed7|1892262366||t19825.4105363093s|2c06a348d4bf78e8|3708342|rds|local|list|eegnet_HLM_exp||23.201||
+eegnet_HLM_exp_9fe717f1|branch|83957528e3f7dda7|d8cfae74f384cd1e|bca30b265b007aa7|-1043988303||t19825.8215556855s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||17.449||
+eegnet_HLM_exp_a04d718d|branch|705c0fe1e90196ab|d8cfae74f384cd1e|bca30b265b007aa7|1892262366||t19825.8211471227s|2c06a348d4bf78e8|3708342|rds|local|list|eegnet_HLM_exp||18.033||
 eegnet_HLM_exp_a9ffd095|branch|1645d99eb242949c|c29697348e65c096|48c36bf271663c1e|1221819916||t19825.377094402s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||19.458||
-eegnet_HLM_exp_b7d9b6be|branch|1645d99eb242949c|5b1748ee9b679c78|f1052dd390c63ed7|1883502813||t19825.4119709889s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||19.197||
+eegnet_HLM_exp_b7d9b6be|branch|1645d99eb242949c|d8cfae74f384cd1e|bca30b265b007aa7|1883502813||t19825.8224370175s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||17.666||
 eegnet_HLM_exp_b824abcd|branch|f0dbba26aae5e8e2|263e1f659dd96166|ef46db3751d8e999|585935134||t19804.9349380411s|d4f5a726beea803a|4032513|rds|local|list|eegnet_HLM_exp||1181.841|convergence code 1 from optimx none|
-eegnet_HLM_exp_c21a54cf|branch|08b78b8f6171ce02|5b1748ee9b679c78|f1052dd390c63ed7|889673622||t19825.4117428262s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||20.474||
+eegnet_HLM_exp_c21a54cf|branch|08b78b8f6171ce02|d8cfae74f384cd1e|bca30b265b007aa7|889673622||t19825.8222266014s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||18.131||
 eegnet_HLM_exp_check|pattern|b4a45658716c200a|7d40deb672c01ad6||-1254562300||||1094|rds|local|list||eegnet_HLM_exp_check_ff099055*eegnet_HLM_exp_check_2a0fa424*eegnet_HLM_exp_check_6207c8da*eegnet_HLM_exp_check_1218c3b2*eegnet_HLM_exp_check_12476351*eegnet_HLM_exp_check_d040ff17*eegnet_HLM_exp_check_b9ba3c19|0.346||
 eegnet_HLM_exp_check_1218c3b2|branch|955640fe242dacf1|7d40deb672c01ad6|efb30f0bedd08558|-1210341794||t19807.5567680774s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.05|coercing argument of type double to logical|
 eegnet_HLM_exp_check_12476351|branch|476ae10c6ea8a42b|7d40deb672c01ad6|d60a2c1c9f8467d5|426672862||t19807.5567697282s|e209d753280b6d62|157|rds|local|list|eegnet_HLM_exp_check||0.048|coercing argument of type double to logical|
@@ -238,7 +238,7 @@ eegnet_HLM_exp_emm_omni_ungrouped|stem|769cdb14d331229c|c9e35bec9a09c053|c489138
 eegnet_HLM_exp_f46e7e49|branch|6e7c66eea2b3e082|263e1f659dd96166|ef46db3751d8e999|-1285741134||t19804.9348497535s|ff087c4fc3326252|4595319|rds|local|list|eegnet_HLM_exp||1179.345|convergence code 1 from optimx none|
 eegnet_HLM_exp_f5eab7a6|branch|08b78b8f6171ce02|c29697348e65c096|48c36bf271663c1e|-1599112568||t19825.3768631699s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||19.802||
 eegnet_HLM_exp_fa036d79|branch|c919c4adf212ebce|263e1f659dd96166|ef46db3751d8e999|-2103379088||t19804.9343401751s|85872e8378ab381d|4856396|rds|local|list|eegnet_HLM_exp||1134.086|convergence code 1 from optimx none|
-eegnet_HLM_exp_fb71ec51|branch|719998573e47d6e0|5b1748ee9b679c78|f1052dd390c63ed7|766385322||t19825.4107607014s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||18.862||
+eegnet_HLM_exp_fb71ec51|branch|719998573e47d6e0|d8cfae74f384cd1e|bca30b265b007aa7|766385322||t19825.8213478958s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||16.831||
 eegnet_HLM_exp_qq|pattern|810c7ace39783d92|77fce9d65f8fc2e7||-1457341439||||40160435|rds|local|list||eegnet_HLM_exp_qq_f10985e1*eegnet_HLM_exp_qq_15858ef0*eegnet_HLM_exp_qq_2218b545*eegnet_HLM_exp_qq_7cfdabaa*eegnet_HLM_exp_qq_a0e8db90*eegnet_HLM_exp_qq_235cf138*eegnet_HLM_exp_qq_4db695be|0.13||
 eegnet_HLM_exp_qq_0cd46656|branch|97d3c036ed094b5b|77fce9d65f8fc2e7|2692f048bf98ae14|-352562678||t19811.5308717585s|ad6f6dd82a7ae884|6020595|rds|local|list|eegnet_HLM_exp_qq||0.02||
 eegnet_HLM_exp_qq_15858ef0|branch|7c2fa689c6f889ce|77fce9d65f8fc2e7|23ea0f5be3b204c7|-1234403570||t19825.4023853494s|a299e83ee7935f8e|6088495|rds|local|list|eegnet_HLM_exp_qq||0.018||
@@ -322,6 +322,7 @@ eegnet_HLM_rvf|stem|73d2c01f8f5c98d6|9dbd04ec58355e84|290fabaf5d1e6bce|149683749
 eegnet_HLM_rvf_comb|stem|0e66eef2a627384a|91f04f5049afaa87|75de0181fd6d19ed|232144735||t19825.4028467824s|d17fff903ee3b181|1176596|rds|local|vector|||0.351||
 eegnet_HLM_sasrvf|stem|1a7a70b6d6fe2343|807ac304c9499ac7|37e56d8db20c3c79|1923892363||t19825.4019846793s|833d545b43f9da42|27415149|rds|local|vector|||3.08||
 eegnet_HLM_sasrvf_comb|stem|18b76b39b9b7a6eb|299c60170aff425a|eba8a5ab99844f04|616862209||t19825.402852091s|82ca858fc8ed2ccc|1177152|rds|local|vector|||0.316||
+eegnet_HLMi2_exp_a04d718d|branch||266b878f75d399b3|3c032670f302d439|2100584189||t19825.7281569661s||0|rds|local|list|eegnet_HLMi2_exp||61.079|cannot open compressed file ..juliamodel_4610.rds, probable reason No such file or directory|cannot open the connection
 eegnet_RFX_all|stem|d6b6a50dddd09ac3|bca3d162eccfcdd6|d012e573472ffe9c|-875235594||t19825.4018133205s|cec14e18a1560d39|27918172|rds|local|vector|||0.503||
 eegnet_RFX_exp|pattern|ce8bc39c0c9e6753|8ff9d762e48e770e||-2117689092||||27565655|rds|local|list||eegnet_RFX_exp_f10985e1*eegnet_RFX_exp_15858ef0*eegnet_RFX_exp_2218b545*eegnet_RFX_exp_7cfdabaa*eegnet_RFX_exp_a0e8db90*eegnet_RFX_exp_235cf138*eegnet_RFX_exp_4db695be|0.395||
 eegnet_RFX_exp_0cd46656|branch|36e9bd6f6efe2c3a|8ff9d762e48e770e|0122aecb205b68ca|1200000968||t19811.6127218311s|cf33a269d9ef299f|4338233|rds|local|list|eegnet_RFX_exp||0.058||
@@ -383,7 +384,7 @@ hlm_single_5e426bd1|branch|230f741a562421de|127b73a18d6b6bce|4bccaac7332c76f3|-1
 hlm_single_8201a9a7|branch|e42185f2b42511ff|127b73a18d6b6bce|4bccaac7332c76f3|307151749||t19774.719204619s|a7e5f9154283166e|1846885|rds|local|list|hlm_single||0.764||
 hlm_single_b311e5d6|branch|d523b2b1cdd23b48|127b73a18d6b6bce|4bccaac7332c76f3|1698768864||t19774.7191671736s|d249503a7200c8bf|2672375|rds|local|list|hlm_single||0.895||
 hlm_single_c23e5de7|branch|c8eaeae52f68dcc0|127b73a18d6b6bce|4bccaac7332c76f3|-1973329093||t19774.7192175325s|77d813e4d2e00263|1755967|rds|local|list|hlm_single||0.764||
-julia_mlm_script|stem|3755c3805cd4d621|bffb98b0970f45b2|ef46db3751d8e999|1547666630|/Users/roman/GitHub/m4d/julia/MLM.jl|t19825.3968640669s|d5b83ed0b039ca83|3274|file|local|vector|||1.254|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3|
+julia_mlm_script|stem|9cafed5f50d4beb8|bffb98b0970f45b2|ef46db3751d8e999|1547666630|/Users/roman/GitHub/m4d/julia/MLM.jl|t19825.8195035903s|fd1aac5eee8b5962|3755|file|local|vector|||1.22|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3|
 luckfps|object|7aee25c19d1370bf|||||||||||||||
 marginal_means|stem|24cd0b9b9cacfa77|8fba43621e948087|9754dee9af7a069e|-48339942||t19807.4720291158s|aec99c5a2abc0f72|11865|rds|local|vector|||0.435||
 marginal_means_083d8130|branch|3a02b3ddacf5f7e2|a744525c5f8bc755|0c821b0f0d3ce0bf|-735913030||t19782.6182323893s|e4206639e0cce271|27292|rds|local|vector|marginal_means||0.31||
@@ -969,33 +970,3 @@ tsum_file|stem|c2cce8a72d05c0db|f02e8b9e6327693e|ef46db3751d8e999|2115584499|sli
 ungrouping|function|dba99142121dc49f|||||||||||||||
 variable|object|c5a9e5584c3f223f|||||||||||||||
 |t19813.4520669439s||0|file|local|vector|||||_paths_ missing files  latex table generated in R 4.2.2 by xtable 1.84 package Sun Mar 31 125058 2024\begintableht\centering\begintabularrlllllllll  \hline  model term  ALL  ERN  LRP  MMN  N170  N2pc  N400  P3 \\   \hline1  ref                    \\   2  hpf                     \\   3  lpf            .       \\   4  base                         \\   5  det                      \\   6  ar              .   \\   7  emc                       \\   8  mac                    \\   9  experiment                 \\    \hline\endtabular\caption \label\endtable||||||
-ecdf|function|9e21093127ace394
-estimate_marginal_means_sliding|function|6fa64fc6b7fbcdd4
-table_output_dir|object|bd49f6058c3ad146
-get_preprocess_data|function|de472f849168777c
-replacements|object|2c8b1659ff37c902
-extract_rfx_exp|function|b9bc515964f6ac46
-combine_single_whole|function|9648121f1b0c766d
-figure_output_dir|object|4c8c1c37f830e0c0
-ungrouping|function|dba99142121dc49f
-plot_rfx_demographics|function|212154f597c3673d
-luckfps|object|7aee25c19d1370bf
-output.table.f|function|04d46688c5a41f1a
-qqplot|function|a6df3eab638a7009
-filter_experiment|function|7eff20fb7943367c
-raincloud_acc|function|2684ed4caf889861
-check_convergence|function|5648df5664e4d447
-output.table.con|function|336aeef581926a9e
-rvfplot|function|03e0e300645347e1
-est_emm|function|d2ecfeab3dd875e5
-paired_tests|function|d92635e17be015e6
-estimate_marginal_means|function|ee473aa23cea102b
-sasrvfplot|function|87505c7103ad4fef
-rfx_vis|function|cf8b91a30f4564af
-sliding_plot_all|function|e1034e4834d46e89
-heatmap|function|1efe60a3647fd823
-paired_box|function|58367a7978f53279
-sliding_plot_experiment|function|d7e122e28a6b1c26
-raincloud_mm|function|d5d45692c7a588c9
-timeresolved_plot|function|c9243d1da254b490
-julia_mlm_script|stem|aec998e6b580c09a|bffb98b0970f45b2|ef46db3751d8e999|1547666630|/Users/roman/GitHub/m4d/julia/MLM.jl|t19825.4104853112s|736d41db8fd7159f|3278|file|local|vector|||1.248|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3|

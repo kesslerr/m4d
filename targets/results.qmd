@@ -54,7 +54,21 @@ tar_read(timeresolved_luck)
 ### EEGNet 
 
 ```{r}
+r2s = c()
+r2si2 = c()
 
+for (i in 1:7){
+  modeli2 <- tar_read(eegnet_HLMi2_exp, branches=i)[[1]]
+  model <- tar_read(eegnet_HLM_exp, branches=i)[[1]]
+  models <- summary(model)
+  modeli2s <- summary(modeli2)
+  r2s = c(r2s, models$adj.r.squared)
+  r2si2 = c(r2si2, modeli2s$adj.r.squared)
+}
+print("Adj. R2 no interactions:")
+print(r2s)
+print("Adj. R2 2-way interactions:")
+print(r2si2)
 ```
 
 ### Time-resolved
