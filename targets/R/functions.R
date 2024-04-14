@@ -409,11 +409,12 @@ filter_experiment <- function(data){
 #  lmer(formula, data = data)
 #}
 
-est_emm <- function(model, variables){
+est_emm <- function(model, variables, orig_data){
   # DEBUG
   #model = return_model
   #variables = c("ref", "hpf","lpf","emc","mac","base","det","ar") # "experiment"
   
+  experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
   fs = data.frame()
@@ -452,6 +453,14 @@ est_emm <- function(model, variables){
   }
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
+  fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
+    mutate(sign.unc = stars.pval(.$p.value)) %>%
+    mutate(sign.fdr = stars.pval(.$p.fdr))
+  
+  # add experiment variable to all
+  means %<>% mutate(experiment = experiment) %>% select(experiment, everything())
+  contra %<>% mutate(experiment = experiment) %>% select(experiment, everything())
+  fs %<>% mutate(experiment = experiment) %>% select(experiment, everything())
   
   return(list(means, contra, fs))
   
@@ -485,7 +494,7 @@ heatmap <- function(data){
     # NEW: replacements for each level
     #mutate(level = recode(level, !!!replacements)) %>%
     # delete the experiment compairson in the full data
-    filter(!(experiment == "ALL" & variable == "experiment")) %>% 
+    #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
     # center around zero for better comparability
     group_by(experiment) %>%
     mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
@@ -653,7 +662,7 @@ output.table.f <- function(data, filename="", thisLabel="", thisCaption=""){
         include.rownames=FALSE, # row numbers not printed to file
         caption.placement = "top", # caption on top of table
         file = filename)
-  filename # it seems that the filename should be printed last for targets
+  filename # it seems that the filename should be printed last for file targets
 }
 
 output.table.con <- function(data, filename="", thisLabel="", thisCaption=""){
@@ -674,7 +683,7 @@ output.table.con <- function(data, filename="", thisLabel="", thisCaption=""){
         caption.placement = "top", # caption on top of table
         latex.environments = "widestuff", # this uses the widestuff environment which I have designed in latex to adjust the width of the table (move left)
         file = filename)
-  filename # it seems that the filename should be printed last for targets
+  filename # it seems that the filename should be printed last for file targets
 }
 
 # plot_emm <- function(model, variables){

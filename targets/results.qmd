@@ -177,6 +177,11 @@ tar_read(eegnet_RFX_plot)
 ```{r}
 tar_read(rfx_demographics)
 ```
+## EDA subjects intercept correlating across expeirments?
+
+```{r}
+tar_read(rfx_exp_plot)
+```
 
 ## Model diagnostics
 
