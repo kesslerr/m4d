@@ -22,6 +22,8 @@ julia_command("my_mod = fit(MixedModel, @formula(score ~ 1 + Machine + (1 + Mach
 julia_library("JellyMe4")
 julia_command("return_mod = (my_mod, dat)")
 
+# this would actually work, if matrix package would have the problem
+#https://github.com/palday/JellyMe4.jl/issues/72
 julia_command("RCall.Const.GlobalEnv[:return_mod] = robject(:lmerMod, return_mod)")
 
 # Pass as a tuple

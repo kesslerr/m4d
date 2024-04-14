@@ -29,6 +29,65 @@ get_preprocess_data <- function(file) {
   data
 }
 
+rjulia_mlm <- function(data, interactions = TRUE){
+  
+  #DEBUG
+  #data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
+  
+  # INFO: 
+  julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays")
+  #julia_library("DataFrames")
+  #julia_library("CSV")
+  #julia_library("Plots")
+  #julia_library("MixedModels")
+  julia_command("ENV[\"LMER\"] = \"afex::lmer_alt\"") # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly; https://github.com/palday/JellyMe4.jl (ReadMe)
+  # caution, if zerocorr is used, now julia will automatically use afex::lmer_alt, and from then on, use lmer_alt for the remainder of the session
+  #Sys.setenv(LMER = "afex::lmer_alt")
+  julia_library("RCall, JellyMe4")
+  #julia_library("JellyMe4")
+  #julia_library("RData")
+  #julia_library("CategoricalArrays") # for categorical 
+  
+  julia_assign("data", data) # bring data into julia
+  julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac) ^ 2 | subject))") ## TODO all variables
+  julia_command("model = fit(LinearMixedModel, formula, data)")  
+  
+  julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data, but R model does); https://github.com/palday/JellyMe4.jl/issues/51, 
+  julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel)") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
+  
+  rmodel
+}
+
+chord_plot <- function(plot_filepath){
+  varnames <- c("ref","hpf","lpf","emc","mac","base","det","ar")
+  varnames <- recode(varnames, !!!replacements)
+  numbers <- c(0.1,1,1,0.1,0.1,0.1,0.1,1,
+               1,0.1,1,1,1,1,1,1,
+               1,1,0.1,1,1,1,1,1,
+               0.1,1,1,0.1,1,0.1,0.1,1,
+               0.1,1,1,1,0.1,0.1,0.1,1,
+               0.1,1,1,0.1,0.1,0.1,1,0.1,
+               0.1,1,1,0.1,0.1,1,0.1,0.1,
+               1,1,1,1,1,0.1,0.1,0.1)
+  data <- matrix( numbers, ncol=8)
+  rownames(data) <- varnames
+  colnames(data) <- varnames
+  col_fun = colorRamp2(range(data), c("#ddd8d5", "#4e4b44"), transparency = 0.5)
+  png(plot_filepath, width=8, height=8, units="cm", res=300) 
+  chordDiagram(data, 
+               transparency = 0,
+               symmetric = TRUE,
+               big.gap = 20,
+               small.gap = 5,
+               link.visible = data > 0.5,
+               grid.col = "black",
+               col = col_fun,
+               annotationTrack =  c("name", "grid") # remove xticks / xticklabels
+               )
+  dev.off() # the chordDiagram is not saved into an object that can be returned, therefore save it to file
+  plot_filepath
+}
+
 estimate_marginal_means <- function(data, variables){
   data_list <- list()
   for (variable in variables) {

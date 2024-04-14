@@ -19,8 +19,6 @@ name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iterat
 "7 & emc & *** &   &   &   &   & ** &   &   \\"|||||||||||||||||
 "8 & mac & *** &   & *** & ** &   & ** & * &   \\"|||||||||||||||||
 "9 & experiment & *** & - & - & - & - & - & - & - \\"|||||||||||||||||
-check_convergence|function|5648df5664e4d447|||||||||||||||
-combine_single_whole|function|9648121f1b0c766d|||||||||||||||
 convergence_checks|pattern|a89267074fdcc5a9|c7e08a02acb627cb||1139449904||||3593|rds|local|list||convergence_checks_5111e482*convergence_checks_f3fabf5c*convergence_checks_0aace154*convergence_checks_892e39ff*convergence_checks_4aca8f09*convergence_checks_c8cbadae*convergence_checks_89e7dabc*convergence_checks_033e96b4*convergence_checks_839233ee*convergence_checks_825f570e*convergence_checks_16079b58*convergence_checks_f2c2a2e2*convergence_checks_309ab4bf*convergence_checks_9ccd4de5*convergence_checks_e4c5b176*convergence_checks_0a16c952*convergence_checks_189ad4ed*convergence_checks_b625981c*convergence_checks_1dd6783b*convergence_checks_7f69dd12*convergence_checks_e0944651*convergence_checks_30cf4c23*convergence_checks_94c36d5e|0.064||
 convergence_checks_00c645ce|branch|cf0232c4e38d96d2|c7e08a02acb627cb|f690b457189fbc41|-538458872||t19814.7976564434s|e209d753280b6d62|157|rds|local|list|convergence_checks||0.014|coercing argument of type double to logical|
 convergence_checks_033e96b4|branch|44bfe96718b0d0e7|c7e08a02acb627cb|f690b457189fbc41|-1471505097||t19825.4027085717s|c303d0aa7a9c897f|156|rds|local|list|convergence_checks||0.003|coercing argument of type double to logical|
@@ -106,10 +104,9 @@ data_tsum_exp|stem|0d1cb44f7368d326|c7a06489d7e56b3e|0b18ae18126449c2|329676867|
 data_tsum_exp_list|stem|1295bee9620bc57c|7e59ce7a1c4a1f5f|1ff0a9fcba91149a|-1156286940||t19810.4449983315s|8ffb9ff8538c4cd1|59143|rds|local|vector|||0||
 demographics|stem|377f2c40a7f848b2|d136b898ce74f324|622e62cef0c0bd39|1922940885||t19817.6316439729s|c54907a2f546a1d9|519|rds|local|vector|||0.105||
 demographics_file|stem|64a5477ad8d73202|6b1e2f0c17365de5|ef46db3751d8e999|1356961824|../data/erpcore/participants.tsv|t19816.6103164458s|5804f0d9761a796e|792|file|local|vector|||1.594|package broom.mixed was built under R version 4.2.3|
-ecdf|function|9e21093127ace394|||||||||||||||
 eegnet_file|stem|fd3c95e6db9997ea|3beb03ea38f21c1a|ef46db3751d8e999|412366697|eegnet.csv|t19802.522010786s|5786f064c6d6de05|31206155|file|local|vector|||0||
 eegnet_heatmap|stem|ea3e958d89df7ffb|03b3e5a91798e15b|6a4722c90ad7eedd|-804051026||t19825.4029304809s|63ec63669417c5ca|181784|rds|local|vector|||0.007||
-eegnet_HLM|stem|d1c662860eb56cbb|4f7627833c2941e0|be141ef817768102|-1121325005||t19825.8209312615s|13960fd8d5432aba|24715867|rds|local|vector|||108.706||
+eegnet_HLM|stem|d1c662860eb56cbb|4f7627833c2941e0|d04348c4e2f2edcf|-1121325005||t19827.7028432654s|13960fd8d5432aba|24715867|rds|local|vector|||130.149|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_check|stem|0129e159faf6fdeb|31802937457459a3|ffb795bf5ed0f367|1685617962||t19807.5567584561s|c303d0aa7a9c897f|156|rds|local|vector|||0.526|coercing argument of type double to logical|
 eegnet_HLM_emm|stem|59337b443323f0fc|be0d41d36d2e6397|1c7d0faa596cb44f|-484332659||t19825.3208942211s|26892481db728bf9|2578|rds|local|vector|||62.056|Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.. Using formulax is deprecated when x is a character vector of length  1.  Consider formulapastex, collapse    instead.|
 eegnet_HLM_emm_contrasts|stem|f5bf8774dc298049|c627e638daf68609|44a785197990b28d|-801159400||t19825.3212337902s|e852174247017dae|1737|rds|local|vector|||0||
@@ -120,7 +117,7 @@ eegnet_HLM_emm_omni|stem|0b547fd6741e56f3|31ec35dd38f09eb9|44a785197990b28d|-891
 eegnet_HLM_emm_omni_comb|stem|372197fe22e9358a|0e1027d86a32602b|1502dd070c919fe3|-2029745761||t19825.3779582714s|35584c6b63d4466b|1964|rds|local|vector|||0.002||
 eegnet_HLM_exp|pattern|9b6fdf04c0e2d2d3|c29697348e65c096||525040348||||25079885|rds|local|list||eegnet_HLM_exp_a04d718d*eegnet_HLM_exp_fb71ec51*eegnet_HLM_exp_9fe717f1*eegnet_HLM_exp_105f77ae*eegnet_HLM_exp_95813302*eegnet_HLM_exp_c21a54cf*eegnet_HLM_exp_b7d9b6be|136.727||
 eegnet_HLM_exp_085f6600|branch|ab80af0234b4bd23|263e1f659dd96166|ef46db3751d8e999|506032469||t19804.9357757905s|b881d8de8f91a01c|4499636|rds|local|list|eegnet_HLM_exp||1257.902|convergence code 1 from optimx none|
-eegnet_HLM_exp_105f77ae|branch|5709afd1314443a7|d8cfae74f384cd1e|bca30b265b007aa7|-1174587123||t19825.8217825258s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||19.09||
+eegnet_HLM_exp_105f77ae|branch|5709afd1314443a7|d8cfae74f384cd1e|bd6ac14026f22c64|-1174587123||t19827.7017408137s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||41.366|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_exp_29f6416a|branch|9354d1ddabf77553|263e1f659dd96166|ef46db3751d8e999|1226368843||t19804.935279228s|3bacfa88275b6785|3994942|rds|local|list|eegnet_HLM_exp||1210.072|convergence code 1 from optimx none|
 eegnet_HLM_exp_30fa363a|branch|1f6ea10e2b8c5223|c29697348e65c096|48c36bf271663c1e|-1900148097||t19825.3766280481s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||20.797||
 eegnet_HLM_exp_4c7fc5d7|branch|5709afd1314443a7|c29697348e65c096|48c36bf271663c1e|288742189||t19825.3763813431s|61e476a6bfd283f9|3453909|rds|local|list|eegnet_HLM_exp||20.538||
@@ -128,14 +125,14 @@ eegnet_HLM_exp_56beca07|branch|705c0fe1e90196ab|c29697348e65c096|48c36bf271663c1
 eegnet_HLM_exp_6812cc65|branch|719998573e47d6e0|c29697348e65c096|48c36bf271663c1e|-1377641835||t19825.3759107868s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||18.165||
 eegnet_HLM_exp_8d83e99a|branch|2fd0a8bde4c4c76a|263e1f659dd96166|ef46db3751d8e999|807497487||t19804.9340530191s|08bfd4d0aa61dd38|4017869|rds|local|list|eegnet_HLM_exp||1105.91|convergence code 1 from optimx none|
 eegnet_HLM_exp_8db25150|branch|67239056c00e02d0|263e1f659dd96166|ef46db3751d8e999|446846205||t19804.9353031817s|8291a8288dc2bb08|3938697|rds|local|list|eegnet_HLM_exp||1215.318|convergence code 1 from optimx none|
-eegnet_HLM_exp_95813302|branch|1f6ea10e2b8c5223|d8cfae74f384cd1e|bca30b265b007aa7|-522110354||t19825.822010881s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||19.2||
+eegnet_HLM_exp_95813302|branch|1f6ea10e2b8c5223|d8cfae74f384cd1e|bd6ac14026f22c64|-522110354||t19827.7017489949s|941f6bfc929fbfa9|3494737|rds|local|list|eegnet_HLM_exp||40.887|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_exp_9abaa6a9|branch|83957528e3f7dda7|c29697348e65c096|48c36bf271663c1e|1844709276||t19825.3761376695s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||19.089||
-eegnet_HLM_exp_9fe717f1|branch|83957528e3f7dda7|d8cfae74f384cd1e|bca30b265b007aa7|-1043988303||t19825.8215556855s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||17.449||
-eegnet_HLM_exp_a04d718d|branch|705c0fe1e90196ab|d8cfae74f384cd1e|bca30b265b007aa7|1892262366||t19825.8211471227s|2c06a348d4bf78e8|3708342|rds|local|list|eegnet_HLM_exp||18.033||
+eegnet_HLM_exp_9fe717f1|branch|83957528e3f7dda7|d8cfae74f384cd1e|bd6ac14026f22c64|-1043988303||t19827.7016887965s|4cf5a67c4862dc64|3671279|rds|local|list|eegnet_HLM_exp||37.695|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
+eegnet_HLM_exp_a04d718d|branch|705c0fe1e90196ab|d8cfae74f384cd1e|bd6ac14026f22c64|1892262366||t19827.7016649483s|2c06a348d4bf78e8|3708342|rds|local|list|eegnet_HLM_exp||36.475||
 eegnet_HLM_exp_a9ffd095|branch|1645d99eb242949c|c29697348e65c096|48c36bf271663c1e|1221819916||t19825.377094402s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||19.458||
-eegnet_HLM_exp_b7d9b6be|branch|1645d99eb242949c|d8cfae74f384cd1e|bca30b265b007aa7|1883502813||t19825.8224370175s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||17.666||
+eegnet_HLM_exp_b7d9b6be|branch|1645d99eb242949c|d8cfae74f384cd1e|bd6ac14026f22c64|1883502813||t19827.7017341759s|b50aa0703e1baa2d|3477677|rds|local|list|eegnet_HLM_exp||38.859|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_exp_b824abcd|branch|f0dbba26aae5e8e2|263e1f659dd96166|ef46db3751d8e999|585935134||t19804.9349380411s|d4f5a726beea803a|4032513|rds|local|list|eegnet_HLM_exp||1181.841|convergence code 1 from optimx none|
-eegnet_HLM_exp_c21a54cf|branch|08b78b8f6171ce02|d8cfae74f384cd1e|bca30b265b007aa7|889673622||t19825.8222266014s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||18.131||
+eegnet_HLM_exp_c21a54cf|branch|08b78b8f6171ce02|d8cfae74f384cd1e|bd6ac14026f22c64|889673622||t19827.7017555445s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||39.77|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_exp_check|pattern|b4a45658716c200a|7d40deb672c01ad6||-1254562300||||1094|rds|local|list||eegnet_HLM_exp_check_ff099055*eegnet_HLM_exp_check_2a0fa424*eegnet_HLM_exp_check_6207c8da*eegnet_HLM_exp_check_1218c3b2*eegnet_HLM_exp_check_12476351*eegnet_HLM_exp_check_d040ff17*eegnet_HLM_exp_check_b9ba3c19|0.346||
 eegnet_HLM_exp_check_1218c3b2|branch|955640fe242dacf1|7d40deb672c01ad6|efb30f0bedd08558|-1210341794||t19807.5567680774s|c303d0aa7a9c897f|156|rds|local|list|eegnet_HLM_exp_check||0.05|coercing argument of type double to logical|
 eegnet_HLM_exp_check_12476351|branch|476ae10c6ea8a42b|7d40deb672c01ad6|d60a2c1c9f8467d5|426672862||t19807.5567697282s|e209d753280b6d62|157|rds|local|list|eegnet_HLM_exp_check||0.048|coercing argument of type double to logical|
@@ -238,7 +235,7 @@ eegnet_HLM_exp_emm_omni_ungrouped|stem|769cdb14d331229c|c9e35bec9a09c053|c489138
 eegnet_HLM_exp_f46e7e49|branch|6e7c66eea2b3e082|263e1f659dd96166|ef46db3751d8e999|-1285741134||t19804.9348497535s|ff087c4fc3326252|4595319|rds|local|list|eegnet_HLM_exp||1179.345|convergence code 1 from optimx none|
 eegnet_HLM_exp_f5eab7a6|branch|08b78b8f6171ce02|c29697348e65c096|48c36bf271663c1e|-1599112568||t19825.3768631699s|bebbbd3c85855c70|3462263|rds|local|list|eegnet_HLM_exp||19.802||
 eegnet_HLM_exp_fa036d79|branch|c919c4adf212ebce|263e1f659dd96166|ef46db3751d8e999|-2103379088||t19804.9343401751s|85872e8378ab381d|4856396|rds|local|list|eegnet_HLM_exp||1134.086|convergence code 1 from optimx none|
-eegnet_HLM_exp_fb71ec51|branch|719998573e47d6e0|d8cfae74f384cd1e|bca30b265b007aa7|766385322||t19825.8213478958s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||16.831||
+eegnet_HLM_exp_fb71ec51|branch|719998573e47d6e0|d8cfae74f384cd1e|bd6ac14026f22c64|766385322||t19827.7016758486s|028c944977430de6|3811678|rds|local|list|eegnet_HLM_exp||36.972|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 eegnet_HLM_exp_qq|pattern|810c7ace39783d92|77fce9d65f8fc2e7||-1457341439||||40160435|rds|local|list||eegnet_HLM_exp_qq_f10985e1*eegnet_HLM_exp_qq_15858ef0*eegnet_HLM_exp_qq_2218b545*eegnet_HLM_exp_qq_7cfdabaa*eegnet_HLM_exp_qq_a0e8db90*eegnet_HLM_exp_qq_235cf138*eegnet_HLM_exp_qq_4db695be|0.13||
 eegnet_HLM_exp_qq_0cd46656|branch|97d3c036ed094b5b|77fce9d65f8fc2e7|2692f048bf98ae14|-352562678||t19811.5308717585s|ad6f6dd82a7ae884|6020595|rds|local|list|eegnet_HLM_exp_qq||0.02||
 eegnet_HLM_exp_qq_15858ef0|branch|7c2fa689c6f889ce|77fce9d65f8fc2e7|23ea0f5be3b204c7|-1234403570||t19825.4023853494s|a299e83ee7935f8e|6088495|rds|local|list|eegnet_HLM_exp_qq||0.018||
@@ -351,26 +348,18 @@ eegnet_RFX_plot|stem|8bc3399c5a42e599|b5be7af703d75614|f560453747c9690d|-1616600
 eegnet_RFX_plot_file|stem|cc9b02d41fed08db|a7ffb5d7c1c98110|57f87e2725ff853c|-1154136767|../manuscript/plots//RFX.png|t19825.4029283494s|cdc900196489c6e8|787381|file|local|vector|||1.003||
 emm|function|f07b21ca3ed18610|||||||||||||||
 emm_all_exp|stem||440c3fe1eae97f18|d70b1201476769f8|297731203||t19775.8793612887s||0|rds|local|vector|||0.024||Cant handle an object of class  function  Use helpmodels, package  emmeans for information on supported models.
-est_emm|function|d2ecfeab3dd875e5|||||||||||||||
-estimate_marginal_means|function|ee473aa23cea102b|||||||||||||||
-estimate_marginal_means_sliding|function|6fa64fc6b7fbcdd4|||||||||||||||
 experiment_value|object|062b906efe013cc4|||||||||||||||
 experiments|object|5b0e7225eb82c206|||||||||||||||
-extract_rfx_exp|function|b9bc515964f6ac46|||||||||||||||
 factorize|function|9265221b7e87d24e|||||||||||||||
 factorize_data|function|b6beda07083ddd28|||||||||||||||
 factorized_data|stem|40350891e4122086|b6f1d975dad734a8|fcf1a27b7efea09a|1171269741||t19774.5852213453s|c1a27c650e2e9d04|786344|rds|local|vector|||0.156||
-figure_output_dir|object|4c8c1c37f830e0c0|||||||||||||||
 file|stem|fd3c95e6db9997ea|3beb03ea38f21c1a|ef46db3751d8e999|1735323524|eegnet.csv|t19782.6421565337s|5786f064c6d6de05|31206155|file|local|vector|||1.139||
-filter_experiment|function|7eff20fb7943367c|||||||||||||||
 filtered_data|stem|e2176f8a0195ce8e|d351f0e715c95ba8|7c92111f669e544c|1185767870||t19774.6173786749s|e9e3f4b99f3ac804|5505964|rds|local|vector|||0.308||
 find_significant_combinations|function|e5e93911f165e150|||||||||||||||
 fit_model|function|982677e5c5b1c4d7|||||||||||||||
 get_coefficients|function|ca0844d63aaf27bf|||||||||||||||
 get_data|function|2d6039203ac586f4|||||||||||||||
 get_ffx_coefs|function|f0417d6c08bbecf6|||||||||||||||
-get_preprocess_data|function|de472f849168777c|||||||||||||||
-heatmap|function|1efe60a3647fd823|||||||||||||||
 heatmaps|stem|ef17904dafb3835f|85979bf9e6cacb5f|7e0d2a55b741851d|1172197873||t19825.4029430759s|90cc6d35f413fabd|519328|rds|local|vector|||0.869||
 heatmaps_file|stem|1be39ff15db4fb9b|dfceebfc571c1260|9ae25953710f8315|-1997426311|../manuscript/plots//heatmaps.png|t19825.4029552584s|a24cc2470c674ee0|432065|file|local|vector|||1.052||
 hlm|function|913ebce40178f990|||||||||||||||
@@ -384,8 +373,7 @@ hlm_single_5e426bd1|branch|230f741a562421de|127b73a18d6b6bce|4bccaac7332c76f3|-1
 hlm_single_8201a9a7|branch|e42185f2b42511ff|127b73a18d6b6bce|4bccaac7332c76f3|307151749||t19774.719204619s|a7e5f9154283166e|1846885|rds|local|list|hlm_single||0.764||
 hlm_single_b311e5d6|branch|d523b2b1cdd23b48|127b73a18d6b6bce|4bccaac7332c76f3|1698768864||t19774.7191671736s|d249503a7200c8bf|2672375|rds|local|list|hlm_single||0.895||
 hlm_single_c23e5de7|branch|c8eaeae52f68dcc0|127b73a18d6b6bce|4bccaac7332c76f3|-1973329093||t19774.7192175325s|77d813e4d2e00263|1755967|rds|local|list|hlm_single||0.764||
-julia_mlm_script|stem|9cafed5f50d4beb8|bffb98b0970f45b2|ef46db3751d8e999|1547666630|/Users/roman/GitHub/m4d/julia/MLM.jl|t19825.8195035903s|fd1aac5eee8b5962|3755|file|local|vector|||1.22|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3|
-luckfps|object|7aee25c19d1370bf|||||||||||||||
+julia_mlm_script|stem|a21bb18c3c031858|bffb98b0970f45b2|ef46db3751d8e999|1547666630|/Users/roman/GitHub/m4d/julia/MLM.jl|t19827.700768554s|0341f18ae869ab86|4960|file|local|vector|||1.5|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
 marginal_means|stem|24cd0b9b9cacfa77|8fba43621e948087|9754dee9af7a069e|-48339942||t19807.4720291158s|aec99c5a2abc0f72|11865|rds|local|vector|||0.435||
 marginal_means_083d8130|branch|3a02b3ddacf5f7e2|a744525c5f8bc755|0c821b0f0d3ce0bf|-735913030||t19782.6182323893s|e4206639e0cce271|27292|rds|local|vector|marginal_means||0.31||
 marginal_means_0abedbcb|branch|2f2325af429656e2|a744525c5f8bc755|0c821b0f0d3ce0bf|1317802975||t19787.7522370007s|c907f214f692dca6|15265|rds|local|vector|marginal_means||0.241||
@@ -434,8 +422,6 @@ marginal_means_single_exp_d7a3bcf6|branch|2f19389c6c0d97d1|aa5751f8b554ad88|0c82
 models_combined|stem|b07c6af28bdf4ae9|7b2fd0dde0193935|67fabe1f00e95cb8|709449580||t19825.4022859475s|84291fd21dbbc35d|56484608|rds|local|vector||models_combined_d3de2f5a*models_combined_f8e5b5b6*models_combined_1fafa788*models_combined_a3215fc3*models_combined_0315299b*models_combined_6b7b7fcb*models_combined_1c44d64c*models_combined_694edf93*models_combined_72818612*models_combined_14eb738c*models_combined_4a251995*models_combined_06d8e833*models_combined_36e5ec06*models_combined_0ce6fe09*models_combined_39d81e91*models_combined_89e87199*models_combined_42d114c4*models_combined_6e93553d*models_combined_feda1618*models_combined_821d408c*models_combined_d407c5d0*models_combined_b43d5e86*models_combined_06b3a97a|0||
 modeltest|stem|d1c662860eb56cbb|d58c462256691d59|e8434854d514846e|-1606476911||t19825.3117466468s|13960fd8d5432aba|24715867|rds|local|vector|||111.407||
 outfile|stem|e6edff991e9f8c97|f199382887e88149|bde535d2ce4e59d2|-29825774||t0s|f4066a65ff755f48|0|file|local|vector|||0.587||
-output.table.con|function|336aeef581926a9e|||||||||||||||
-output.table.f|function|04d46688c5a41f1a|||||||||||||||
 overview|stem|45be51108b6e3fcc|0f31715afaf0f8c0|3830f173df7e0ea1|919504987||t19825.4019926139s|aed85bb706648708|2205847|rds|local|vector|||0.349||
 overview_accuracy|stem|17ecc70ee2df4696|da044dde71fb960b|dd85400075967f8e|-198863082||t19825.3972741368s|fef1f65e613955e6|7927814|rds|local|vector|||0.003||
 overview_accuracy_avgsub|stem|7372acdf21ea5464|996b074b09fc76d7|dd85400075967f8e|-1140931668||t19825.3972437012s|d7a473131c468073|532451|rds|local|vector|||0.07||
@@ -453,7 +439,6 @@ paired_all_b0f09ebd|branch|be99a6a9e652d22b|8526b1bb94b8f039|164923092ebac845|67
 paired_all_b8642496|branch|1dd4182f4c281eef|987c8db7a33c4b21|bbe22669ffeafe04|-1152572748||t19782.6461741338s|1d886bad26229d97|401810|rds|local|list|paired_all||0.032||
 paired_all_bf1e970d|branch|2d64729cab14c5eb|987c8db7a33c4b21|b63df596118cd112|385217649||t19782.6425316382s|246016fe147fde02|827134|rds|local|list|paired_all||0.054||
 paired_all_ed64757d|branch|5ae4eacd523d3e6c|987c8db7a33c4b21|e9a605fe13633e05|-1347323491||t19782.6461756385s|a94cd9ae7bb626fb|532928|rds|local|list|paired_all||0.046||
-paired_box|function|58367a7978f53279|||||||||||||||
 paired_single|pattern|0bc0fb98bc53aaf3|a579f8d5c2600ae2||630805837||||3055697|rds|local|list||paired_single_d32ef653*paired_single_c12fa668*paired_single_c7358802*paired_single_0d0d41f3*paired_single_b118c8fe*paired_single_81e4a484*paired_single_9d9f772c*paired_single_27e0cdc1*paired_single_eeb30ea4*paired_single_ba77658c*paired_single_5f8a7e86*paired_single_704ffaf5|0.263||
 paired_single_0d0d41f3|branch|e481a1e415b981ec|a579f8d5c2600ae2|e3dcb75ca1db0249|-1978618942||t19788.6830993967s|0bd14dc4de60e741|265386|rds|local|list|paired_single||0.023||
 paired_single_1ac9880e|branch|016026ef5a7b0791|e3f7b248b61e767f|8f231527c95e395e|1653131020||t19781.9113319342s|3e9b8e6337e67f92|393329|rds|local|list|paired_single||0.028||
@@ -509,15 +494,11 @@ paired_single_title_a252cd32|branch|ac457d328fa4a0d3|09269a1748130e44|d786afe23a
 paired_single_title_ca282872|branch|fc7c727de74dd4ac|09269a1748130e44|10e663ed96a35d2e|942287853||t19782.3548804999s|c6f7af5f558481b6|398412|rds|local|list|paired_single_title||0||
 paired_single_title_d5883229|branch|06ecae4815f06f7c|8ebeb555c03d1e82|95a26298e79d70a2|-744025432||t19782.3548794417s||396918|rds|local|list|paired_single_title||0.063||Cant recycle .x size 4 to match .y size 7.
 paired_single_title_fdf68960|branch|3ee8fed39ee858f1|09269a1748130e44|3c9b5b501802446d|-1300728668||t19782.3548859088s|55b5356cf7caed13|265610|rds|local|list|paired_single_title||0||
-paired_tests|function|d92635e17be015e6|||||||||||||||
 plot_ecdf|stem|61de9b56a9fcfd48|af5063f67655b7f7|7f31eb49689a0452|-1888715344||t19802.5401182423s|8c6d366b329562cf|63455|rds|local|vector|||0.035||
 plot_model|function|53e93a3f92656367|||||||||||||||
-plot_rfx_demographics|function|212154f597c3673d|||||||||||||||
 plot_sliding|stem|ebce1bb170e7cd4a|c968eee39df0643a|99fd0260aa568e9c|410022930||t19789.3839372285s|b56f8121de06bbdf|60320|rds|local|vector|||0.004||
 plot_sliding_experiment|stem|f42a870deb204725|b01932b767881ed9|691d8d607c0f5c51|838117195||t19789.3839369076s|2428eccdc429a8a6|63427|rds|local|vector|||0.005||
-qqplot|function|a6df3eab638a7009|||||||||||||||
 qqplot.data|function|a6df3eab638a7009|||||||||||||||
-raincloud_acc|function|2684ed4caf889861|||||||||||||||
 raincloud_all|stem|6500af51a3cc94be|60dff565c9fb337c|bc1fbe28e574a392|260600452||t19806.8985206788s|60c21470214cdf04|266921|rds|local|vector|||0.027||
 raincloud_all_083d8130|branch|82d9fcdb01aef4cf|cd1bb8a838bad716|9ac41fb0425115be|1273889522||t19782.6194654084s|315a76f28cd1fddc|220278|rds|local|list|raincloud_all||0.068||
 raincloud_all_2a6c533c|branch|0a0122edc6200794|8a120513fe86f2ec|9073b5a3e3bd9275|579136250||t19788.6830633525s|c27463150e973df6|194781|rds|local|list|raincloud_all||0.04||
@@ -528,7 +509,6 @@ raincloud_all_b0f09ebd|branch|f7e4dc5084ce6ba2|8a120513fe86f2ec|c9e04cbef5c3b4fb
 raincloud_all_b8642496|branch|00ae4bebdcc286f0|cd1bb8a838bad716|cc649c96d98d38f8|-385044982||t19782.6461716814s|1fdcb954c425a960|187862|rds|local|list|raincloud_all||0.044||
 raincloud_all_bf1e970d|branch|44407a79de15d096|cd1bb8a838bad716|ba626e21fc07319a|1311575836||t19782.6425276844s|e239ca4a42ba05e1|219752|rds|local|list|raincloud_all||0.052||
 raincloud_all_ed64757d|branch|b688672f2d2a0341|cd1bb8a838bad716|fe3ab614636bc4a8|-862540251||t19782.6461727091s|53e19b0854f12751|194675|rds|local|list|raincloud_all||0.038||
-raincloud_mm|function|d5d45692c7a588c9|||||||||||||||
 raincloud_single|pattern|3726cda300f96edb|4bcf31adf8366d12||-1080433250||||2086877|rds|local|list||raincloud_single_d32ef653*raincloud_single_c12fa668*raincloud_single_c7358802*raincloud_single_0d0d41f3*raincloud_single_b118c8fe*raincloud_single_81e4a484*raincloud_single_9d9f772c*raincloud_single_27e0cdc1*raincloud_single_eeb30ea4*raincloud_single_ba77658c*raincloud_single_5f8a7e86*raincloud_single_704ffaf5|0.203||
 raincloud_single_0d0d41f3|branch|ebdb571a4ddb4c26|4bcf31adf8366d12|150ef9f9ab9e2f72|1317819445||t19788.6831094099s|d3b3456eb7a6032b|174119|rds|local|list|raincloud_single||0.02||
 raincloud_single_1ac9880e|branch|392a0bd59f399cda|c46374281db6ac37|5b969945e277ee84|787227431||t19781.4851042762s|8e99d7c91b7b4e07|181360|rds|local|list|raincloud_single||0.019||
@@ -575,7 +555,6 @@ raincloud_single_eeb30ea4|branch|01d20c74ffaca783|4bcf31adf8366d12|32a10a44fa90c
 raincloud_single_f0ad381a|branch|41c1a266af81edc4|4bcf31adf8366d12|a6c146f4e4087ade|-329196588||t19783.6220856336s|49aa7c4ebad4661b|169063|rds|local|list|raincloud_single||0.012||
 raincloud_single_fcee70aa|branch|0fa24c2536fefe9d|c46374281db6ac37|3f4fe17e6048c56d|-240697089||t19781.4851034795s|160a1089150691ba|181820|rds|local|list|raincloud_single||0.025||
 raincloud_single_fd82a93b|branch|3e5290af068765c0|4bcf31adf8366d12|ffb3aa8c09f7f51d|-1453990324||t19782.3893500024s|955581239c6d380a|181918|rds|local|list|raincloud_single||0.03||
-replacements|object|2c8b1659ff37c902|||||||||||||||
 results_sliding|stem|d4a38e0797a8967a|6c4840314b4b782d|6ef6a7dd58cf1d08|1588513367||t19802.540129566s|2c02ccb1d6d3878b|191|rds|local|vector|||0.117||
 results_sliding_experiment|stem|0f5e169db588657f|60ecb92cfe8472be|6ef6a7dd58cf1d08|718759758||t19802.5401281772s|85f9d15331713ebb|203|rds|local|vector|||0.856|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectvariable   Now  data  selectall_ofvariableSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.|
 reults_sliding|stem|8ba5e97e3ce44dc9|6c4840314b4b782d|0fbc1860a52bdce0|-47874146||t19788.6374215635s|8fdac5baae0b04f8|526|rds|local|vector|||0.315|Using an external vector in selections was deprecated in tidyselect 1.1.0.ℹ Please use all_of or any_of instead.   Was  data  selectvariable   Now  data  selectall_ofvariableSee httpstidyselect.rlib.orgreferencefaqexternalvector.html.|
@@ -599,10 +578,7 @@ rfx_exp_e686e832|branch|e95696450d5252d3|b437ea7dcacd28da|e5bbad133aae6626|-7100
 rfx_exp_f10985e1|branch|e95696450d5252d3|b437ea7dcacd28da|d41e4a4e05db4c1b|-1570996213||t19825.4022938073s|da6992c36af3d9e9|2495|rds|local|vector|rfx_exp||0.007||
 rfx_exp_plot|stem|642779822008d3a1|a164ec044358778f|00c0d95b308e5f12|-938568971||t19825.4027099863s|bdde39c6537a96c0|97476|rds|local|vector|||0.015||
 rfx_exp_plt|stem|706153b8de852342|a164ec044358778f|b4d564593b78a8f7|1864064563||t19817.6759527359s|9b37950de8891db2|97506|rds|local|vector|||0.016||
-rfx_vis|function|cf8b91a30f4564af|||||||||||||||
-rvfplot|function|03e0e300645347e1|||||||||||||||
 rvfplot.data|function|d6f3fb0ec677e12d|||||||||||||||
-sasrvfplot|function|87505c7103ad4fef|||||||||||||||
 sasrvfplot.data|function|a26543dd83d43634|||||||||||||||
 simulations_eegnet|stem||d333beaa7ee979e5|33b770527afef325|1296100519||t19802.533812349s||0|rds|local|vector|||16.187||function chm_factor_ldetL2 not provided by package Matrix
 single_coefs|pattern|5aa52cbb7c122a36|1561ac0558c81ce2||35105923||||1992|rds|local|list||single_coefs_52e1aa16*single_coefs_f0d4ade6*single_coefs_22dff5db*single_coefs_4a0271b6*single_coefs_211bcef1*single_coefs_69d44b10*single_coefs_1f7de087|0.001||
@@ -907,9 +883,7 @@ sliding_LMi3_exp_afebf7ef|branch|6368c636ab70c994|a4ad93c9287038ed|ef46db3751d8e
 sliding_LMi3_exp_bf562889|branch|6e781c4ee9b2a826|a4ad93c9287038ed|ef46db3751d8e999|-124679315||t19825.3973401377s|c22af9302141d52f|1905653|rds|local|list|sliding_LMi3_exp||0.052||
 sliding_LMi3_exp_f691d91e|branch|525b9d63cb50d503|a4ad93c9287038ed|ef46db3751d8e999|1535608449||t19823.5047860918s|d9ea3802e6a13173|1905663|rds|local|list|sliding_LMi3_exp||0.051||
 sliding_LMi3_exp_fcff4d2d|branch|86685ed1c3120100|a4ad93c9287038ed|ef46db3751d8e999|1652977161||t19825.3973446514s|02eb9ae654868ab2|1904933|rds|local|list|sliding_LMi3_exp||0.052||
-sliding_plot_all|function|e1034e4834d46e89|||||||||||||||
 sliding_plot_expeirment|function|22ff33b1cba159cd|||||||||||||||
-sliding_plot_experiment|function|d7e122e28a6b1c26|||||||||||||||
 stats_all|stem|0857f3c40d0ff51c|424e7b4fc0b65043|ac42356c3079936f|20753526||t19802.670201489s|d5de7511bbeb8d73|63599|rds|local|vector|||0.257||
 stats_all_083d8130|branch||de968553500c86af|ca57a030abd4b5c4|-1873055332||t19782.6182389163s||0|rds|local|vector|stats_all||0.263||ℹ In argument data  map.datadata, .f, ....Caused by error in mapℹ In index 9.Caused by error in mapℹ In index 7.ℹ With name V7.Caused by error in complete.cases not all arguments have the same length
 stats_all_2a6c533c|branch|3d626c76e29af89d|424e7b4fc0b65043|f018839177f0f8d5|-680797325||t19788.6830730077s|8927807d98fa036b|63115|rds|local|list|stats_all||0.195||
@@ -962,11 +936,74 @@ table_con_eegnet|stem|668e131ad7368f90|e0c05724ceb4f31c|559b44de23b6dd62|-689369
 table_con_sliding|stem|2bc630c49adc1776|d0606e1aeebd584c|d59ee3f45b537e33|1658000080|../manuscript/tables/sliding_contrasts.tex|t19825.4029285548s|1eaf17143371277d|2997|file|local|vector|||0.012||
 table_f_eegnet|stem|464f7746725796fd|ab62752dfefa7bff|e19db45370e38b29|1208825893|../manuscript/tables/eegnet_omni.tex|t19825.3779585475s|66ac671536ddd0ce|1193|file|local|vector|||0.01||
 table_f_sliding|stem|1a699d49e5f75eb5|ea9ec2d14cb96b3e|2155bc1f666129fb|1757267929|../manuscript/tables/sliding_omni.tex|t19815.8637736174s|b518a3c2eda8e5a8|955|file|local|vector|||0.006||
-table_output_dir|object|bd49f6058c3ad146|||||||||||||||
 timeresolved_luck|stem|cd8c28b934facac9|7e885eb6e74cf014|e6fdc3e07b475822|-1888973947||t19825.3987457834s|83f1df235f27c13d|11566503|rds|local|vector|||1.156||
 timeresolved_luck_file|stem|43738a0d57e04a95|a30b157444467e2f|f280b832374a8ad0|1602484633|../manuscript/plots//timeresolved_luck.png|t19825.4000742098s|cceab2405920f34a|944934|file|local|vector|||1.042||
-timeresolved_plot|function|c9243d1da254b490|||||||||||||||
 tsum_file|stem|c2cce8a72d05c0db|f02e8b9e6327693e|ef46db3751d8e999|2115584499|sliding_tsums.csv|t19802.6562676128s|5b9e787af3023097|905293|file|local|vector|||1.225||
-ungrouping|function|dba99142121dc49f|||||||||||||||
 variable|object|c5a9e5584c3f223f|||||||||||||||
 |t19813.4520669439s||0|file|local|vector|||||_paths_ missing files  latex table generated in R 4.2.2 by xtable 1.84 package Sun Mar 31 125058 2024\begintableht\centering\begintabularrlllllllll  \hline  model term  ALL  ERN  LRP  MMN  N170  N2pc  N400  P3 \\   \hline1  ref                    \\   2  hpf                     \\   3  lpf            .       \\   4  base                         \\   5  det                      \\   6  ar              .   \\   7  emc                       \\   8  mac                    \\   9  experiment                 \\    \hline\endtabular\caption \label\endtable||||||
+replacements|object|2c8b1659ff37c902|||||||||||||||
+ecdf|function|9e21093127ace394|||||||||||||||
+estimate_marginal_means_sliding|function|6fa64fc6b7fbcdd4|||||||||||||||
+table_output_dir|object|bd49f6058c3ad146|||||||||||||||
+get_preprocess_data|function|de472f849168777c|||||||||||||||
+extract_rfx_exp|function|b9bc515964f6ac46|||||||||||||||
+combine_single_whole|function|9648121f1b0c766d|||||||||||||||
+figure_output_dir|object|4c8c1c37f830e0c0|||||||||||||||
+ungrouping|function|dba99142121dc49f|||||||||||||||
+plot_rfx_demographics|function|212154f597c3673d|||||||||||||||
+luckfps|object|7aee25c19d1370bf|||||||||||||||
+output.table.f|function|04d46688c5a41f1a|||||||||||||||
+qqplot|function|a6df3eab638a7009|||||||||||||||
+filter_experiment|function|7eff20fb7943367c|||||||||||||||
+raincloud_acc|function|2684ed4caf889861|||||||||||||||
+check_convergence|function|5648df5664e4d447|||||||||||||||
+output.table.con|function|336aeef581926a9e|||||||||||||||
+rvfplot|function|03e0e300645347e1|||||||||||||||
+est_emm|function|d2ecfeab3dd875e5|||||||||||||||
+estimate_marginal_means|function|ee473aa23cea102b|||||||||||||||
+paired_tests|function|d92635e17be015e6|||||||||||||||
+sasrvfplot|function|87505c7103ad4fef|||||||||||||||
+rfx_vis|function|cf8b91a30f4564af|||||||||||||||
+rjulia_mlm|function|bd7f0ac85a7d467b|||||||||||||||
+julia_executable|object|08f0744ce6f2b3a6|||||||||||||||
+chord_plot|function|7a54ce7329e936ea|||||||||||||||
+sliding_plot_all|function|e1034e4834d46e89|||||||||||||||
+heatmap|function|1efe60a3647fd823|||||||||||||||
+paired_box|function|58367a7978f53279|||||||||||||||
+sliding_plot_experiment|function|d7e122e28a6b1c26|||||||||||||||
+raincloud_mm|function|d5d45692c7a588c9|||||||||||||||
+timeresolved_plot|function|c9243d1da254b490|||||||||||||||
+interaction_chordplot_prior|stem|a059672ff048991a|bf39ca6089fcad7c|f176ac964872d040|-434725470|../manuscript/plots/chord_interactions.png|t19827.7212971422s|4ffa8fcd4dd4137a|103668|file|local|vector|||1.405|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|
+replacements|object|2c8b1659ff37c902
+ecdf|function|9e21093127ace394
+estimate_marginal_means_sliding|function|6fa64fc6b7fbcdd4
+table_output_dir|object|bd49f6058c3ad146
+get_preprocess_data|function|de472f849168777c
+extract_rfx_exp|function|b9bc515964f6ac46
+combine_single_whole|function|9648121f1b0c766d
+figure_output_dir|object|4c8c1c37f830e0c0
+ungrouping|function|dba99142121dc49f
+plot_rfx_demographics|function|212154f597c3673d
+luckfps|object|7aee25c19d1370bf
+output.table.f|function|04d46688c5a41f1a
+qqplot|function|a6df3eab638a7009
+filter_experiment|function|7eff20fb7943367c
+raincloud_acc|function|2684ed4caf889861
+check_convergence|function|5648df5664e4d447
+output.table.con|function|336aeef581926a9e
+rvfplot|function|03e0e300645347e1
+est_emm|function|d2ecfeab3dd875e5
+estimate_marginal_means|function|ee473aa23cea102b
+paired_tests|function|d92635e17be015e6
+sasrvfplot|function|87505c7103ad4fef
+rfx_vis|function|cf8b91a30f4564af
+rjulia_mlm|function|bd7f0ac85a7d467b
+julia_executable|object|08f0744ce6f2b3a6
+chord_plot|function|f4a263ec3adc0595
+sliding_plot_all|function|e1034e4834d46e89
+heatmap|function|1efe60a3647fd823
+paired_box|function|58367a7978f53279
+sliding_plot_experiment|function|d7e122e28a6b1c26
+raincloud_mm|function|d5d45692c7a588c9
+timeresolved_plot|function|c9243d1da254b490
+interaction_chordplot_prior|stem|2fcd09b31d551c86|bf39ca6089fcad7c|b5db5fc4804903d8|-434725470|../manuscript/plots/chord_interactions.png|t19827.7218961716s|e37caf45bdcf0fbd|200322|file|local|vector|||1.582|package broom.mixed was built under R version 4.2.3. package GGally was built under R version 4.2.3. package circlize was built under R version 4.2.3|

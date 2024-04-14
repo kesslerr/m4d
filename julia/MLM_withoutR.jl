@@ -9,28 +9,24 @@ using CSV
 using Plots
 using MixedModels
 
-
+# https://github.com/palday/JellyMe4.jl
+ENV["LMER"] = "afex::lmer_alt" # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly
+using RCall
+using JellyMe4
 
 using RData
 using CategoricalArrays # for categorical 
 
-randint = ARGS[1]
-interact = ARGS[2]
+#randint = ARGS[1]
+#interact = ARGS[2]
 
 # DEBUG
-#randint = 4610
-#interact = "true"
+randint = 4610
+interact = "true"
 
 # Convert the value of randint to a string, so the R function below can use it
 randint_str = string(randint)
 interact = parse(Bool, interact)
-
-# https://github.com/palday/JellyMe4.jl
-if interact
-    ENV["LMER"] = "afex::lmer_alt" # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly
-end
-using RCall
-using JellyMe4
 
 # define column type so that the strings (in experiment) is long enough
 column_types = Dict(
@@ -87,8 +83,16 @@ else
 end
 
 
+# selected interaction subset
+formula = @formula(accuracy ~ (hpf + lpf + base + det) ^ 2 + (hpf + lpf + emc + mac + ar ) ^2 + ref*hpf + ref*lpf + ref*ar +
+                    zerocorr( (hpf + lpf + base + det) ^ 2 + (hpf + lpf + emc + mac + ar ) ^2 + ref*hpf + ref*lpf + ref*ar | subject) )
+
+#formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject))
+
+
+
 # fit it
-model = fit(LinearMixedModel, formula, data) # TODO: suppress output into R
+model = fit(LinearMixedModel, formula, data) # suppress output into R
 
 
 # convert to R
@@ -96,7 +100,10 @@ rmodel = (model, data);
 #R"install.packages('afex', type = 'source')"
 #R"library('afex')" # needed for converting an lmer model with zerocorr
 
-@rput rmodel
+elapsed_time = @elapsed begin
+    #@rput rmodel
+    @rput rmodel
+end
 
 
 

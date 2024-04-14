@@ -41,10 +41,15 @@ tar_option_set( # packages that your targets use
                "stringr", 
                "tidyr", # e.g. wide to long transform
                "performance",
+               "circlize", # chord diagram
                "xtable" # export R tables to latex files
                ) 
   # format = "qs", # Optionally set the default storage format. qs is fast.
 )
+
+# set Julia binary
+options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
+julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
 
 # Environment: save package to logfile
 renv::snapshot()
@@ -170,11 +175,8 @@ list(
     command = {
       # random number (deterministic for this branch/target)
       randint <- sample(0:10000, size = 1) 
-      
       data_eegnet %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
-      julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # maybe without julia
-      julia_script <- julia_mlm_script
-      system2(command = julia_executable, args = c(julia_script, as.character(randint), "false"), wait=TRUE)
+      system2(command = julia_executable, args = c(julia_mlm_script, as.character(randint), "false"), wait=TRUE)
       model <- readRDS(paste0("../julia/model_",randint,".rds"))
       file.remove(paste0("../julia/data_",randint,".csv"))
       file.remove(paste0("../julia/model_",randint,".rds"))
@@ -186,11 +188,8 @@ list(
     command = {
       # random number (deterministic for this branch/target)
       randint <- sample(0:10000, size = 1) 
-      
       data_eegnet_exp %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
-      julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # maybe without julia
-      julia_script <- julia_mlm_script #"/Users/roman/GitHub/m4d/julia/MLM.jl" # TODO: track this script as target, then it is only run when changes are there
-      system2(command = julia_executable, args = c(julia_script, 
+      system2(command = julia_executable, args = c(julia_mlm_script, 
                                                    as.character(randint), # put the random number
                                                    "false"), # if to use interactions
               wait=TRUE) # wait for process to be finished before continuing in R
@@ -203,25 +202,19 @@ list(
     pattern = map(data_eegnet_exp),
     iteration = "list"
   ),
-  # tar_target( # WITH INTERACTIONS
-  #   eegnet_HLMi2_exp,
-  #   command = {
-  #     # random number (deterministic for this branch/target)
-  #     randint <- sample(0:10000, size = 1) 
-  #     
-  #     data_eegnet_exp %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
-  #     julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # maybe without julia
-  #     julia_script <- julia_mlm_script #"/Users/roman/GitHub/m4d/julia/MLM.jl" # TODO: track this script as target, then it is only run when changes are there
-  #     system2(command = julia_executable, args = c(julia_script, as.character(randint), "true"), wait=TRUE)
-  #     model <- readRDS(paste0("../julia/model_",randint,".rds"))
-  #     file.remove(paste0("../julia/data_",randint,".csv"))
-  #     file.remove(paste0("../julia/model_",randint,".rds"))
-  #     model
-  #     # TODO: reduce output from julia script
-  #   },
-  #   pattern = map(data_eegnet_exp),
-  #   iteration = "list"
-  # ),  
+  
+  #tar_target( # WITH INTERACTIONS
+  #  eegnet_HLMi2_exp,
+  #  command = rjulia_mlm(data_eegnet_exp, interactions = TRUE),
+  #  pattern = map(data_eegnet_exp),
+  #  iteration = "list"
+  #),
+  
+  tar_target(
+    interaction_chordplot_prior,
+    chord_plot(paste0(figure_output_dir,"chord_interactions.png")),
+    format = "file"
+  ),
 
   #tar_target(
   #  name=eegnet_HLM,
