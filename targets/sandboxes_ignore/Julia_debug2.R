@@ -15,7 +15,7 @@ julia_library("JellyMe4")
 
 julia_eval("(my_mod,dat)")
 
-julia_eval("RCall.Const.GlobalEnv[:m_machines] = robject(:my_mod, m_machines) #https://github.com/palday/JellyMe4.jl/issues/72
+julia_eval("RCall.Const.GlobalEnv[:m_machines] = robject(:my_mod, m_machines)") #https://github.com/palday/JellyMe4.jl/issues/72
 
 ####
 julia_command("my_mod = fit(MixedModel, @formula(score ~ 1 + Machine + (1 + Machine|Worker)),dat)")

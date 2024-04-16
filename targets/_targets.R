@@ -48,8 +48,11 @@ tar_option_set( # packages that your targets use
 )
 
 # set Julia binary
+JuliaCall::julia_setup(rebuild = TRUE, # if rcall is disrupted by updates in R
+                       JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
 options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
-julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
+julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia" # needed to call external scripts
+
 
 # Environment: save package to logfile
 renv::snapshot()
@@ -161,41 +164,59 @@ list(
     experiment 
   ),  
   
-  ## HLM for EEGNet
   
-  ## track julia MLM script
+  ## Simulate if desired model terms lead to inflation of false positive rate
   tar_file(
-    julia_mlm_script,
-    "/Users/roman/GitHub/m4d/julia/MLM.jl"
+   julia_simulation_fpr_script,
+   "/Users/roman/GitHub/m4d/julia/simulation_rfxslopes_fp.jl"
+  ),
+  tar_target(
+    simulation_fpr,
+    command = {
+      plot_file = paste0(figure_output_dir, "simulations_rfxslopes_fp.png")
+      dummy = system2(command = julia_executable, args = c(julia_simulation_fpr_script, plot_file),
+              wait=TRUE,# wait for process to be finished before continuing in R
+              stdout = TRUE) # capture output (doesnt work)
+      plot_file # TODO, slight errors might not lead to aborting the pipeline
+    },
+    format = "file"
   ),
   
-  ### HLM within julia
+  ## HLM
   tar_target(
-    eegnet_HLM_exp,
-    command = {
-      # random number (deterministic for this branch/target)
-      randint <- sample(0:10000, size = 1) 
-      data_eegnet_exp %>% write.csv(paste0("../julia/data_",randint,".csv"), row.names = FALSE)
-      system2(command = julia_executable, args = c(julia_mlm_script, 
-                                                   as.character(randint), # put the random number
-                                                   "false"), # if to use interactions
-              wait=TRUE) # wait for process to be finished before continuing in R
-      model <- readRDS(paste0("../julia/model_",randint,".rds"))
-      file.remove(paste0("../julia/data_",randint,".csv"))
-      file.remove(paste0("../julia/model_",randint,".rds"))
-      model
-      # TODO: reduce output from julia script
-    },
+    eegnet_HLM,
+    rjulia_mlm(data_eegnet_exp, interactions=FALSE),
     pattern = map(data_eegnet_exp),
     iteration = "list"
   ),
-  
-  #tar_target( # WITH INTERACTIONS
-  #  eegnet_HLMi2_exp,
-  #  command = rjulia_mlm(data_eegnet_exp, interactions = TRUE),
+  #tar_target(
+  #  eegnet_HLMi2,
+  #  rjulia_mlm_interact(data_eegnet_exp),
   #  pattern = map(data_eegnet_exp),
   #  iteration = "list"
   #),
+  
+  tar_target(
+    r2_table,
+    rjulia_r2(data_eegnet)
+  ),
+  tar_target(
+    r2_plot,
+    { ggplot(r2_table, aes(y=r2, x=experiment, fill=interactions)) + 
+        geom_bar(stat = "identity", position="dodge") + 
+        scale_fill_grey(start=0.2, end=0.6)
+    }
+  ),
+  # TODO also for time-resolved
+  # TODO: save plot to file
+  
+  
+  # tar_target(
+  #   eegnet_HLMi2,
+  #   rjulia_mlm(data_eegnet_exp, interactions=TRUE),
+  #   pattern = map(data_eegnet_exp),
+  #   iteration = "list"
+  # ),  
   
   tar_target(
     interaction_chordplot_prior,
@@ -204,7 +225,7 @@ list(
   ),
 
   #tar_target(
-  #  name = eegnet_HLM_exp,
+  #  name = eegnet_HLM,
   #  command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
   #                     control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
   #                     data = data_eegnet_exp),
@@ -214,7 +235,7 @@ list(
 
   ## LM for sliding
   tar_target(
-    name = sliding_LM_exp,
+    name = sliding_LM,
     command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
@@ -223,14 +244,14 @@ list(
   
   ### TODO: TEST: Sliding with all interactions
   tar_target(
-    name = sliding_LMi2_exp,
+    name = sliding_LMi2,
     command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
   tar_target(
-    name = sliding_LMi3_exp,
+    name = sliding_LMi3,
     command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 3", 
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
@@ -241,30 +262,30 @@ list(
   
   # TODO: var explained of random slopes and random subject intercepts?
   tar_target(
-    name=eegnet_HLM_exp_emm,
-    command=est_emm(eegnet_HLM_exp, 
+    name=eegnet_HLM_emm,
+    command=est_emm(eegnet_HLM, 
                     variables = c("ref", "hpf","lpf","emc","mac","base","det","ar"),
                     data_eegnet_exp),
-    pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+    pattern = map(eegnet_HLM, data_eegnet_exp),
     iteration = "list"
   ),
   # split means and contrasts
-  tar_target(eegnet_HLM_exp_emm_means, eegnet_HLM_exp_emm[[1]], pattern=map(eegnet_HLM_exp_emm)), #, iteration="list"
-  tar_target(eegnet_HLM_exp_emm_contrasts, eegnet_HLM_exp_emm[[2]], pattern=map(eegnet_HLM_exp_emm)), 
-  tar_target(eegnet_HLM_exp_emm_omni, eegnet_HLM_exp_emm[[3]], pattern=map(eegnet_HLM_exp_emm)),
+  tar_target(eegnet_HLM_emm_means, eegnet_HLM_emm[[1]], pattern=map(eegnet_HLM_emm)), #, iteration="list"
+  tar_target(eegnet_HLM_emm_contrasts, eegnet_HLM_emm[[2]], pattern=map(eegnet_HLM_emm)), 
+  tar_target(eegnet_HLM_emm_omni, eegnet_HLM_emm[[3]], pattern=map(eegnet_HLM_emm)),
 
   ### SLIDING
   tar_target(
-    name=sliding_LM_exp_emm, # TODO: kick out the "_exp" suffixes from everywhere, as it is always grouped now?
-    command=est_emm(sliding_LM_exp, 
+    name=sliding_LM_emm,
+    command=est_emm(sliding_LM, 
                     variables = c("ref","hpf","lpf","emc","mac","base","det","ar"),
                     data_tsum_exp),
-    pattern = map(sliding_LM_exp, data_tsum_exp),
+    pattern = map(sliding_LM, data_tsum_exp),
     iteration = "list"
   ),
-  tar_target(sliding_LM_exp_emm_means, sliding_LM_exp_emm[[1]], pattern=map(sliding_LM_exp_emm)), #, iteration="list"
-  tar_target(sliding_LM_exp_emm_contrasts, sliding_LM_exp_emm[[2]], pattern=map(sliding_LM_exp_emm)),
-  tar_target(sliding_LM_exp_emm_omni, sliding_LM_exp_emm[[3]], pattern=map(sliding_LM_exp_emm)),
+  tar_target(sliding_LM_emm_means, sliding_LM_emm[[1]], pattern=map(sliding_LM_emm)), #, iteration="list"
+  tar_target(sliding_LM_emm_contrasts, sliding_LM_emm[[2]], pattern=map(sliding_LM_emm)),
+  tar_target(sliding_LM_emm_omni, sliding_LM_emm[[3]], pattern=map(sliding_LM_emm)),
 
   # TODO Omni, also other models, and maybe combine it with the targets using dyn branching?
   
@@ -274,9 +295,9 @@ list(
   ## heatmaps of EMMs
   # TODO: use the omni test significances to highlight the facets
   tar_target(eegnet_heatmap,
-            command=heatmap(eegnet_HLM_exp_emm_means)),
+            command=heatmap(eegnet_HLM_emm_means)),
   tar_target(sliding_heatmap,
-             heatmap(sliding_LM_exp_emm_means)),
+             heatmap(sliding_LM_emm_means)),
   tar_target(
     name = heatmaps,
     command = {
@@ -289,7 +310,7 @@ list(
   ## concatenate all models and datas in one target
   tar_target( 
     name=models_combined,
-    command=c(eegnet_HLM_exp, sliding_LM_exp, sliding_LMi2_exp) # TODO add new interaction models
+    command=c(eegnet_HLM, sliding_LM, sliding_LMi2) # TODO add new interaction models
   ), 
   
   ## diagnostics for all models (HLM, LM, ALL and experiment wise)
@@ -303,119 +324,119 @@ list(
   
   ### qq plots
   #### EEGNet
-  tar_target(eegnet_HLM_exp_qq,
-    command = qqplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
-    pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+  tar_target(eegnet_HLM_qq,
+    command = qqplot(model=eegnet_HLM, data=data_eegnet_exp),
+    pattern = map(eegnet_HLM, data_eegnet_exp),
     iteration ="list"),
   tar_target(eegnet_HLM_qq_comb,
-    {plt <- ggarrange(plotlist = eegnet_HLM_exp_qq)
+    {plt <- ggarrange(plotlist = eegnet_HLM_qq)
      annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNet", 
                      color = "black", face = "bold", size = 16))}),
 #  tar_target(eegnet_HLM_qq_comb,
-#             {plt <- ggarrange(plotlist = eegnet_HLM_exp_qq_agg)
+#             {plt <- ggarrange(plotlist = eegnet_HLM_qq_agg)
 #             annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNet", 
 #                                                  color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
-  tar_target(sliding_LM_exp_qq,
-    qqplot(model=sliding_LM_exp, data=data_tsum_exp),
-    pattern = map(sliding_LM_exp, data_tsum_exp),
+  tar_target(sliding_LM_qq,
+    qqplot(model=sliding_LM, data=data_tsum_exp),
+    pattern = map(sliding_LM, data_tsum_exp),
     iteration ="list"),
   tar_target(sliding_LM_qq_comb,
-    {plt <- ggarrange(plotlist = sliding_LM_exp_qq)
+    {plt <- ggarrange(plotlist = sliding_LM_qq)
     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
                     color = "black", face = "bold", size = 16))}),
   
   #### SLIDING WITH INTERACTIONS
-  tar_target(sliding_LMi2_exp_qq,
-             qqplot(model=sliding_LMi2_exp, data=data_tsum_exp),
-             pattern = map(sliding_LMi2_exp, data_tsum_exp),
+  tar_target(sliding_LMi2_qq,
+             qqplot(model=sliding_LMi2, data=data_tsum_exp),
+             pattern = map(sliding_LMi2, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LMi2_qq_comb,
-             {plt <- ggarrange(plotlist = sliding_LMi2_exp_qq)
+             {plt <- ggarrange(plotlist = sliding_LMi2_qq)
               annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
                                                   color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
   #### EEGNet
-  tar_target(eegnet_HLM_exp_rvf,
-             command = rvfplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
-             pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+  tar_target(eegnet_HLM_rvf,
+             command = rvfplot(model=eegnet_HLM, data=data_eegnet_exp),
+             pattern = map(eegnet_HLM, data_eegnet_exp),
              iteration ="list"),
   tar_target(eegnet_HLM_rvf_comb,
-             {plt <- ggarrange(plotlist = eegnet_HLM_exp_rvf)
+             {plt <- ggarrange(plotlist = eegnet_HLM_rvf)
              annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
-  tar_target(sliding_LM_exp_rvf,
-             rvfplot(model=sliding_LM_exp, data=data_tsum_exp),
-             pattern = map(sliding_LM_exp, data_tsum_exp),
+  tar_target(sliding_LM_rvf,
+             rvfplot(model=sliding_LM, data=data_tsum_exp),
+             pattern = map(sliding_LM, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LM_rvf_comb,
-             {plt <- ggarrange(plotlist = sliding_LM_exp_rvf)
+             {plt <- ggarrange(plotlist = sliding_LM_rvf)
              annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING WITH INTERACTIONS
-  tar_target(sliding_LMi2_exp_rvf,
-             rvfplot(model=sliding_LMi2_exp, data=data_tsum_exp),
-             pattern = map(sliding_LMi2_exp, data_tsum_exp),
+  tar_target(sliding_LMi2_rvf,
+             rvfplot(model=sliding_LMi2, data=data_tsum_exp),
+             pattern = map(sliding_LMi2, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LMi2_rvf_comb,
-             {plt <- ggarrange(plotlist = sliding_LMi2_exp_rvf)
+             {plt <- ggarrange(plotlist = sliding_LMi2_rvf)
              annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
                                                   color = "black", face = "bold", size = 16))}),
 
   ### sqrt abs std res_vs_fitted plots
   #### EEGNet
-  tar_target(eegnet_HLM_exp_sasrvf,
-             command = sasrvfplot(model=eegnet_HLM_exp, data=data_eegnet_exp),
-             pattern = map(eegnet_HLM_exp, data_eegnet_exp),
+  tar_target(eegnet_HLM_sasrvf,
+             command = sasrvfplot(model=eegnet_HLM, data=data_eegnet_exp),
+             pattern = map(eegnet_HLM, data_eegnet_exp),
              iteration ="list"),
   tar_target(eegnet_HLM_sasrvf_comb,
-             {plt <- ggarrange(plotlist = eegnet_HLM_exp_sasrvf)
+             {plt <- ggarrange(plotlist = eegnet_HLM_sasrvf)
              annotate_figure(plt, top = text_grob("Scale-Location-Plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
-  tar_target(sliding_LM_exp_sasrvf,
-             sasrvfplot(model=sliding_LM_exp, data=data_tsum_exp),
-             pattern = map(sliding_LM_exp, data_tsum_exp),
+  tar_target(sliding_LM_sasrvf,
+             sasrvfplot(model=sliding_LM, data=data_tsum_exp),
+             pattern = map(sliding_LM, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LM_sasrvf_comb,
-             {plt <- ggarrange(plotlist = sliding_LM_exp_sasrvf)
+             {plt <- ggarrange(plotlist = sliding_LM_sasrvf)
              annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   
   ## RFX Boxplots
-  tar_target(eegnet_RFX_exp,
-             rfx_vis(eegnet_HLM_exp, data_eegnet_exp),
-             pattern=map(eegnet_HLM_exp, data_eegnet_exp),
+  tar_target(eegnet_RFX,
+             rfx_vis(eegnet_HLM, data_eegnet_exp),
+             pattern=map(eegnet_HLM, data_eegnet_exp),
              iteration="list"),
   tar_target(eegnet_RFX_plot,
              {
-               plt <- ggarrange(plotlist =eegnet_RFX_exp)
+               plt <- ggarrange(plotlist =eegnet_RFX)
                annotate_figure(plt, top = text_grob("Random Effects - EEGNet", 
                                color = "black", face = "bold", size = 16))
              }),
 
   ## RFX Intercepts and Participant Demographics
   tar_target(rfx_demographics,
-             plot_rfx_demographics(eegnet_HLM_exp, demographics),
-             pattern = map(eegnet_HLM_exp) #, demographics
+             plot_rfx_demographics(eegnet_HLM, demographics),
+             pattern = map(eegnet_HLM) #, demographics
              ),
   
   ## RFX Intercepts per Experiment
-  tar_target(rfx_exp,
-             extract_rfx_exp(eegnet_HLM_exp, data_eegnet_exp),
-             pattern=map(eegnet_HLM_exp, data_eegnet_exp),
+  tar_target(rfx,
+             extract_rfx_exp(eegnet_HLM, data_eegnet_exp),
+             pattern=map(eegnet_HLM, data_eegnet_exp),
              # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
              ),
-  tar_target(rfx_exp_plot,
+  tar_target(rfx_plot,
              {
-               wide_data <- rfx_exp %>% 
+               wide_data <- rfx %>% 
                  pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
                  select(-c("Subject")) # remove sub for now
                
@@ -504,7 +525,7 @@ list(
   ### Tables
   tar_target(
     name = table_f_eegnet,
-    command = output.table.f(eegnet_HLM_exp_emm_omni,
+    command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
                              thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
@@ -513,7 +534,7 @@ list(
   ),
   tar_target(
     name = table_f_sliding,
-    command = output.table.f(sliding_LM_exp_emm_omni,
+    command = output.table.f(sliding_LM_emm_omni,
                              filename=paste0(table_output_dir, "sliding_omni.tex"),
                              thisLabel = "sliding_omni",
                              thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
@@ -523,7 +544,7 @@ list(
 
   tar_target(
     name = table_con_eegnet,
-    command = output.table.con(eegnet_HLM_exp_emm_contrasts,
+    command = output.table.con(eegnet_HLM_emm_contrasts,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
                              thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
@@ -532,7 +553,7 @@ list(
   ),
   tar_target(
     name = table_con_sliding,
-    command = output.table.con(sliding_LM_exp_emm_contrasts,
+    command = output.table.con(sliding_LM_emm_contrasts,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
                              thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
@@ -550,105 +571,6 @@ list(
   # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
 
 # TODO: add another dataset (infants)
-
-## OLD ################################################################
-
-#### sliding processing ####
-
-# calculation of marginal means (total and per experiment)
-#tar_target(
-#  name = results_sliding,
-#  command = estimate_marginal_means_sliding(data_tsum, per_exp=FALSE)
-#),
-#tar_target(
-#  name = results_sliding_experiment,
-#  command = estimate_marginal_means_sliding(data_tsum, per_exp=TRUE)
-#),
-
-# calculation of t values
-
-
-# plotting
-#tar_target(
-#  name = plot_sliding,
-#  command = sliding_plot_all(results_sliding)
-#),
-#tar_target(
-#  name = plot_sliding_experiment,
-#  command = sliding_plot_experiment(results_sliding_experiment)
-#),
-#tar_target(
-#  name = plot_ecdf,
-#  command = ecdf(data_tsum)
-#),
-
-
-
-
-#### EEGNet processing ####
-#tar_group_by(
-#  data_dataset, 
-#  data_eegnet, 
-#  dataset # this groups the dataframe by experiment, for later single evaluation
-#),  
-
-# tar_target(
-#   name = marginal_means,
-#   command = estimate_marginal_means(data_eegnet, 
-#                                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac","experiment"))
-#   #pattern = map(data_dataset)
-# ),
-# tar_target(
-#   name=stats_all,
-#   command=paired_tests(marginal_means, study=unique(data_dataset$dataset)[1])
-#   #pattern = map(marginal_means, data_dataset),
-#   #iteration = "list"
-# ),
-# tar_target(
-#   name=raincloud_all,
-#   command = raincloud_mm(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)),
-#   #pattern = map(marginal_means, data_dataset),
-#   #iteration = "list"
-# ),
-# tar_target(
-#   name=paired_all,
-#   command = paired_box(marginal_means, title="ERPCORE") #unique(data_dataset$dataset)) #,
-#   #pattern = map(marginal_means, data_dataset),
-#   #iteration = "list"
-# ),
-
-# single analyses per experiment
-# tar_group_by(
-#   single_exp_data,
-#   data_dataset,
-#   experiment # this groups the dataframe by experiment, for later single evaluation
-# ),
-# tar_target(
-#   name = marginal_means_single_exp,
-#   command = estimate_marginal_means(single_exp_data,
-#                                     variables = c("ref","hpf","lpf","base","det","ar","emc","mac")),
-#   pattern = map(single_exp_data)
-# ),
-# tar_target(
-#   name=stats_single,
-#   command=paired_tests(marginal_means_single_exp),
-#   pattern = map(marginal_means_single_exp),
-#   iteration = "list"
-# ),
-# tar_target(
-#   name=raincloud_single,
-#   command = raincloud_mm(marginal_means_single_exp,
-#                          title=unique(single_exp_data$experiment)),
-#   pattern = map(marginal_means_single_exp, single_exp_data),
-#   iteration = "list"
-# ),
-# tar_target(
-#   name=paired_single,
-#   command = paired_box(marginal_means_single_exp,
-#                        title = unique(single_exp_data$experiment)),
-#   pattern = map(marginal_means_single_exp, single_exp_data),
-#   iteration = "list"
-# ),
 
 
 )

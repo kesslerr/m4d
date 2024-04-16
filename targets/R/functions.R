@@ -1,3 +1,9 @@
+library(JuliaCall)
+options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
+#julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
+julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
+
+
 get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
   
@@ -29,46 +35,88 @@ get_preprocess_data <- function(file) {
   data
 }
 
-rjulia_mlm <- function(data, interactions = TRUE){
-  
-  #DEBUG
-  #data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
-  
-  # INFO: 
+#DEBUG
+#data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
+rjulia_mlm <- function(data, interactions = FALSE){
+  # INFO: Julia session stays open once initialized, no current way to restart it, so afex::lmer_alt will replace lme4::lmer as soon as the first case with zerocorr or :: is run.
   julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays")
-  #julia_library("DataFrames")
-  #julia_library("CSV")
-  #julia_library("Plots")
-  #julia_library("MixedModels")
-  julia_command("ENV[\"LMER\"] = \"afex::lmer_alt\"") # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly; https://github.com/palday/JellyMe4.jl (ReadMe)
-  # caution, if zerocorr is used, now julia will automatically use afex::lmer_alt, and from then on, use lmer_alt for the remainder of the session
-  #Sys.setenv(LMER = "afex::lmer_alt")
+  if (interactions == TRUE){
+    julia_command("ENV[\"LMER\"] = \"afex::lmer_alt\"") # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly; https://github.com/palday/JellyMe4.jl (README)
+  } # caution, if zerocorr is used, now julia will automatically use afex::lmer_alt, and from then on, use lmer_alt as reference R object for the remainder of the session
   julia_library("RCall, JellyMe4")
-  #julia_library("JellyMe4")
-  #julia_library("RData")
-  #julia_library("CategoricalArrays") # for categorical 
   
   julia_assign("data", data) # bring data into julia
-  julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac) ^ 2 | subject))") ## TODO all variables
-  julia_command("model = fit(LinearMixedModel, formula, data)")  
-  
-  julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data, but R model does); https://github.com/palday/JellyMe4.jl/issues/51, 
-  julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel)") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
-  
+  if (interactions == FALSE){
+    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+  } else {
+    julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf) ^ 2 + zerocorr( (ref + hpf + lpf) ^ 2 | subject));") ## TODO all variables
+  }
+  julia_command("model = fit(LinearMixedModel, formula, data);") 
+  julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data saved, but R analogue lmer model does); https://github.com/palday/JellyMe4.jl/issues/51, 
+  julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel);") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
   rmodel
+}
+
+rjulia_mlm_interact <- function(data){
+  # INFO: Julia session stays open once initialized, no current way to restart it, so afex::lmer_alt will replace lme4::lmer as soon as the first case with zerocorr or :: is run.
+  julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays")
+  julia_command("ENV[\"LMER\"] = \"afex::lmer_alt\"") # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly; https://github.com/palday/JellyMe4.jl (README)
+  julia_library("RCall, JellyMe4")
+  
+  julia_assign("data", data) # bring data into julia
+  #julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( 1 | subject));") ## TODO all variables
+  julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));") ## TODO all variables
+  julia_command("model = fit(LinearMixedModel, formula, data);") 
+  julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data saved, but R analogue lmer model does); https://github.com/palday/JellyMe4.jl/issues/51, 
+  julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel);") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
+  rmodel
+}
+
+rjulia_r2 <- function(data){
+  julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays, RCall, JellyMe4, GLM, Statistics")
+  
+  interactions = c()
+  experiments = c()
+  r2s = c()
+  aic = c()
+  bic = c()
+  ll = c()
+  for (interaction in c( "subset", "true", "false")){
+    for (thisExperiment in unique(data$experiment)){
+      data_tmp <- data %>% filter(experiment == thisExperiment)
+      julia_assign("data", data_tmp) # bring data into julia
+      if (interaction == "true"){
+        julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));")
+      } else if (interaction == "false") {
+        julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+      } else if (interaction == "subset") {
+        julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + hpf&base + hpf&det + hpf&emc + hpf&mac + lpf&emc + lpf&mac + lpf&ar + emc&mac + emc&ar + mac&ar + ar&ref + emc&ref + mac&ref + zerocorr( ref + hpf + lpf + emc + mac + base + det + ar + hpf&base + hpf&det + hpf&emc + hpf&mac + lpf&emc + lpf&mac + lpf&ar + emc&mac + emc&ar + mac&ar + ar&ref + emc&ref + mac&ref | subject ) );")
+        #julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + hpf:base + hpf:det + hpf:emc + hpf:mac + lpf:emc + lpf:mac + lpf:ar + emc:mac + emc:ar + mac:ar + ar:ref + emc:ref + mac:ref + ( ref + hpf + lpf + emc + mac + base + det + ar + hpf:base + hpf:det + hpf:emc + hpf:mac + lpf:emc + lpf:mac + lpf:ar + emc:mac + emc:ar + mac:ar + ar:ref + emc:ref + mac:ref | subject ) );")
+      }
+      julia_command("model = fit(LinearMixedModel, formula, data);")
+      julia_command("predictions = predict(model, data);")
+      r2s <- c(r2s,julia_eval("cor(predictions, data.accuracy)^2;"))
+      aic <- c(aic, julia_eval("aic(model);"))
+      bic <- c(bic, julia_eval("bic(model);"))
+      ll <- c(ll, julia_eval("loglikelihood(model);"))
+      experiments <- c(experiments, thisExperiment)
+      interactions <- c(interactions, interaction)
+    }
+  }
+  data.frame(experiment=experiments, interactions=interactions, r2=r2s, aic=aic, bic=bic, ll=ll)
 }
 
 chord_plot <- function(plot_filepath){
   varnames <- c("ref","hpf","lpf","emc","mac","base","det","ar")
   varnames <- recode(varnames, !!!replacements)
-  numbers <- c(0.1,1,1,0.1,0.1,0.1,0.1,1,
-               1,0.1,1,1,1,1,1,1,
-               1,1,0.1,1,1,1,1,1,
-               0.1,1,1,0.1,1,0.1,0.1,1,
-               0.1,1,1,1,0.1,0.1,0.1,1,
-               0.1,1,1,0.1,0.1,0.1,1,0.1,
-               0.1,1,1,0.1,0.1,1,0.1,0.1,
-               1,1,1,1,1,0.1,0.1,0.1)
+  numbers <- c(0,1,1,0,0,0,0,1,
+               1,0,1,1,1,1,1,1,
+               1,1,0,1,1,1,1,1,
+               0,1,1,0,1,0,0,1,
+               0,1,1,1,0,0,0,1,
+               0,1,1,0,0,0,1,0,
+               0,1,1,0,0,1,0,0,
+               1,1,1,1,1,0,0,0)
   data <- matrix( numbers, ncol=8)
   rownames(data) <- varnames
   colnames(data) <- varnames
@@ -743,7 +791,7 @@ check_convergence <- function(model){
   
   ## correlations between fixed effects should be not exactly 0, -1 or 1
   corrs <- 
-    {if (class(model) == "lmerMod") models$vcov else
+    {if (class(model) %in% c("lmerMod","lmerModLmerTest")) as.matrix(models$vcov) else
     if (class(model) == "lm") models$cov.unscaled} %>%
     cov2cor() %>%
     { .[lower.tri(., diag = FALSE)] }
