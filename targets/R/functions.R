@@ -37,7 +37,7 @@ get_preprocess_data <- function(file) {
 
 #DEBUG
 #data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
-rjulia_mlm <- function(data, interactions = FALSE){
+rjulia_mlm_with_random_slopes <- function(data, interactions = FALSE){
   # INFO: Julia session stays open once initialized, no current way to restart it, so afex::lmer_alt will replace lme4::lmer as soon as the first case with zerocorr or :: is run.
   julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays")
   if (interactions == TRUE){
@@ -57,15 +57,17 @@ rjulia_mlm <- function(data, interactions = FALSE){
   rmodel
 }
 
-rjulia_mlm_interact <- function(data){
+rjulia_mlm <- function(data, interactions = FALSE){
   # INFO: Julia session stays open once initialized, no current way to restart it, so afex::lmer_alt will replace lme4::lmer as soon as the first case with zerocorr or :: is run.
   julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays")
-  julia_command("ENV[\"LMER\"] = \"afex::lmer_alt\"") # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly; https://github.com/palday/JellyMe4.jl (README)
   julia_library("RCall, JellyMe4")
-  
   julia_assign("data", data) # bring data into julia
-  #julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( 1 | subject));") ## TODO all variables
-  julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));") ## TODO all variables
+  if (interactions == FALSE){
+    #julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (1 | subject));")
+    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+  } else {
+    julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + (1 | subject));") ## TODO all variables
+  }
   julia_command("model = fit(LinearMixedModel, formula, data);") 
   julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data saved, but R analogue lmer model does); https://github.com/palday/JellyMe4.jl/issues/51, 
   julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel);") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
@@ -74,36 +76,66 @@ rjulia_mlm_interact <- function(data){
 
 rjulia_r2 <- function(data){
   julia_library("Parsers, DataFrames, CSV, Plots, MixedModels, RData, CategoricalArrays, RCall, JellyMe4, GLM, Statistics")
-  
-  interactions = c()
-  experiments = c()
-  r2s = c()
-  aic = c()
-  bic = c()
-  ll = c()
-  for (interaction in c( "subset", "true", "false")){
+  df <- data.frame(model=c(),
+                   experiment=c(), 
+                   interactions=c(), 
+                   metric=c(),
+                   value=c())
+  for (interaction in c( "true", "false")){
     for (thisExperiment in unique(data$experiment)){
-      data_tmp <- data %>% filter(experiment == thisExperiment)
-      julia_assign("data", data_tmp) # bring data into julia
-      if (interaction == "true"){
-        julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));")
-      } else if (interaction == "false") {
-        julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
-      } else if (interaction == "subset") {
-        julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + hpf&base + hpf&det + hpf&emc + hpf&mac + lpf&emc + lpf&mac + lpf&ar + emc&mac + emc&ar + mac&ar + ar&ref + emc&ref + mac&ref + zerocorr( ref + hpf + lpf + emc + mac + base + det + ar + hpf&base + hpf&det + hpf&emc + hpf&mac + lpf&emc + lpf&mac + lpf&ar + emc&mac + emc&ar + mac&ar + ar&ref + emc&ref + mac&ref | subject ) );")
-        #julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + hpf:base + hpf:det + hpf:emc + hpf:mac + lpf:emc + lpf:mac + lpf:ar + emc:mac + emc:ar + mac:ar + ar:ref + emc:ref + mac:ref + ( ref + hpf + lpf + emc + mac + base + det + ar + hpf:base + hpf:det + hpf:emc + hpf:mac + lpf:emc + lpf:mac + lpf:ar + emc:mac + emc:ar + mac:ar + ar:ref + emc:ref + mac:ref | subject ) );")
+      for (modeltype in c("EEGNet", "Time-resolved")){
+        data_tmp <- data %>% filter(experiment == thisExperiment)
+        if (modeltype == "EEGNet"){
+          data_tmp <- data_tmp %>% filter(!is.na(accuracy))
+        } else if (modeltype == "Time-resolved"){
+          data_tmp <- data_tmp %>% filter(!is.na(tsum))
+        }
+        
+        if (modeltype == "EEGNet"){
+          julia_assign("data", data_tmp) # bring data into julia
+          if (interaction == "true"){
+            julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( 1 | subject));")
+          } else if (interaction == "false") {
+            julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (1 | subject));")
+          }
+          julia_command("model = fit(LinearMixedModel, formula, data);")
+          julia_command("predictions = predict(model, data);")
+          ir2 <- julia_eval("cor(predictions, data.accuracy)^2;")
+          iaic <- julia_eval("aic(model);")
+          iloglikelihood <- julia_eval("loglikelihood(model);")
+          
+        } else if (modeltype == "Time-resolved"){
+            if (interaction=="true"){
+              mod <- lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2",
+                 data = data_tmp)
+            } else if (interaction=="false"){
+              mod <- lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
+                 data = data_tmp)
+            }
+          ir2 <- summary(mod)$r.squared
+          iaic <- AIC(mod)
+          iloglikelihood <- logLik(mod)[1]
+        }
+          
+        df <- rbind(df, data.frame(model=modeltype,
+                                   experiment=thisExperiment, 
+                                   interactions=interaction, 
+                                   metric="R2",
+                                   value=ir2))
+        df <- rbind(df, data.frame(model=modeltype,
+                                   experiment=thisExperiment, 
+                                   interactions=interaction, 
+                                   metric="AIC",
+                                   value=iaic))
+        df <- rbind(df, data.frame(model=modeltype,
+                                   experiment=thisExperiment, 
+                                   interactions=interaction, 
+                                   metric="Log Likelihood",
+                                   value=iloglikelihood))
       }
-      julia_command("model = fit(LinearMixedModel, formula, data);")
-      julia_command("predictions = predict(model, data);")
-      r2s <- c(r2s,julia_eval("cor(predictions, data.accuracy)^2;"))
-      aic <- c(aic, julia_eval("aic(model);"))
-      bic <- c(bic, julia_eval("bic(model);"))
-      ll <- c(ll, julia_eval("loglikelihood(model);"))
-      experiments <- c(experiments, thisExperiment)
-      interactions <- c(interactions, interaction)
     }
   }
-  data.frame(experiment=experiments, interactions=interactions, r2=r2s, aic=aic, bic=bic, ll=ll)
+  df
 }
 
 chord_plot <- function(plot_filepath){
@@ -563,6 +595,160 @@ heatmap <- function(data){
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
+}
+
+est_emm_int <- function(model, data){
+  experiment <- experiment <- unique(data$experiment)
+  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  means = data.frame()
+  contra = data.frame()
+  for (variable.1 in variables) {
+    for (variable.2 in variables) {
+      if (variable.1 != variable.2) {
+        #print(paste(variable.1, variable.2))
+        
+        # extract marginal means grouped for results and stats
+        emm <- emmeans(model, as.formula(paste("pairwise ~", variable.1, "|", variable.2)), data=data)
+        
+        # means
+        dfw <- emm$emmeans %>% 
+          as.data.frame() # leaving out contrasts for now
+        dfw$variable.1 <- names(dfw)[1] # grouping variable 
+        dfw$variable.2 <- names(dfw)[2] 
+        names(dfw)[1] <- "level.1" # grouping variable
+        names(dfw)[2] <- "level.2" 
+        dfw <- dfw[, c(8, 9, 1, 2, 3)]  # CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+        # to avoid TRUE and FALSE being converted to NA (in variable="ar")
+        if (class(dfw$level.1) == "logical") {dfw$level <- as.factor(dfw$level.1)}
+        if (class(dfw$level.2) == "logical") {dfw$level <- as.factor(dfw$level.2)}
+        means <- rbind(means, dfw)
+        
+        # contrasts
+        dfc <- emm$contrasts %>% 
+          as.data.frame() %>% # leaving out contrasts for now
+          mutate(variable.1 = variable.1) %>%
+          mutate(variable.2 = variable.2) %>%
+          separate(contrast, c("level.1.1", "level.1.2"), " - ")
+        names(dfc)[3] <- "level.2"
+        dfc <- dfc[, c(9, 10, 1, 2, 3, 4, 5, 6, 7, 8)]
+        contra <- rbind(contra, dfc)
+        
+        # f test # TODO: check if and how to do it
+        #f <- joint_tests(emm)
+        
+        # extract marginal means grouped as plotting information
+        #tmp <- emmip(model, as.formula(paste(variable.1, "~", variable.2)), data=data, plotit=FALSE)
+        #tmp$variable.1 <- names(tmp)[1]
+        #tmp$variable.2 <- names(tmp)[2]
+        #names(tmp)[1:2] <- c("level1","level2")
+        #results <- rbind(results, tmp)
+        #emmip(model, ref ~ hpf, data=data)
+      }
+    }
+  }
+  # significance asterisks
+  contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
+  #fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
+  #  mutate(sign.unc = stars.pval(.$p.value)) %>%
+  #  mutate(sign.fdr = stars.pval(.$p.fdr))
+  
+  # add experiment variable to all
+  means %<>% mutate(experiment = experiment) %>% select(experiment, everything())
+  contra %<>% mutate(experiment = experiment) %>% select(experiment, everything())
+  #fs %<>% mutate(experiment = experiment) %>% select(experiment, everything())
+  
+  return(list(means, contra))
+}
+
+
+interaction_plot <- function(means){
+  experiment <- unique(means$experiment)
+  meansr <- means %>% 
+    mutate(variable.1 = recode(variable.1, !!!replacements)) %>%
+    mutate(variable.2 = recode(variable.2, !!!replacements))
+  
+  # own colorscale # TODO: outsource from this script?
+  cols_stepped <- stepped(20)
+  cols <- c("None" = "black",
+            "0.1" = cols_stepped[1],    
+            "0.5" = cols_stepped[9],     
+            "6" = cols_stepped[1],       
+            "20" = cols_stepped[9],      
+            "45" = cols_stepped[17],      
+            "ica" = cols_stepped[1],     
+            "200ms" = "black",   
+            "400ms" = cols_stepped[1],   
+            "offset" = "black",  
+            "linear" = cols_stepped[1], 
+            "false" = "black",
+            "true" = cols_stepped[1],
+            "average" = "black",
+            "Cz" = cols_stepped[1],
+            "P9P10" = cols_stepped[9]
+  )
+  
+  p1 <- ggplot(meansr, 
+               aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
+    geom_line(size = 1.2) + 
+    facet_grid(variable.2~variable.1, scales = "free") +
+    labs(title = experiment, y = "Marginal Mean", x = "Level of Model Term 1", color = "Level of\nModel Term 2") +
+    # TODO: better y value titel
+    scale_color_manual(values=cols) +
+    theme_classic() +
+    scale_x_discrete(expand = c(0.2, 0.0)) + # strech a bit in x direction
+    theme(legend.position = "none")  # Remove legend
+  
+  
+  # make pseudo plots for each row, and extract only the legend
+  variable.2s <- sort(unique(meansr$variable.2))
+  legends <- list()
+  for (v2 in variable.2s){
+    results_filtered <- meansr %>% filter(variable.2 == v2)
+    ptmp <- ggplot(results_filtered, 
+                   aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
+      geom_line(size = 1.2) + 
+      facet_grid(.~variable.1, scales = "free") +
+      labs(color = v2) +
+      scale_color_manual(values=cols) +
+      theme_classic()
+    # get legend
+    legend <- as_ggplot(ggpubr::get_legend(ptmp))
+    legends <- c(legends, list(legend))
+  }
+  
+  # possibility 1: legend at the right side
+  # p1_and_legends <- c(list(p1), legends)
+  # grid.arrange(grobs=p1_and_legends, #, ncol = 5)y
+  #           layout_matrix = matrix(c(1,1,1,1,1,1,1,2,
+  #                                    1,1,1,1,1,1,1,3,
+  #                                    1,1,1,1,1,1,1,4,
+  #                                    1,1,1,1,1,1,1,5,
+  #                                    1,1,1,1,1,1,1,6,
+  #                                    1,1,1,1,1,1,1,7,
+  #                                    1,1,1,1,1,1,1,8,
+  #                                    1,1,1,1,1,1,1,9),
+  #                                  nrow=8, byrow=TRUE))
+  
+  # possibility 2: on diagonals
+  cow <- cowplot::ggdraw() + 
+    cowplot::draw_plot(p1, x = 0, y = 0, width = 1.0, height = 1.0) 
+  
+  d <- 1/8.5
+  e <- 1/9
+  for (i in 0:7){
+    # single legends
+    cow <- cow + cowplot::draw_plot(legends[[i+1]], 
+                                    x = d*i+0.05, 
+                                    y = 0.875-e*i, 
+                                    width = 0.1, height = 0.03)
+    # horizontal lines between facets
+    if (i<7){
+      cow <- cow + cowplot::draw_line(x = c(0.05, 0.97), 
+                                      y = c(0.83-e*i, 0.83-e*i), 
+                                      color = "grey", size = 0.5)
+    }
+  }
+  cow
 }
 
 qqplot <- function (model, data="") # argument: vector of numbers

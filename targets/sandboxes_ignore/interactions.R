@@ -22,3 +22,10 @@ julia_command("model = fit(LinearMixedModel, formula, data);")  # , verbose=fals
 julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data, but R model does); https://github.com/palday/JellyMe4.jl/issues/51, 
 julia_command("RCall.Const.GlobalEnv[:rmodel] = robject(:lmerMod, rmodel);") # alternative to @rput; https://github.com/palday/JellyMe4.jl/issues/72
 rmodel
+
+
+
+# compare models with (and no random slopes) and without interactions (but random slopes)
+# 
+model <- tar_read(eegnet_HLM, branches = 1)[[1]]
+modeli <- tar_read(eegnet_HLMi2, branches = 1)[[1]]

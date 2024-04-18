@@ -88,7 +88,7 @@ R"""library(ggplot2);
     geom_bar(stat = "identity", position="dodge") + 
     labs(title = "Simulation of potential Type-I inflation by missing random slopes", x = "Term", y = "False Positive Rate", fill="Model Type") + 
     geom_hline(aes(yintercept=0.05)) + 
-    scale_fill_discrete();
+    scale_fill_grey(start=0.2, end=0.6);
     ggsave($plot_file, dpi=300, height=4, width=10) """
 
 

@@ -25,6 +25,8 @@ tar_option_set( # packages that your targets use
                "GGally", # e.g. pairwise correlation plots (ggpairs)
                "ggdist", 
                "ggthemes", 
+               "cowplot", # to overlay plots
+               "pals", # some colorscales
                "readr", 
                #"lmerTest", # has p value estimations
                "lme4", # seems to be 20% faster
@@ -63,6 +65,9 @@ source("R/functions.R")
 
 table_output_dir = "../manuscript/tables/"
 figure_output_dir = "../manuscript/plots/"
+
+# EMM
+#emm_options(lmerTest.limit = Inf) # TODO, include this but real command
 
 # tar_source("other_functions.R") # Source other scripts as needed.
 
@@ -189,24 +194,40 @@ list(
     pattern = map(data_eegnet_exp),
     iteration = "list"
   ),
-  #tar_target(
-  #  eegnet_HLMi2,
-  #  rjulia_mlm_interact(data_eegnet_exp),
-  #  pattern = map(data_eegnet_exp),
-  #  iteration = "list"
-  #),
+  tar_target(
+   eegnet_HLMi2,
+   rjulia_mlm(data_eegnet_exp, interactions=TRUE),
+   pattern = map(data_eegnet_exp),
+   iteration = "list"
+  ),
   
   tar_target(
-    r2_table,
-    rjulia_r2(data_eegnet)
+    r2aic_table,
+    rjulia_r2(bind_rows(data_eegnet, data_tsum)) # bind_rows does completes with NA in case of mismatching col names
   ),
   tar_target(
-    r2_plot,
-    { ggplot(r2_table, aes(y=r2, x=experiment, fill=interactions)) + 
-        geom_bar(stat = "identity", position="dodge") + 
-        scale_fill_grey(start=0.2, end=0.6)
+    r2aic_plot,
+    { r2aic_table %>% filter(metric %in% c("R2", "AIC")) %>%
+        ggplot(aes(y=value, x=experiment, fill=interactions)) +
+        geom_bar(stat = "identity", position="dodge") +
+        scale_fill_grey(start=0.2, end=0.6) +
+        facet_wrap(metric ~ model, scales = "free_y") +
+        labs(y="")
     }
   ),
+  tar_target(
+    name = r2aic_plot_file,
+    command = {
+      ggsave(plot=r2aic_plot,
+             filename="r2aic.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=8,
+             units="cm",
+             dpi=500)
+    },
+    format="file"),  
   # TODO also for time-resolved
   # TODO: save plot to file
   
@@ -264,16 +285,29 @@ list(
   tar_target(
     name=eegnet_HLM_emm,
     command=est_emm(eegnet_HLM, 
-                    variables = c("ref", "hpf","lpf","emc","mac","base","det","ar"),
+                    variables = c("ref", "hpf","lpf","emc","mac","base","det","ar"), # TODO make this inside the function
                     data_eegnet_exp),
     pattern = map(eegnet_HLM, data_eegnet_exp),
     iteration = "list"
   ),
   # split means and contrasts
-  tar_target(eegnet_HLM_emm_means, eegnet_HLM_emm[[1]], pattern=map(eegnet_HLM_emm)), #, iteration="list"
+  tar_target(eegnet_HLM_emm_means, eegnet_HLM_emm[[1]], pattern=map(eegnet_HLM_emm)), 
   tar_target(eegnet_HLM_emm_contrasts, eegnet_HLM_emm[[2]], pattern=map(eegnet_HLM_emm)), 
   tar_target(eegnet_HLM_emm_omni, eegnet_HLM_emm[[3]], pattern=map(eegnet_HLM_emm)),
 
+  # TODO EMM interactions
+  ### EEGNET interaction
+  tar_target(
+    name=eegnet_HLMi2_emm,
+    command=est_emm_int(eegnet_HLMi2,
+                        data_eegnet_exp),
+    pattern = map(eegnet_HLMi2, data_eegnet_exp),
+    iteration = "list"
+  ),
+  tar_target(eegnet_HLMi2_emm_means, eegnet_HLMi2_emm[[1]], pattern=map(eegnet_HLMi2_emm)), 
+  tar_target(eegnet_HLMi2_emm_contrasts, eegnet_HLMi2_emm[[2]], pattern=map(eegnet_HLMi2_emm)),
+  # TODO F values?
+  
   ### SLIDING
   tar_target(
     name=sliding_LM_emm,
@@ -289,7 +323,17 @@ list(
 
   # TODO Omni, also other models, and maybe combine it with the targets using dyn branching?
   
-  
+  ### Sliding interaction
+  tar_target(
+    name=sliding_LMi2_emm,
+    command=est_emm_int(sliding_LMi2,
+                    data_tsum_exp),
+    pattern = map(sliding_LMi2, data_tsum_exp),
+    iteration = "list"
+  ),
+  tar_target(sliding_LMi2_emm_means, sliding_LMi2_emm[[1]], pattern=map(sliding_LMi2_emm)), #, iteration="list"
+  tar_target(sliding_LMi2_emm_contrasts, sliding_LMi2_emm[[2]], pattern=map(sliding_LMi2_emm)),
+  # TODO F values?
   
   
   ## heatmaps of EMMs
@@ -306,7 +350,18 @@ list(
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
-
+  # TODO: main effects with only means?
+  
+  ## interaction plots of EMMs
+  tar_target(eegnet_interaction,
+            command=interaction_plot(eegnet_HLMi2_emm_means),
+            pattern=map(eegnet_HLMi2_emm_means),
+            iteration="list"),
+  tar_target(sliding_interaction,
+             command=interaction_plot(sliding_LMi2_emm_means),
+             pattern = map(sliding_LMi2_emm_means),
+             iteration="list"),
+  
   ## concatenate all models and datas in one target
   tar_target( 
     name=models_combined,

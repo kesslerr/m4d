@@ -29,6 +29,7 @@ shuffle_var_ordered <- function(df, var) {
 }
 
 
+
 # DEBUG
 i=1
 var="det"
