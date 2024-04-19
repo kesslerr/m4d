@@ -489,11 +489,10 @@ filter_experiment <- function(data){
 #  lmer(formula, data = data)
 #}
 
-est_emm <- function(model, variables, orig_data){
+est_emm <- function(model, orig_data){
   # DEBUG
   #model = return_model
-  #variables = c("ref", "hpf","lpf","emc","mac","base","det","ar") # "experiment"
-  
+  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
@@ -502,6 +501,7 @@ est_emm <- function(model, variables, orig_data){
     # MAIN EFFECTS (1 factor)
     emm <- emmeans(model, 
                    specs = formula(paste0(c("pairwise ~ ",variable))), 
+                   lmer.df = "asymp", # to supress warning: Note: D.f. calculations have been disabled because the number of observations
                    #lmerTest.limit = 322560,
                    #pbkrtest.limit = 322560) # to not have inf df
     )
@@ -569,6 +569,8 @@ combine_single_whole <- function(single, whole){
 # heatmap of emms
 heatmap <- function(data){
   data <- data %>% 
+    reorder_variables(column_name = "variable") %>%
+    relevel_variables(column_name = "level") %>%
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements)) %>%
     # NEW: replacements for each level
@@ -608,7 +610,11 @@ est_emm_int <- function(model, data){
         #print(paste(variable.1, variable.2))
         
         # extract marginal means grouped for results and stats
-        emm <- emmeans(model, as.formula(paste("pairwise ~", variable.1, "|", variable.2)), data=data)
+        emm <- emmeans(model, 
+                       as.formula(paste("pairwise ~", variable.1, "|", variable.2)), 
+                       data=data,
+                       lmer.df = "asymp" # to supress warning: Note: D.f. calculations have been disabled because the number of observations
+        )
         
         # means
         dfw <- emm$emmeans %>% 
@@ -660,9 +666,29 @@ est_emm_int <- function(model, data){
   return(list(means, contra))
 }
 
+reorder_variables <- function(data, column_name){
+  # reorder the factor levels of the variables in the following order
+  #new_order = c("ref", "hpf","lpf","emc","mac","base","det","ar") # original
+  new_order = c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
+  data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
+  return(data)
+}
 
-interaction_plot <- function(means){
+relevel_variables <- function(data, column_name){
+  # reorder the factor levels of the variables in the following order
+  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "offset", "linear", "false", "true") # I CHANGED HPF AND LPF
+  data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
+  return(data)
+}
+
+interaction_plot <- function(means, title_prefix=""){
   experiment <- unique(means$experiment)
+  means %<>% 
+    reorder_variables("variable.1") %>%
+    reorder_variables("variable.2") %>%
+    relevel_variables("level.1") %>%
+    relevel_variables("level.2") 
+  #means <- 
   meansr <- means %>% 
     mutate(variable.1 = recode(variable.1, !!!replacements)) %>%
     mutate(variable.2 = recode(variable.2, !!!replacements))
@@ -691,8 +717,10 @@ interaction_plot <- function(means){
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(size = 1.2) + 
     facet_grid(variable.2~variable.1, scales = "free") +
-    labs(title = experiment, y = "Marginal Mean", x = "Level of Model Term 1", color = "Level of\nModel Term 2") +
-    # TODO: better y value titel
+    labs(title = paste0(title_prefix,experiment),
+         y = "Marginal Mean", 
+         x = "processing step", 
+         color = "Grouping") + # todo: replace 1 term with "Grouping Variable" or similar?
     scale_color_manual(values=cols) +
     theme_classic() +
     scale_x_discrete(expand = c(0.2, 0.0)) + # strech a bit in x direction
@@ -708,7 +736,7 @@ interaction_plot <- function(means){
                    aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
       geom_line(size = 1.2) + 
       facet_grid(.~variable.1, scales = "free") +
-      labs(color = v2) +
+      labs(color = paste0("Grouping: ",v2)) +
       scale_color_manual(values=cols) +
       theme_classic()
     # get legend
@@ -739,12 +767,12 @@ interaction_plot <- function(means){
     # single legends
     cow <- cow + cowplot::draw_plot(legends[[i+1]], 
                                     x = d*i+0.05, 
-                                    y = 0.875-e*i, 
+                                    y = 0.9-d*i, 
                                     width = 0.1, height = 0.03)
     # horizontal lines between facets
     if (i<7){
       cow <- cow + cowplot::draw_line(x = c(0.05, 0.97), 
-                                      y = c(0.83-e*i, 0.83-e*i), 
+                                      y = c(0.85-d*i, 0.85-d*i), 
                                       color = "grey", size = 0.5)
     }
   }

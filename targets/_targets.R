@@ -228,9 +228,6 @@ list(
              dpi=500)
     },
     format="file"),  
-  # TODO also for time-resolved
-  # TODO: save plot to file
-  
   
   # tar_target(
   #   eegnet_HLMi2,
@@ -284,10 +281,9 @@ list(
   # TODO: var explained of random slopes and random subject intercepts?
   tar_target(
     name=eegnet_HLM_emm,
-    command=est_emm(eegnet_HLM, 
-                    variables = c("ref", "hpf","lpf","emc","mac","base","det","ar"), # TODO make this inside the function
+    command=est_emm(eegnet_HLMi2,
                     data_eegnet_exp),
-    pattern = map(eegnet_HLM, data_eegnet_exp),
+    pattern = map(eegnet_HLMi2, data_eegnet_exp),
     iteration = "list"
   ),
   # split means and contrasts
@@ -312,7 +308,6 @@ list(
   tar_target(
     name=sliding_LM_emm,
     command=est_emm(sliding_LM, 
-                    variables = c("ref","hpf","lpf","emc","mac","base","det","ar"),
                     data_tsum_exp),
     pattern = map(sliding_LM, data_tsum_exp),
     iteration = "list"
@@ -354,18 +349,18 @@ list(
   
   ## interaction plots of EMMs
   tar_target(eegnet_interaction,
-            command=interaction_plot(eegnet_HLMi2_emm_means),
+            command=interaction_plot(eegnet_HLMi2_emm_means, "EEGNet - "),
             pattern=map(eegnet_HLMi2_emm_means),
             iteration="list"),
   tar_target(sliding_interaction,
-             command=interaction_plot(sliding_LMi2_emm_means),
+             command=interaction_plot(sliding_LMi2_emm_means, "Time-resolved - "),
              pattern = map(sliding_LMi2_emm_means),
              iteration="list"),
   
   ## concatenate all models and datas in one target
   tar_target( 
     name=models_combined,
-    command=c(eegnet_HLM, sliding_LM, sliding_LMi2) # TODO add new interaction models
+    command=c(eegnet_HLM, eegnet_HLMi2, sliding_LM, sliding_LMi2) # TODO add new interaction models
   ), 
   
   ## diagnostics for all models (HLM, LM, ALL and experiment wise)
@@ -380,8 +375,8 @@ list(
   ### qq plots
   #### EEGNet
   tar_target(eegnet_HLM_qq,
-    command = qqplot(model=eegnet_HLM, data=data_eegnet_exp),
-    pattern = map(eegnet_HLM, data_eegnet_exp),
+    command = qqplot(model=eegnet_HLMi2, data=data_eegnet_exp),
+    pattern = map(eegnet_HLMi2, data_eegnet_exp),
     iteration ="list"),
   tar_target(eegnet_HLM_qq_comb,
     {plt <- ggarrange(plotlist = eegnet_HLM_qq)
@@ -415,8 +410,8 @@ list(
   ### res_vs_fitted plots
   #### EEGNet
   tar_target(eegnet_HLM_rvf,
-             command = rvfplot(model=eegnet_HLM, data=data_eegnet_exp),
-             pattern = map(eegnet_HLM, data_eegnet_exp),
+             command = rvfplot(model=eegnet_HLMi2, data=data_eegnet_exp),
+             pattern = map(eegnet_HLMi2, data_eegnet_exp),
              iteration ="list"),
   tar_target(eegnet_HLM_rvf_comb,
              {plt <- ggarrange(plotlist = eegnet_HLM_rvf)
@@ -446,8 +441,8 @@ list(
   ### sqrt abs std res_vs_fitted plots
   #### EEGNet
   tar_target(eegnet_HLM_sasrvf,
-             command = sasrvfplot(model=eegnet_HLM, data=data_eegnet_exp),
-             pattern = map(eegnet_HLM, data_eegnet_exp),
+             command = sasrvfplot(model=eegnet_HLMi2, data=data_eegnet_exp),
+             pattern = map(eegnet_HLMi2, data_eegnet_exp),
              iteration ="list"),
   tar_target(eegnet_HLM_sasrvf_comb,
              {plt <- ggarrange(plotlist = eegnet_HLM_sasrvf)
@@ -467,8 +462,8 @@ list(
   
   ## RFX Boxplots
   tar_target(eegnet_RFX,
-             rfx_vis(eegnet_HLM, data_eegnet_exp),
-             pattern=map(eegnet_HLM, data_eegnet_exp),
+             rfx_vis(eegnet_HLMi2, data_eegnet_exp),
+             pattern=map(eegnet_HLMi2, data_eegnet_exp),
              iteration="list"),
   tar_target(eegnet_RFX_plot,
              {
@@ -479,14 +474,14 @@ list(
 
   ## RFX Intercepts and Participant Demographics
   tar_target(rfx_demographics,
-             plot_rfx_demographics(eegnet_HLM, demographics),
-             pattern = map(eegnet_HLM) #, demographics
+             plot_rfx_demographics(eegnet_HLMi2, demographics),
+             pattern = map(eegnet_HLMi2) #, demographics
              ),
   
   ## RFX Intercepts per Experiment
   tar_target(rfx,
-             extract_rfx_exp(eegnet_HLM, data_eegnet_exp),
-             pattern=map(eegnet_HLM, data_eegnet_exp),
+             extract_rfx_exp(eegnet_HLMi2, data_eegnet_exp),
+             pattern=map(eegnet_HLMi2, data_eegnet_exp),
              # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
              ),
   tar_target(rfx_plot,
