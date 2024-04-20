@@ -71,6 +71,8 @@ figure_output_dir = "../manuscript/plots/"
 
 # tar_source("other_functions.R") # Source other scripts as needed.
 
+experiments = c("ERN","LRP","MMN","N170","N2pc","N400","P3")
+
 list(
   ## define some variables in targets TODO: targets doesnt accept it, maybe use as normal list
   # tar_target(
@@ -557,6 +559,54 @@ list(
     },
     format="file"
   ),  
+
+  # 1 file per branch
+  tar_target(eegnet_interaction_filenames, paste0("interactions_eegnet_", experiments, ".png")),
+  tar_target(eegnet_interaction_files,
+             command = {
+               ggsave(plot=eegnet_interaction,
+                      filename=eegnet_interaction_filenames,
+                      path=figure_output_dir,
+                      scale=2,
+                      width=17,
+                      height=17,
+                      units="cm",
+                      dpi=500)
+             },
+             pattern=map(eegnet_interaction, eegnet_interaction_filenames),
+             format="file"
+  ),
+  tar_target(sliding_interaction_filenames, paste0("interactions_sliding_", experiments, ".png")),
+  tar_target(sliding_interaction_files,
+             command = {
+               ggsave(plot=sliding_interaction,
+                      filename=sliding_interaction_filenames,
+                      path=figure_output_dir,
+                      scale=2,
+                      width=17,
+                      height=17,
+                      units="cm",
+                      dpi=500)
+             },
+             pattern=map(sliding_interaction, sliding_interaction_filenames),
+             format="file"
+  ),
+
+  #tar_target(
+  #  interaction_file_eegnet,
+  #  command = {
+  #    ggarrange(plotlist = interaction_eegnet, ncol=2) %>% 
+  #      annotate_figure(top = text_grob("Interaction Effects - EEGNet", 
+  #                                      color = "black", face = "bold", size = 16)) %>% 
+  #      ggsave(filename="interaction_eegnet.png",
+  #             path=figure_output_dir,
+  #             scale=2,
+  #             width=12,
+  #             height=12,
+  #             units="cm",
+  #             dpi=500)
+  #  }
+  #),
   
   tar_target(
     name = eegnet_RFX_plot_file,

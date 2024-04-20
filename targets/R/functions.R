@@ -720,7 +720,7 @@ interaction_plot <- function(means, title_prefix=""){
     labs(title = paste0(title_prefix,experiment),
          y = "Marginal Mean", 
          x = "processing step", 
-         color = "Grouping") + # todo: replace 1 term with "Grouping Variable" or similar?
+         color = "Group: ") + # legend removed anway
     scale_color_manual(values=cols) +
     theme_classic() +
     scale_x_discrete(expand = c(0.2, 0.0)) + # strech a bit in x direction
@@ -736,7 +736,7 @@ interaction_plot <- function(means, title_prefix=""){
                    aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
       geom_line(size = 1.2) + 
       facet_grid(.~variable.1, scales = "free") +
-      labs(color = paste0("Grouping: ",v2)) +
+      labs(color = paste0("Group: ",v2)) +
       scale_color_manual(values=cols) +
       theme_classic()
     # get legend
