@@ -30,16 +30,23 @@ interact = parse(Bool, interact)
 
 # define column type so that the strings (in experiment) is long enough
 column_types = Dict(
-    "experiment" => String7,  # Assuming you have a column named "experiment" in your CSV file
+    "experiment" => String31,  # Assuming you have a column named "experiment" in your CSV file
     # Add more column types if needed
 )
 
 # import dataframe
-data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
+#data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
+data = CSV.read(string("../targets/eegnet.csv"), DataFrame, types=column_types) 
 #data = CSV.read("data_eegnet.csv", DataFrame) 
+
+data = filter(row -> row.experiment == "ERN", data)
+select!(data, Not(:experiment, :dataset))
+
 
 # define factor levels
 #describe(data)
+
+
 
 # convert to factors
 levels_hpf = ["None", "0.1", "0.5"];

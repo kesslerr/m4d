@@ -17,6 +17,9 @@ using DisplayAs # nicer LMM output
 using GLM # for LinearModel
 using HypothesisTests # for binomial errorbars
 using MakieCore # to automatically calculate binomErrors
+using CSV # to load own data
+using RCall, RData # to control R or make it R objects
+
 #using Plots
 #using PyPlots
 #pyplot()
@@ -215,7 +218,6 @@ results = sim_type1(m0,
         rep=1000)
 
 
-using RCall, RData
 
 #ggplot_object = 
 R"""library(ggplot2); 
@@ -232,8 +234,21 @@ scale_fill_grey(start=0.2, end=0.6)
 
 
 ### now fit a model with my own data, to estimate the actual effect sizes for modeling what happens when avoiding the RFX
-using CSV
+
+using Parsers # for getting input arguments
 using DataFrames
+using CSV
+using Plots
+using MixedModels
+
+# https://github.com/palday/JellyMe4.jl
+#ENV["LMER"] = "afex::lmer_alt" # set before import RCall and JellyMe4 to be able to convert zerocorr(rfx) correctly
+using RCall
+using JellyMe4
+
+using RData
+using CategoricalArrays # for categorical 
+
 
 data = CSV.read("../targets/eegnet.csv", DataFrame) #, types=column_types 
 data = filter(row -> row.experiment == "ERN", data)
@@ -249,7 +264,7 @@ levels_emc = ["None", "ica"];
 levels_mac = ["None", "ica"];
 levels_base = ["200ms", "400ms"];
 levels_det = ["offset", "linear"];
-levels_ar = [false, true];
+levels_ar = [false, true]; # was bool.... maybe check if works better with bool
 
 
 data[!, :hpf] = categorical(data[!, :hpf], levels=levels_hpf);
@@ -260,6 +275,8 @@ data[!, :mac] = categorical(data[!, :mac], levels=levels_mac);
 data[!, :base] = categorical(data[!, :base], levels=levels_base);
 data[!, :det] = categorical(data[!, :det], levels=levels_det);
 data[!, :ar] = categorical(data[!, :ar], levels=levels_ar);
+
+
 
 formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject))
 
@@ -291,3 +308,96 @@ ggplot(df, aes(x=Var1, y=Var2, fill=value)) +
   scale_fill_continuous(type="viridis") +
   labs(x="X-axis", y="Y-axis", title="Heatmap")
 """
+
+# convert bool column to str
+data.ar = [string(x) for x in data.ar]
+data[!, :ar] = categorical(data[!, :ar], levels=["false", "true"]);
+
+
+
+### show z/p values for FFX for models With and Without RFX slopes
+
+formula_rs = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject));
+model_rs = fit(LinearMixedModel, formula_rs, data);
+
+formula_rsz = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + zerocorr( ref + hpf + lpf + emc + mac + base + det + ar | subject));
+model_rsz = fit(LinearMixedModel, formula_rsz, data);
+
+formula_ri = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( 1 | subject));
+model_ri = fit(LinearMixedModel, formula_ri, data);
+
+#formula_rsi = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar)^2 + ( (1 + ref + hpf + lpf + emc + mac + base + det + ar)^2 | subject));
+#model_rsi = fit(LinearMixedModel, formula_rsi, data);
+
+formula_rszi = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));
+model_rszi = fit(LinearMixedModel, formula_rszi, data);
+
+formula_rii = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar)^2 + ( 1 | subject));
+model_rii = fit(LinearMixedModel, formula_rii, data);
+
+
+ffx_ri = coef(model_ri)
+ffx_rs = coef(model_rs)
+ffx_rsz = coef(model_rsz)
+ffx_rii = coef(model_rii)[1:13]
+#ffx_rsi = coef(model_rsi)[1:13]
+ffx_rszi = coef(model_rszi)[1:13]
+
+z_ri = model_ri.beta./ model_ri.stderror
+z_rs = model_rs.beta./ model_rs.stderror
+z_rsz = model_rsz.beta./ model_rsz.stderror
+z_rii = model_rii.beta[1:13] ./ model_rii.stderror[1:13]
+#z_rsi = model_rsi.beta./ model_rsi.stderror
+z_rszi = model_rszi.beta[1:13] ./ model_rszi.stderror[1:13]
+
+zs = vcat(z_ri, z_rs, z_rsz, z_rii, z_rszi) #z_rsi, 
+ffx = vcat(ffx_ri, ffx_rs, ffx_rsz,ffx_rii,z_rszi) #z_rsi,
+ffxnames = repeat(["a+b+(1|sub)", "a+b+(1+a+b|sub)", "a+b+(1+a+b||sub)","a*b+(1|sub)", "a*b+(1+a*b||sub)"], inner=13) #, "a*b+(1+a*b|sub)"
+ffxind = repeat(1:13, outer=5)
+
+df = DataFrame(
+    model = ffxnames,
+    effect = ffx,
+    z = zs,
+    predictor = ffxind
+)
+
+
+
+R"""
+library(ggplot2)
+library(dplyr)
+df2 <- $df
+df2 <- df2 %>% filter(predictor > 1)
+ggplot(df2, aes(x=predictor, y=z, fill=model)) +
+    geom_bar(stat = "identity", position="dodge") 
+"""
+
+
+# the sizes of the effects are identical !! but how about statistics?
+
+
+
+
+
+
+
+using PlotlyJS
+using Plotly
+
+plot(scatter(x=1:10, y=rand(10), mode="markers"))
+
+
+
+using Plots
+x = range(0, 10, length=100)
+y = sin.(x)
+plot(x, y)
+
+using CairoMakie
+
+
+xs = range(0, 10, length = 30)
+ys = 0.5 .* sin.(xs)
+
+scatter(xs, ys)
