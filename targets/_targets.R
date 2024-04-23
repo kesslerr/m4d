@@ -108,6 +108,54 @@ list(
     format = "file"
   ),
   
+  ## NEW: single LMM files
+  ## first, test if multiple files can be tracked at the same time
+  tar_target(
+    name = jLMM_file_ERN,
+    command = '../julia/model_ERN.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_LRP,
+    command = '../julia/model_LRP.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_MMN,
+    command = '../julia/model_MMN.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N170,
+    command = '../julia/model_N170.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N2pc,
+    command = '../julia/model_N2pc.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N400,
+    command = '../julia/model_N400.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_P3,
+    command = '../julia/model_P3.rds',
+    format = "file"
+  ),
+  
+  tar_target(
+    name = jLMM_files,
+    command = c(jLMM_file_ERN, jLMM_file_LRP, jLMM_file_MMN, jLMM_file_N170, jLMM_file_N2pc, jLMM_file_N400, jLMM_file_P3),
+  ),
+  tar_target(name = eegnet_HLMi2, 
+             readRDS(jLMM_files),
+             pattern=jLMM_files,
+             iteration="list"),
+  
+
   ## import and recode datasets
   tar_target(
     name = data_eegnet,
@@ -171,38 +219,25 @@ list(
     experiment 
   ),  
   
-  
-  ## Simulate if desired model terms lead to inflation of false positive rate
+  ## Simulate if desired model terms lead to inflation Type1 error
   tar_file(
-   julia_simulation_fpr_script,
-   "/Users/roman/GitHub/m4d/julia/simulation_rfxslopes_fp.jl"
+    julia_z_script,
+    "/Users/roman/GitHub/m4d/julia/Type1error_random_slopes.jl"
   ),
   tar_target(
     simulation_fpr,
     command = {
-      plot_file = paste0(figure_output_dir, "simulations_rfxslopes_fp.png")
-      dummy = system2(command = julia_executable, args = c(julia_simulation_fpr_script, plot_file),
-              wait=TRUE,# wait for process to be finished before continuing in R
-              stdout = TRUE) # capture output (doesnt work)
+      plot_file = paste0(figure_output_dir, "ffx_z_values.png")
+      dummy = system2(command = julia_executable, args = c(julia_z_script, plot_file),
+                      wait=TRUE,# wait for process to be finished before continuing in R
+                      stdout = TRUE) # capture output (doesnt work)
       plot_file # TODO, slight errors might not lead to aborting the pipeline
     },
     format = "file"
   ),
   
-  ## HLM
-  tar_target(
-    eegnet_HLM,
-    rjulia_mlm(data_eegnet_exp, interactions=FALSE),
-    pattern = map(data_eegnet_exp),
-    iteration = "list"
-  ),
-  tar_target(
-   eegnet_HLMi2,
-   rjulia_mlm(data_eegnet_exp, interactions=TRUE),
-   pattern = map(data_eegnet_exp),
-   iteration = "list"
-  ),
-  
+  ## LMM: is it better to include interactions? # TODO: outsource this in julia
+  #tar_target()
   tar_target(
     r2aic_table,
     rjulia_r2(bind_rows(data_eegnet, data_tsum)) # bind_rows does completes with NA in case of mismatching col names
@@ -230,39 +265,15 @@ list(
              dpi=500)
     },
     format="file"),  
-  
-  # tar_target(
-  #   eegnet_HLMi2,
-  #   rjulia_mlm(data_eegnet_exp, interactions=TRUE),
-  #   pattern = map(data_eegnet_exp),
-  #   iteration = "list"
-  # ),  
-  
+
+  ## HLM: visualize interactions TODO, do it instead with significant interactions per exp
   tar_target(
     interaction_chordplot_prior,
     chord_plot(paste0(figure_output_dir,"chord_interactions.png")),
     format = "file"
   ),
 
-  #tar_target(
-  #  name = eegnet_HLM,
-  #  command=lme4::lmer(formula="accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject)",
-  #                     control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-  #                     data = data_eegnet_exp),
-  #  pattern = map(data_eegnet_exp),
-  #  iteration = "list"
-  #),  
-
   ## LM for sliding
-  tar_target(
-    name = sliding_LM,
-    command=lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
-               data = data_tsum_exp),
-    pattern = map(data_tsum_exp),
-    iteration = "list"
-  ),
-  
-  ### TODO: TEST: Sliding with all interactions
   tar_target(
     name = sliding_LMi2,
     command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
@@ -309,9 +320,9 @@ list(
   ### SLIDING
   tar_target(
     name=sliding_LM_emm,
-    command=est_emm(sliding_LM, 
+    command=est_emm(sliding_LMi2, 
                     data_tsum_exp),
-    pattern = map(sliding_LM, data_tsum_exp),
+    pattern = map(sliding_LMi2, data_tsum_exp),
     iteration = "list"
   ),
   tar_target(sliding_LM_emm_means, sliding_LM_emm[[1]], pattern=map(sliding_LM_emm)), #, iteration="list"
@@ -362,7 +373,7 @@ list(
   ## concatenate all models and datas in one target
   tar_target( 
     name=models_combined,
-    command=c(eegnet_HLM, eegnet_HLMi2, sliding_LM, sliding_LMi2) # TODO add new interaction models
+    command=c(eegnet_HLMi2, sliding_LMi2) # TODO add new interaction models
   ), 
   
   ## diagnostics for all models (HLM, LM, ALL and experiment wise)
@@ -391,23 +402,13 @@ list(
   
   #### SLIDING
   tar_target(sliding_LM_qq,
-    qqplot(model=sliding_LM, data=data_tsum_exp),
-    pattern = map(sliding_LM, data_tsum_exp),
+    qqplot(model=sliding_LMi2, data=data_tsum_exp),
+    pattern = map(sliding_LMi2, data_tsum_exp),
     iteration ="list"),
   tar_target(sliding_LM_qq_comb,
     {plt <- ggarrange(plotlist = sliding_LM_qq)
     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
                     color = "black", face = "bold", size = 16))}),
-  
-  #### SLIDING WITH INTERACTIONS
-  tar_target(sliding_LMi2_qq,
-             qqplot(model=sliding_LMi2, data=data_tsum_exp),
-             pattern = map(sliding_LMi2, data_tsum_exp),
-             iteration ="list"),
-  tar_target(sliding_LMi2_qq_comb,
-             {plt <- ggarrange(plotlist = sliding_LMi2_qq)
-              annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
-                                                  color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
   #### EEGNet
@@ -422,24 +423,14 @@ list(
   
   #### SLIDING
   tar_target(sliding_LM_rvf,
-             rvfplot(model=sliding_LM, data=data_tsum_exp),
-             pattern = map(sliding_LM, data_tsum_exp),
+             rvfplot(model=sliding_LMi2, data=data_tsum_exp),
+             pattern = map(sliding_LMi2, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LM_rvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_rvf)
              annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
                              color = "black", face = "bold", size = 16))}),
   
-  #### SLIDING WITH INTERACTIONS
-  tar_target(sliding_LMi2_rvf,
-             rvfplot(model=sliding_LMi2, data=data_tsum_exp),
-             pattern = map(sliding_LMi2, data_tsum_exp),
-             iteration ="list"),
-  tar_target(sliding_LMi2_rvf_comb,
-             {plt <- ggarrange(plotlist = sliding_LMi2_rvf)
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
-                                                  color = "black", face = "bold", size = 16))}),
-
   ### sqrt abs std res_vs_fitted plots
   #### EEGNet
   tar_target(eegnet_HLM_sasrvf,
@@ -453,8 +444,8 @@ list(
   
   #### SLIDING
   tar_target(sliding_LM_sasrvf,
-             sasrvfplot(model=sliding_LM, data=data_tsum_exp),
-             pattern = map(sliding_LM, data_tsum_exp),
+             sasrvfplot(model=sliding_LMi2, data=data_tsum_exp),
+             pattern = map(sliding_LMi2, data_tsum_exp),
              iteration ="list"),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_sasrvf)
@@ -469,17 +460,24 @@ list(
              iteration="list"),
   tar_target(eegnet_RFX_plot,
              {
-               plt <- ggarrange(plotlist =eegnet_RFX)
+               plt <- ggarrange(plotlist = eegnet_RFX) #
                annotate_figure(plt, top = text_grob("Random Effects - EEGNet", 
                                color = "black", face = "bold", size = 16))
              }),
 
   ## RFX Intercepts and Participant Demographics
   tar_target(rfx_demographics,
-             plot_rfx_demographics(eegnet_HLMi2, demographics),
-             pattern = map(eegnet_HLMi2) #, demographics
+             plot_rfx_demographics(eegnet_HLMi2, demographics, data_eegnet_exp),
+             pattern = map(eegnet_HLMi2, data_eegnet_exp), #, demographics
+             iteration = "list"
              ),
-  
+  tar_target(rfx_demographics_all,
+             {ggarrange(plotlist = rfx_demographics, ncol=1) %>% 
+               annotate_figure(top = text_grob("Random Intercept and Participant Demographics", 
+                                               color = "black", face = "bold", size = 16))
+               }
+  ),
+
   ## RFX Intercepts per Experiment
   tar_target(rfx,
              extract_rfx_exp(eegnet_HLMi2, data_eegnet_exp),
@@ -492,10 +490,9 @@ list(
                  pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
                  select(-c("Subject")) # remove sub for now
                
-               ggpairs(wide_data) + labs(title="RFX Correlation Between Experiments")
+               ggpairs(wide_data) + labs(title="Random Intercept Correlation Between Experiments")
              }
   ),
-  
   
   ## Exports for Paper
 
@@ -615,12 +612,41 @@ list(
              filename="RFX.png",
              path=figure_output_dir,
              scale=2,
+             width=18,
+             height=18,
+             units="cm",
+             dpi=500)
+    },
+    format="file"),
+  tar_target(
+    name = eegnet_RFX_pairs_file,
+    command = {
+      ggsave(plot=rfx_plot,
+             filename="RFXpairs.png",
+             path=figure_output_dir,
+             scale=2,
              width=12,
              height=12,
              units="cm",
              dpi=500)
     },
+  format="file"),
+  tar_target(
+    name = eegnet_RFX_demographics_file,
+    command = {
+      ggsave(plot=rfx_demographics_all,
+             filename="RFXdemographics.png",
+             path=figure_output_dir,
+             scale=2,
+             width=16,
+             height=20,
+             units="cm",
+             dpi=500)
+    },
     format="file"),
+
+
+
 
   ### Tables
   tar_target(

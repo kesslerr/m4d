@@ -94,9 +94,9 @@ rjulia_r2 <- function(data){
         if (modeltype == "EEGNet"){
           julia_assign("data", data_tmp) # bring data into julia
           if (interaction == "true"){
-            julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( 1 | subject));")
+            julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));")
           } else if (interaction == "false") {
-            julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (1 | subject));")
+            julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject));")
           }
           julia_command("model = fit(LinearMixedModel, formula, data);")
           julia_command("predictions = predict(model, data);")
@@ -492,6 +492,12 @@ filter_experiment <- function(data){
 est_emm <- function(model, orig_data){
   # DEBUG
   #model = return_model
+  #data <- tar_read(data_tsum_exp, branches=1)
+  #data <- data %>% filter(experiment=="ERN")
+  #model <- tar_read(sliding_LMi2, branches=1)
+  #model <- model[[1]]
+  
+  
   variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
@@ -504,6 +510,7 @@ est_emm <- function(model, orig_data){
                    lmer.df = "asymp", # to supress warning: Note: D.f. calculations have been disabled because the number of observations
                    #lmerTest.limit = 322560,
                    #pbkrtest.limit = 322560) # to not have inf df
+                   data=orig_data,# new, data not found in model (also works for HLM?)
     )
     
     # get means
@@ -862,13 +869,14 @@ rfx_vis <- function(model, orig_data){
 }
 
 # RFX and sociodemographics
-plot_rfx_demographics <- function(model, demographics){
+plot_rfx_demographics <- function(model, demographics, orig_data){
   # from rfx_vis function
   data <- ranef(model)$subject %>%
     mutate(Subject = rownames(.)) %>%
     mutate(Intercept = `(Intercept)`) %>%
     select(c(Intercept, Subject))
   rownames(data) <- NULL
+  experiment <- unique(orig_data$experiment)
   
   # merge with demographics
   data <- left_join(data, demographics, c("Subject" = "participant_id"))
@@ -880,18 +888,20 @@ plot_rfx_demographics <- function(model, demographics){
     labs(x="Age", y="Random Intercept")
   
   p2 <- ggplot(data, aes(x=sex, y=Intercept, fill=sex)) +
-    geom_boxplot(notch=TRUE) +
+    geom_boxplot(notch=FALSE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
     labs(x="Sex", y="Random Intercept") +
     guides(fill = "none") # remove legend for "fill"
   
   p3 <- ggplot(data, aes(x=Intercept, fill=handedness)) +
-    geom_histogram() + 
+    geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
     labs(x="Random Intercept", y="Count") +
     scale_fill_viridis_d()
   
-  ggarrange(p1,p2,p3)
+  ggarrange(p1,p2,p3, ncol=3) %>%
+  annotate_figure(left = text_grob(experiment, 
+                                    color = "black", face = "bold", size = 12, rot=90))
 }
 
 # extract ranef from all experiment HLM models

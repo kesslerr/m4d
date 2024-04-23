@@ -18,7 +18,9 @@ using GLM # the r2 function is in here
 using Statistics # cor
 
 # data must already exist
-
+data = CSV.read("../targets/eegnet.csv", DataFrame)
+data = filter(row -> row.dataset == "ERPCORE", data)
+data = select!(data, Not(:dataset))
 
 # Create arrays to store results
 interact_results = Vector{Bool}()

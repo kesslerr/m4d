@@ -14,6 +14,9 @@ model <- lme4::lmer(accuracy ~ ( ref + hpf + lpf + emc + mac + base + det + ar) 
                     data = data)
 toc()
 
+# todo: test without this special wrapper
+# 
+
 #          
 # fitting with glmer does not work --> deprecated
 library(nloptr)

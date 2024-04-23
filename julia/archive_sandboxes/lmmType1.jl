@@ -310,8 +310,8 @@ ggplot(df, aes(x=Var1, y=Var2, fill=value)) +
 """
 
 # convert bool column to str
-data.ar = [string(x) for x in data.ar]
-data[!, :ar] = categorical(data[!, :ar], levels=["false", "true"]);
+#data.ar = [string(x) for x in data.ar]
+#data[!, :ar] = categorical(data[!, :ar], levels=["false", "true"]);
 
 
 
@@ -374,7 +374,7 @@ ggplot(df2, aes(x=predictor, y=z, fill=model)) +
 """
 
 
-# the sizes of the effects are identical !! but how about statistics?
+# the sizes of the effects are identical !! statistics is however different!
 
 
 
