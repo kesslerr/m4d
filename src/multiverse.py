@@ -20,8 +20,8 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-experiment = "MIPDB"
-subject = "A00053398"
+#experiment = "RSVP"
+#subject = "sub-001"
 
 
 # define subject and session by arguments to this script
@@ -40,6 +40,7 @@ if experiment == "MIPDB":
     raw_folder = os.path.join(base_dir, "data", "raw", experiment, subject)
 else:
     raw_folder = os.path.join(base_dir, "data", "raw", experiment)
+
 interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
 if not os.path.exists(interim_folder):
     os.makedirs(interim_folder)
@@ -72,7 +73,7 @@ else:
     # get events again, because it doesn't survive i/o operations
     events, event_dict = mne.events_from_annotations(raw) # TODO: get from file instead, because no annotations in MIPDB dataset, and already done in pre-multiverse
     
-    
+
 manager.update_characteristic('event_counts', event_counts)
 
 

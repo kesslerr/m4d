@@ -45,6 +45,9 @@ delete_triggers = { # ERPCORE
                    
                    # Cichy
                    'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults, probably paperclip stimuli (for blinks) and responses to it
+                   
+                   # infants
+                   'RSVP': ["-1"]
                    }
 
 # collate triggers so conditions are merged for decoding
@@ -123,7 +126,23 @@ conditions_triggers = {
 }
 
 
-
+# Groot. infants
+category_triggers = {
+    'aquatic':   [str(i) for i in range(1,21)],
+    'bird':      [str(i) for i in range(21,41)],
+    'human':     [str(i) for i in range(41,61)],
+    'insect':    [str(i) for i in range(61,81)],
+    'mammal':    [str(i) for i in range(81,101)],
+    'clothing':  [str(i) for i in range(101,121)],
+    'fruits':    [str(i) for i in range(121,141)],
+    'furniture': [str(i) for i in range(141,161)],
+    'plants':    [str(i) for i in range(161,181)],
+    'tools':     [str(i) for i in range(181,201)],
+}
+supraordinate_triggers = {
+    'animate':   [str(i) for i in range(1,101)],
+    'inanimate': [str(i) for i in range(101,201)],
+}
 
 # epoching windows
 epoch_windows = {

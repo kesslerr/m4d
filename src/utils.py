@@ -86,29 +86,36 @@ def rename_annotations(raw, conditions_triggers):
     return raw
 
 # make artificial EOG channels by combining existing channels --> ERPCORE
-def recalculate_eog_signal(raw):
+def recalculate_eog_signal(raw, sfreq=256, has_EOG=True):
     """
     Recalculates the EOG (Electrooculogram) signal by creating HEOG (Horizontal EOG) and VEOG (Vertical EOG) channels.
 
     Args:
         raw (mne.io.Raw): The raw data containing the original EOG channels.
+        sfreq (int): The sampling frequency of the data.
+        has_EOG (bool): Whether the data has EOG channels or not.
 
     Returns:
         mne.io.Raw: The raw data with the recalculated EOG channels.
 
     """
-    #Create HEOG channel...
-    heog_info = mne.create_info(['HEOG'], 256, "eog")
-    heog_data = raw['HEOG_left'][0]-raw['HEOG_right'][0]
+    #Create HEOG and VEOG channel
+    heog_info = mne.create_info(['HEOG'], sfreq, "eog")
+    veog_info = mne.create_info(['VEOG'], sfreq, "eog")
+    if has_EOG:    
+        heog_data = raw['HEOG_left'][0]-raw['HEOG_right'][0]
+        veog_data = raw['VEOG_lower'][0]-raw['FP2'][0]
+    else:
+        heog_data = raw['F9'][0]-raw['F10'][0]
+        veog_data = ( raw['Fp1'][0] + raw['Fp2'][0] ) / 2
+
     heog_raw = mne.io.RawArray(heog_data, heog_info)
-    #...and VOEG
-    veog_info = mne.create_info(['VEOG'], 256, "eog")
-    veog_data = raw['VEOG_lower'][0]-raw['FP2'][0]
     veog_raw = mne.io.RawArray(heog_data, veog_info)
     #Append them to the data
     raw.add_channels([heog_raw, veog_raw],True)
     # delete original EOG channels
-    raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
+    if has_EOG:
+        raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
     
     return raw
 
