@@ -13,7 +13,7 @@
 **/*.mat
 
 # external datasets
-./data/ds005106-download/*
+data/ds005106-download/*
 
 # large intermediary and processed files
 **/*.fif
