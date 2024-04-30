@@ -1,7 +1,8 @@
 ---
 title: "Multiverse4Decoding"
 author: "Roman Kessler"
-format: html
+format: pdf
+prefer-html: true
 editor: visual
 ---
 
@@ -10,6 +11,7 @@ library(targets)
 library(tarchetypes)
 library(dplyr)
 library(xtable)
+library(ggpubr)
 options(dplyr.print_max = 1e9)
 base_dir = "/Users/roman/GitHub/m4d/"
 manuscript_dir = paste0(base_dir,"manuscript/")
@@ -20,15 +22,16 @@ manuscript_dir = paste0(base_dir,"manuscript/")
 
 In short, decoding accuracies have been calculated for each participant, each experiment, and each variation in the pipeline. Marginal means have been calculated and plotted in the following.
 
-After careful consideration, I re-decided to use the MLM approach from Clayson et al (2021, Neuroimage) anyways, despite initial concerns.
+After careful consideration, I re-decided to use the MLM approach similar than Clayson et al (2021, Neuroimage) anyways, despite initial concerns. After doing some simulations, and comparing it to other approaches, the results seem similar and trustworthy.
 
 ```{r}
-tar_visnetwork()
+#tar_visnetwork()
 ```
 
 ```{r}
-tar_visnetwork(targets_only=TRUE, label=c("description", "branches"))
+#tar_visnetwork(targets_only=TRUE, label=c("description", "branches"))
 ```
+
 
 ## Overview of decoding performances
 
@@ -40,12 +43,71 @@ tar_read(overview)
 
 ```
 
-## Sliding Window - Example UNIVERSE result
+## Time-resolved - Example UNIVERSE result
 
 ```{r, fig.width=7,fig.height=10}
 #| echo: false
 tar_read(timeresolved_luck)
 ```
+
+## MLM and LM models --> Are interactions necessary?
+
+### EEGNet 
+
+```{r}
+r2s = c()
+r2si2 = c()
+
+for (i in 1:7){
+  modeli2 <- tar_read(eegnet_HLMi2_exp, branches=i)[[1]]
+  model <- tar_read(eegnet_HLM_exp, branches=i)[[1]]
+  models <- summary(model)
+  modeli2s <- summary(modeli2)
+  r2s = c(r2s, models$adj.r.squared)
+  r2si2 = c(r2si2, modeli2s$adj.r.squared)
+}
+print("Adj. R2 no interactions:")
+print(r2s)
+print("Adj. R2 2-way interactions:")
+print(r2si2)
+```
+
+### Time-resolved
+
+Model fits of models (per experiment) without and with interactions
+```{r}
+r2s = c()
+r2si2 = c()
+
+for (i in 1:7){
+  modeli2 <- tar_read(sliding_LMi2_exp, branches=i)[[1]]
+  model <- tar_read(sliding_LM_exp, branches=i)[[1]]
+  models <- summary(model)
+  modeli2s <- summary(modeli2)
+  r2s = c(r2s, models$adj.r.squared)
+  r2si2 = c(r2si2, modeli2s$adj.r.squared)
+}
+print("Adj. R2 no interactions:")
+print(r2s)
+print("Adj. R2 2-way interactions:")
+print(r2si2)
+```
+```{r, fig.width=14,fig.height=10}
+ggarrange( tar_read(sliding_LM_qq_comb),
+           tar_read(sliding_LMi2_qq_comb),
+           ncols=2)
+```
+Doesn't really seem to lead to improvement of Normality assumtions when including interactions.
+
+Residual vs Fitted
+
+```{r, fig.width=14,fig.height=10}
+ggarrange( tar_read(sliding_LM_rvf_comb),
+           tar_read(sliding_LMi2_rvf_comb),
+           ncols=2)
+```
+Res vs Fitted generally looks better when including 2-way interactions!!
+
 
 ## Influence of analysis choises - (M)LM and EMM
 
@@ -72,7 +134,7 @@ tar_read(eegnet_HLM_emm_omni_comb)
 
 ```
 
-#### Sliding Window
+#### Time-resolved
 
 ##### Means
 
@@ -109,6 +171,17 @@ Inspection of RFX parameter estimates (Intercept corresponds to Random Intercept
 #| echo: false
 tar_read(eegnet_RFX_plot)
 
+```
+
+## EDA of sociodemographics (EEGNet)
+
+```{r}
+tar_read(rfx_demographics)
+```
+## EDA subjects intercept correlating across expeirments?
+
+```{r}
+tar_read(rfx_exp_plot)
 ```
 
 ## Model diagnostics

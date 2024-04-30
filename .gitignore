@@ -26,6 +26,8 @@
 **/*.pck
 **/*.pickle
 
+# julia
+**/*.rds # R object
 
 # all raw EEG files and large files in general
 **/*.eeg
