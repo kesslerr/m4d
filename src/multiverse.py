@@ -20,7 +20,7 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-#experiment = "RSVP"
+#experiment = "ERN"
 #subject = "sub-001"
 
 
@@ -82,10 +82,11 @@ path_id = 1
 total_iterations = len(list(itertools.product(*multiverse_params.values())))
 print(f'Number of parameter combinations: {total_iterations}')
 
+# new: apply Cz reference (preliminary) for all datasets, TODO re-reference later in some pipelines
+raw = raw.set_eeg_reference(['Cz'], projection=False)    
 
 with tqdm(total=total_iterations) as pbar:
     
-
     for ref in multiverse_params['ref']:
         # ref
         param_str = f'{ref}'.translate(translation_table)
@@ -114,9 +115,10 @@ with tqdm(total=total_iterations) as pbar:
                     # emc
                     param_str = f'{ref}_{hpf}_{lpf}_{emc}'.translate(translation_table)
                     if emc == 'ica':
-                        _raw2, n1 = ica_eog_emg(_raw1.copy(), method='eog')
+                        _raw2, n1, n2 = ica_eog_emg(_raw1.copy(), method='eog')
                         manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
-    
+                        manager.update_subsubfield('ICA EOG', param_str, 'var_expl_ratio', n2)
+                            
                     elif emc is None:
                         _raw2 = _raw1.copy()
 
@@ -127,8 +129,9 @@ with tqdm(total=total_iterations) as pbar:
                         # mus
                         param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}'.translate(translation_table)
                         if mus == 'ica':
-                            _raw3, n1 = ica_eog_emg(_raw2.copy(), method='emg')
+                            _raw3, n1, n2 = ica_eog_emg(_raw2.copy(), method='emg')
                             manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
+                            manager.update_subsubfield('ICA EMG', param_str, 'var_expl_ratio', n2)
                             
                         elif mus is None:
                             _raw3 = _raw2.copy()

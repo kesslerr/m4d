@@ -270,7 +270,12 @@ def ica_eog_emg(raw, method='eog'):
         # find which ICs match the muscle pattern
         indices, scores = ica.find_bads_muscle(raw_new)
     
+    # new save expl var    
+    explained_var_ratio = ica.get_explained_variance_ratio(filt_raw, components=indices, ch_type="eeg")["eeg"]
+    
     print(f'Found {len(indices)} independent components correlating with {method.upper()}.')
+    print(f'{method.upper()} components explain {int(np.round(explained_var_ratio*100))}% of variance.')
+    
     ica.exclude.extend(indices) 
 
     # because it is an "additive" process, the ica component removel on filtered data 
@@ -278,7 +283,7 @@ def ica_eog_emg(raw, method='eog'):
     # ica.apply() changes the Raw object in-place, so let's make a copy first:
     ica.apply(raw_new)
 
-    return raw_new, len(indices)
+    return raw_new, len(indices), explained_var_ratio
 
 
 # autoreject parser
