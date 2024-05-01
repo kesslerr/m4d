@@ -14,7 +14,7 @@ set -e
 #subjects=($(awk -F',' 'NR>1 {print $1}' "$csv_file"))
 
 experiments=('RSVP')
-subjects = ('sub-001', 'sub-002', 'sub-005', 'sub-007', 'sub-008', 'sub-009', 'sub-011', 'sub-013', 'sub-014', 'sub-015', 'sub-017', 'sub-018', 'sub-020', 'sub-021', 'sub-022', 'sub-023', 'sub-024', 'sub-025', 'sub-026', 'sub-027', 'sub-028', 'sub-030', 'sub-035', 'sub-036', 'sub-037', 'sub-039', 'sub-040', 'sub-042', 'sub-043', 'sub-044', 'sub-045', 'sub-046', 'sub-048', 'sub-049')
+subjects=('sub-001' 'sub-002' 'sub-005' 'sub-007' 'sub-008' 'sub-009' 'sub-011' 'sub-013' 'sub-014' 'sub-015' 'sub-017' 'sub-018' 'sub-020' 'sub-021' 'sub-022' 'sub-023' 'sub-024' 'sub-025' 'sub-026' 'sub-027' 'sub-028' 'sub-030' 'sub-035' 'sub-036' 'sub-037' 'sub-039' 'sub-040' 'sub-042' 'sub-043' 'sub-044' 'sub-045' 'sub-046' 'sub-048' 'sub-049')
 
 # run the multiverse for all experiments and subjects
 for experiment in "${experiments[@]}"; do

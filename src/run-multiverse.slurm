@@ -5,8 +5,8 @@
 # is valid for any multi-threaded program, including
 # plain OpenMP, parallel Matlab, Julia, and similar cases.
 #
-#SBATCH -o /u/kroma/m4d/logs/multiverse_py_%j.out
-#SBATCH -e /u/kroma/m4d/logs/multiverse_py_%j.err
+#SBATCH -o /u/kroma/m4d/logs/%j_multiverse.out
+#SBATCH -e /u/kroma/m4d/logs/%j_multiverse.err
 #SBATCH -D ./
 #SBATCH -J multiverse
 #SBATCH --nodes=1             # request a full node

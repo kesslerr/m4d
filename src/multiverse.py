@@ -20,8 +20,8 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-#experiment = "ERN"
-#subject = "sub-001"
+experiment = "RSVP"
+subject = "sub-001"
 
 
 # define subject and session by arguments to this script
@@ -87,54 +87,56 @@ raw = raw.set_eeg_reference(['Cz'], projection=False)
 
 with tqdm(total=total_iterations) as pbar:
     
-    for ref in multiverse_params['ref']:
-        # ref
-        param_str = f'{ref}'.translate(translation_table)
-        if experiment == "MIPDB": # for MIPDB; the naming doesnt follow 10/10 convention, therefore make some exceptions:
-            if ref == ['Cz']:
-                _raw0 = raw.copy()  # Cz already is the online reference
-            elif ref == "average":
-                _raw0 = raw.copy().set_eeg_reference(ref, projection=False)
-            elif ref == ['P9', 'P10']:
-                _raw0 = raw.copy().set_eeg_reference(['E58', 'E96'], projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created     
-            else:
-                raise ValueError(f"Reference {ref} not implemented for MIPDB dataset.")       
-        else:
-            _raw0 = raw.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
-    
-        for hpf in multiverse_params['hpf']:
+    for emc in multiverse_params['emc']:
+        # emc
+        param_str = f'{emc}'.translate(translation_table)
+        if emc == 'ica':
+            _raw0, n1, n2 = ica_eog_emg(raw.copy(), method='eog')
+            manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
+            manager.update_subsubfield('ICA EOG', param_str, 'var_expl_ratio', n2)
+                
+        elif emc is None:
+            _raw0 = raw.copy()
+
+        # drop non-eeg channels (eog)
+        _raw0.pick_types(eeg=True)
+        
+        for mus in multiverse_params['mus']:
+            # mus
+            param_str = f'{emc}_{mus}'.translate(translation_table)
+            if mus == 'ica':
+                _raw1, n1, n2 = ica_eog_emg(_raw0.copy(), method='emg')
+                manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
+                manager.update_subsubfield('ICA EMG', param_str, 'var_expl_ratio', n2)
+                
+            elif mus is None:
+                _raw1 = _raw0.copy()
+
             for lpf in multiverse_params['lpf']:
-                # hpf + lpf
-                if hpf is None and lpf is None:
-                    _raw1 = _raw0.copy()
-                else:
-                    # CAVE: l_freq is HPF cutoff, and h_freq is LPF cutoff
-                    _raw1 = _raw0.copy().filter(l_freq=hpf, h_freq=lpf, method='fir', fir_design='firwin', skip_by_annotation='EDGE boundary', n_jobs=-1)
-
-                for emc in multiverse_params['emc']:
-                    # emc
-                    param_str = f'{ref}_{hpf}_{lpf}_{emc}'.translate(translation_table)
-                    if emc == 'ica':
-                        _raw2, n1, n2 = ica_eog_emg(_raw1.copy(), method='eog')
-                        manager.update_subsubfield('ICA EOG', param_str, 'n_components', n1)
-                        manager.update_subsubfield('ICA EOG', param_str, 'var_expl_ratio', n2)
-                            
-                    elif emc is None:
+                for hpf in multiverse_params['hpf']:
+                    # hpf + lpf
+                    if hpf is None and lpf is None:
                         _raw2 = _raw1.copy()
+                    else:
+                        # Attention: l_freq is HPF cutoff, and h_freq is LPF cutoff
+                        _raw2 = _raw1.copy().filter(l_freq=hpf, h_freq=lpf, method='fir', fir_design='firwin', skip_by_annotation='EDGE boundary', n_jobs=-1)
 
-                    # drop non-eeg channels (eog)
-                    _raw2.pick_types(eeg=True)
                     
-                    for mus in multiverse_params['mus']:
-                        # mus
-                        param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}'.translate(translation_table)
-                        if mus == 'ica':
-                            _raw3, n1, n2 = ica_eog_emg(_raw2.copy(), method='emg')
-                            manager.update_subsubfield('ICA EMG', param_str, 'n_components', n1)
-                            manager.update_subsubfield('ICA EMG', param_str, 'var_expl_ratio', n2)
-                            
-                        elif mus is None:
-                            _raw3 = _raw2.copy()
+                    for ref in multiverse_params['ref']:
+                        # ref
+                        param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}'.translate(translation_table)
+                        if experiment == "MIPDB": # for MIPDB; the naming doesnt follow 10/10 convention, therefore make some exceptions:
+                            if ref == ['Cz']:
+                                _raw3 = _raw2.copy()  # Cz already is the online reference
+                            elif ref == "average":
+                                _raw3 = _raw2.copy().set_eeg_reference(ref, projection=False)
+                            elif ref == ['P9', 'P10']:
+                                _raw3 = _raw2.copy().set_eeg_reference(['E58', 'E96'], projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created     
+                            else:
+                                raise ValueError(f"Reference {ref} not implemented for MIPDB dataset.")       
+                        else:
+                            _raw3 = _raw2.copy().set_eeg_reference(ref, projection=False) # projection must be false so that it is really re-referenced when using "average", and not only a projecten channel created
+    
 
                         for base in multiverse_params['base']:
                             # base (baseline correction and epoching)
@@ -163,19 +165,17 @@ with tqdm(total=total_iterations) as pbar:
                                                     proj=False,
                                                     reject_by_annotation=False, 
                                                     preload=True)
-                                
-                                # TODO: is the detrending performed as expected?
-                                
+                                                                
                                 for ar in multiverse_params['ar']:
                                     # ar
 
                                     # string that describes the current parameter combination
-                                    param_str = f'{ref}_{hpf}_{lpf}_{emc}_{mus}_{base}_{det}_{ar}'.translate(translation_table)
+                                    param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}_{base}_{det}_{ar}'.translate(translation_table)
 
                                     # add metadata to epochs
                                     epochs.metadata = pd.DataFrame(
-                                                data=[[path_id, ref, hpf, lpf, emc, mus, base, det, ar]] * len(epochs), 
-                                                columns=['path_id', 'ref', 'hpf', 'lpf', 'emc', 'mus', 'base', 'det', 'ar'], 
+                                                data=[[path_id, emc, mus, lpf, hpf, ref, base, det, ar]] * len(epochs), 
+                                                columns=['path_id', 'emc', 'mus', 'lpf', 'hpf', 'ref', 'base', 'det', 'ar'], 
                                                 index=range(len(epochs)),
                                                 )
 
@@ -206,4 +206,5 @@ with tqdm(total=total_iterations) as pbar:
                                     # update iteration
                                     path_id += 1
                                     pbar.update(1)
+                                    
                                     

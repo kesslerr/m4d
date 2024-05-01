@@ -156,6 +156,8 @@ epoch_windows = {
     'P3':   [-.4, .8],
     # MIPDB
     'MIPDB': [-.8, .4],
+    # infants
+    'RSVP': [-.4, .8],
     }
 
 # windows for baseline correction
@@ -169,6 +171,7 @@ baseline_windows = {
         'N400': (-.2, 0.),
         'P3':   (-.2, 0.),
         'MIPDB': [-.8, -.6],
+        'RSVP': [-.2, 0.],
         },
     '400ms': {
         'ERN':  (-.6, -.2),
@@ -179,6 +182,7 @@ baseline_windows = {
         'N400': (-.4, 0.),
         'P3':   (-.4, 0.),
         'MIPDB': [-.8, -.4],
+        'RSVP': [-.4, 0.],
         },
     }    
 
