@@ -271,7 +271,10 @@ def ica_eog_emg(raw, method='eog'):
         indices, scores = ica.find_bads_muscle(raw_new)
     
     # new save expl var    
-    explained_var_ratio = ica.get_explained_variance_ratio(filt_raw, components=indices, ch_type="eeg")["eeg"]
+    if len(indices) > 0:
+        explained_var_ratio = ica.get_explained_variance_ratio(filt_raw, components=indices, ch_type="eeg")["eeg"]
+    else:
+        explained_var_ratio = 0
     
     print(f'Found {len(indices)} independent components correlating with {method.upper()}.')
     print(f'{method.upper()} components explain {int(np.round(explained_var_ratio*100))}% of variance.')

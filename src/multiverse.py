@@ -21,7 +21,7 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 
 # DEBUG
 experiment = "RSVP"
-subject = "sub-001"
+subject = "sub-026"
 
 
 # define subject and session by arguments to this script
