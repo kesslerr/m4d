@@ -248,7 +248,7 @@ luck_forking_paths = { # these are not really the same, but some steps are compa
         'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'MIPDB': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        }
+        } # TODO change this to the new order
 
 luck_forking_paths_clean = { # without special characters
         'ERN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
@@ -260,6 +260,20 @@ luck_forking_paths_clean = { # without special characters
         'P3': "P9P10_0.1_None_ica_ica_200ms_offset_True",
         'MIPDB': "P9P10_0.1_None_ica_ica_200ms_offset_True",
         }
+
+luck_forking_paths_clean2 = { # without special characters
+        'ERN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'LRP': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'MMN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'N170': "ica_ica_None_0.1_average_200ms_offset_True",
+        'N2pc': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'N400': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'P3': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'MIPDB': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        }
+
+
+
 
 # difference waveforms, define the partners of subtraction
 # not use atm, as more easy to compute in the evoked.py script
