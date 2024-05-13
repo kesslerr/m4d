@@ -5,16 +5,17 @@
 # is valid for any multi-threaded program, including
 # plain OpenMP, parallel Matlab, Julia, and similar cases.
 #
-#SBATCH -o /u/kroma/m4d/logs/multiverse_py_%j.out
-#SBATCH -e /u/kroma/m4d/logs/multiverse_py_%j.err
+#SBATCH -o /u/kroma/m4d/logs/%j_multiverse.out
+#SBATCH -e /u/kroma/m4d/logs/%j_multiverse.err
 #SBATCH -D ./
 #SBATCH -J multiverse
 #SBATCH --nodes=1             # request a full node
 #SBATCH --ntasks-per-node=1   # only start 1 task via srun because Python multiprocessing starts more tasks internally
 #SBATCH --cpus-per-task=72    # assign all the cores to that first task to make room for multithreading
-#SBATCH --time=12:00:00
+#SBATCH --time=12:00:00  # for RSVP use 23:00 (all subs but sub-002 should be done in much less time)
 #SBATCH --mail-user=kessler@cbs.mpg.de
 #SBATCH --mail-type=ALL
+##SBATCH --mem 512G             # new
 
 # # set number of OMP threads *per process*
 # export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}

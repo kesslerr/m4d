@@ -86,29 +86,36 @@ def rename_annotations(raw, conditions_triggers):
     return raw
 
 # make artificial EOG channels by combining existing channels --> ERPCORE
-def recalculate_eog_signal(raw):
+def recalculate_eog_signal(raw, sfreq=256, has_EOG=True):
     """
     Recalculates the EOG (Electrooculogram) signal by creating HEOG (Horizontal EOG) and VEOG (Vertical EOG) channels.
 
     Args:
         raw (mne.io.Raw): The raw data containing the original EOG channels.
+        sfreq (int): The sampling frequency of the data.
+        has_EOG (bool): Whether the data has EOG channels or not.
 
     Returns:
         mne.io.Raw: The raw data with the recalculated EOG channels.
 
     """
-    #Create HEOG channel...
-    heog_info = mne.create_info(['HEOG'], 256, "eog")
-    heog_data = raw['HEOG_left'][0]-raw['HEOG_right'][0]
+    #Create HEOG and VEOG channel
+    heog_info = mne.create_info(['HEOG'], sfreq, "eog")
+    veog_info = mne.create_info(['VEOG'], sfreq, "eog")
+    if has_EOG:    
+        heog_data = raw['HEOG_left'][0]-raw['HEOG_right'][0]
+        veog_data = raw['VEOG_lower'][0]-raw['FP2'][0]
+    else:
+        heog_data = raw['F9'][0]-raw['F10'][0]
+        veog_data = ( raw['Fp1'][0] + raw['Fp2'][0] ) / 2
+
     heog_raw = mne.io.RawArray(heog_data, heog_info)
-    #...and VOEG
-    veog_info = mne.create_info(['VEOG'], 256, "eog")
-    veog_data = raw['VEOG_lower'][0]-raw['FP2'][0]
     veog_raw = mne.io.RawArray(heog_data, veog_info)
     #Append them to the data
     raw.add_channels([heog_raw, veog_raw],True)
     # delete original EOG channels
-    raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
+    if has_EOG:
+        raw.drop_channels([ 'HEOG_left', 'HEOG_right', 'VEOG_lower'])
     
     return raw
 
@@ -263,7 +270,15 @@ def ica_eog_emg(raw, method='eog'):
         # find which ICs match the muscle pattern
         indices, scores = ica.find_bads_muscle(raw_new)
     
+    # new save expl var    
+    if len(indices) > 0:
+        explained_var_ratio = ica.get_explained_variance_ratio(filt_raw, components=indices, ch_type="eeg")["eeg"]
+    else:
+        explained_var_ratio = 0
+    
     print(f'Found {len(indices)} independent components correlating with {method.upper()}.')
+    print(f'{method.upper()} components explain {int(np.round(explained_var_ratio*100))}% of variance.')
+    
     ica.exclude.extend(indices) 
 
     # because it is an "additive" process, the ica component removel on filtered data 
@@ -271,7 +286,7 @@ def ica_eog_emg(raw, method='eog'):
     # ica.apply() changes the Raw object in-place, so let's make a copy first:
     ica.apply(raw_new)
 
-    return raw_new, len(indices)
+    return raw_new, len(indices), explained_var_ratio
 
 
 # autoreject parser
@@ -349,6 +364,89 @@ def get_forking_paths(
     forking_paths_split = [i.split("_") for i in forking_paths]
     
     return forking_paths, files, forking_paths_split
+
+
+""" ------------------- EEGNet (RSVP) ------------------- """
+def recode_conditions(epochs, version="superordinate"):
+    """ Recode the conditions in the epochs object.
+    
+    Args:
+        epochs (mne.epochs): epochs object
+        version (str): "categories" or "superordinate", or "pseudo-superordinate" with pseudo trials
+    Returns:
+        epochs (mne.epochs): epochs object with recoded conditions
+    """
+    assert version in ["categories", "superordinate", "pseudo-superordinate"], "Version not recognized."
+    
+    # if exist, drop -2 TODO
+    if "-2" in epochs.event_id.keys():
+        # drop -2 epochs
+        indices = np.where(epochs.events[:, 2] == 1)[0]
+        epochs.drop(indices)
+        epochs.event_id.pop("-2")
+        
+        # also shift the numbers of all other events by -1
+        epochs.events[:, 2] = epochs.events[:, 2] - 1
+        epochs.event_id = {key: value - 1 for key, value in epochs.event_id.items()}
+        
+    
+    if version == "superordinate":
+        epochs = mne.epochs.combine_event_ids(epochs, 
+                            old_event_ids=['aquatic', 'bird', 'human', 'insect', 'mammal'], 
+                            new_event_id={"animate": 20}, 
+                            copy=True)
+        epochs = mne.epochs.combine_event_ids(epochs, 
+                            old_event_ids=['clothing', 'fruits', 'furniture', 'plants', 'tools'], 
+                            new_event_id={"inanimate": 21}, 
+                            copy=True)
+        epochs.event_id = {"animate": 1, "inanimate": 2}
+        epochs.events[:, 2][epochs.events[:, 2] == 20] = 1
+        epochs.events[:, 2][epochs.events[:, 2] == 21] = 2
+    
+    elif version == "pseudo-superordinate":
+        # equate stimulus counts
+        epo_list = []
+        for key in epochs.event_id.keys():
+            epo_list.append(epochs[key])
+        mne.epochs.equalize_epoch_counts(epo_list, method="mintime") # TODO check if that works or i need to work with 2 lists
+        equ_epochs = mne.epochs.concatenate_epochs(epo_list)
+        # make pseudo trials
+        conditions = {
+            'animate': ['aquatic', 'bird', 'human', 'insect', 'mammal'],
+            'inanimate':  ['clothing', 'fruits', 'furniture', 'plants', 'tools'],
+        }
+        
+        n_per_cond = len(epo_list[0])
+        pseudo_epochs = []
+        for i in range(n_per_cond):
+            for c, condition in enumerate(conditions):
+                one_pseudo_epoch = []
+                for category in conditions[condition]:
+                    one_pseudo_epoch.append(equ_epochs[category][i])
+                # average over the pseudo trials
+                #break
+            #break
+                one_pseudo_epoch = mne.epochs.concatenate_epochs(one_pseudo_epoch)
+                one_pseudo_evoked = one_pseudo_epoch.average(method="mean")
+                # make an single epoch from the evoked
+                event_times = [1]  # Example event times in seconds
+                event_id=c
+                events = [[int(time * one_pseudo_evoked.info['sfreq']), 0, event_id] for time in event_times]
+                pseudo_epochs.append(
+                    mne.EpochsArray(np.expand_dims(one_pseudo_evoked.get_data(),0),
+                                    epochs.info, 
+                                    events=events, 
+                                    event_id={condition: event_id}, 
+                                    tmin=epochs.tmin, #tmax=.8, 
+                                    baseline=epochs.baseline)
+                )
+
+        pseudo_epochs = mne.concatenate_epochs(pseudo_epochs)        
+        return pseudo_epochs            
+    
+    # version categories: leave as is
+    
+    return epochs
 
 
 """ 5b sliding groups and 4z-aggregate_results """

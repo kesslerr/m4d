@@ -13,7 +13,7 @@ sys.path.append(base_dir)
 alt_dir = "/ptmp/kroma/m4d/"
 
 #from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
-from src.config import subjects, experiments, channels_of_interest, luck_forking_paths, contrasts, contrasts_combined
+from src.config import subjects, experiments, channels_of_interest, luck_forking_paths_clean2, contrasts, contrasts_combined
 
 plot_dir = os.path.join(base_dir, "plots")
 model_dir = os.path.join(base_dir, "models")
@@ -33,7 +33,7 @@ group_results = {}
 for experiment in experiments:
     group_results[experiment] = {}
 
-    forking_path = luck_forking_paths[experiment] 
+    forking_path = luck_forking_paths_clean2[experiment] 
     contrast = contrasts[experiment]
     channels = channels_of_interest[experiment]
     assert len(contrast) == len(channels), "Number of contrasts and channels must be the same!"

@@ -45,6 +45,9 @@ delete_triggers = { # ERPCORE
                    
                    # Cichy
                    'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults, probably paperclip stimuli (for blinks) and responses to it
+                   
+                   # infants
+                   'RSVP': ["-1", "-2"]
                    }
 
 # collate triggers so conditions are merged for decoding
@@ -123,7 +126,23 @@ conditions_triggers = {
 }
 
 
-
+# Groot. infants
+category_triggers = {
+    'aquatic':   [str(i) for i in range(1,21)],
+    'bird':      [str(i) for i in range(21,41)],
+    'human':     [str(i) for i in range(41,61)],
+    'insect':    [str(i) for i in range(61,81)],
+    'mammal':    [str(i) for i in range(81,101)],
+    'clothing':  [str(i) for i in range(101,121)],
+    'fruits':    [str(i) for i in range(121,141)],
+    'furniture': [str(i) for i in range(141,161)],
+    'plants':    [str(i) for i in range(161,181)],
+    'tools':     [str(i) for i in range(181,201)],
+}
+supraordinate_triggers = {
+    'animate':   [str(i) for i in range(1,101)],
+    'inanimate': [str(i) for i in range(101,201)],
+}
 
 # epoching windows
 epoch_windows = {
@@ -137,6 +156,8 @@ epoch_windows = {
     'P3':   [-.4, .8],
     # MIPDB
     'MIPDB': [-.8, .4],
+    # infants
+    'RSVP': [-.4, .8],
     }
 
 # windows for baseline correction
@@ -150,6 +171,7 @@ baseline_windows = {
         'N400': (-.2, 0.),
         'P3':   (-.2, 0.),
         'MIPDB': [-.8, -.6],
+        'RSVP': [-.2, 0.],
         },
     '400ms': {
         'ERN':  (-.6, -.2),
@@ -160,6 +182,7 @@ baseline_windows = {
         'N400': (-.4, 0.),
         'P3':   (-.4, 0.),
         'MIPDB': [-.8, -.4],
+        'RSVP': [-.4, 0.],
         },
     }    
 
@@ -225,7 +248,7 @@ luck_forking_paths = { # these are not really the same, but some steps are compa
         'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
         'MIPDB': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        }
+        } # TODO change this to the new order
 
 luck_forking_paths_clean = { # without special characters
         'ERN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
@@ -237,6 +260,20 @@ luck_forking_paths_clean = { # without special characters
         'P3': "P9P10_0.1_None_ica_ica_200ms_offset_True",
         'MIPDB': "P9P10_0.1_None_ica_ica_200ms_offset_True",
         }
+
+luck_forking_paths_clean2 = { # without special characters
+        'ERN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'LRP': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'MMN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'N170': "ica_ica_None_0.1_average_200ms_offset_True",
+        'N2pc': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'N400': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'P3': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'MIPDB': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        }
+
+
+
 
 # difference waveforms, define the partners of subtraction
 # not use atm, as more easy to compute in the evoked.py script

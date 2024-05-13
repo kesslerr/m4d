@@ -39,16 +39,16 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
-from src.utils import get_forking_paths
+from src.utils import get_forking_paths, recode_conditions
 from src.config import translation_table, baseline_windows, decoding_windows
 
 """ HEADER END """
 
 # DEBUG
-# experiment = "P3"
-# subject = "sub-001"
+#experiment = "RSVP"
+#subject = "sub-015"
 
-# TODO: decoding should only be done after the baseline period ended!
+# TODO: MAYBE? decoding should only be done after the baseline period ended!
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -110,7 +110,10 @@ def slider_parallel(forking_path, file):
     
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
-    
+    if experiment == "RSVP":
+        # recode conditions
+        epochs = recode_conditions(epochs.copy(), version="superordinate")
+
     #n_tp = len(epochs.times)
     tmin = decoding_windows[experiment][0]
     tmax = decoding_windows[experiment][1]
