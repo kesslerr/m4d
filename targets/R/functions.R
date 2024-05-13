@@ -533,11 +533,10 @@ est_emm <- function(model, orig_data){
     dfc <- dfc[, c(8, 1, 2, 3, 4, 5, 6, 7)]
     contra <- rbind(contra, dfc)
     
-    # omnibus tests for each factor
-    f <- joint_tests(emm)
-    fs <- rbind(fs, f)
-    
   }
+  # omnibus tests for each factor
+  fs <- joint_tests(model, data=orig_data)
+  
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
   fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
@@ -551,59 +550,6 @@ est_emm <- function(model, orig_data){
   
   return(list(means, contra, fs))
   
-}
-
-# ungroup targets across all branches
-ungrouping <- function(input){
-  data = data.frame()
-  i <- 0
-  for (experiment in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
-    i <- i + 1
-    #tmp <- tar_read(eegnet_HLM_exp_emm_means, branches=i)[[1]]
-    tmp <- input[[i]]
-    tmp[["experiment"]] <- experiment
-    data <- rbind(data, tmp)
-  }
-  data
-}
-
-# concatenate experiment and whole 
-combine_single_whole <- function(single, whole){
-  whole$experiment = "ALL"
-  rbind(whole, single)
-}
-
-# heatmap of emms
-heatmap <- function(data){
-  data <- data %>% 
-    reorder_variables(column_name = "variable") %>%
-    relevel_variables(column_name = "level") %>%
-    # Apply replacements batchwise across all columns
-    mutate(variable = recode(variable, !!!replacements)) %>%
-    # NEW: replacements for each level
-    #mutate(level = recode(level, !!!replacements)) %>%
-    # delete the experiment compairson in the full data
-    #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
-    # center around zero for better comparability
-    group_by(experiment) %>%
-    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
-
-  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
-    geom_tile() +
-    facet_grid(experiment~variable, scales="free") +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()) +
-    scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-                                    l1 = 45, # luminance at endpoints
-                                    l2 = 100, # luminance at midpoints
-                                    p1 = .9, 
-                                    p2 = 1.2) +
-    labs(x="processing step",
-         y="",
-         fill="delta\nfrom\nmarginal\nmean\n(%)")  
-        # Percentage marginal mean discrepancy
-        # Distance from average (in %)
-        # Percent above/below average
 }
 
 est_emm_int <- function(model, data){
@@ -672,6 +618,61 @@ est_emm_int <- function(model, data){
   
   return(list(means, contra))
 }
+
+
+# ungroup targets across all branches
+ungrouping <- function(input){
+  data = data.frame()
+  i <- 0
+  for (experiment in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
+    i <- i + 1
+    #tmp <- tar_read(eegnet_HLM_exp_emm_means, branches=i)[[1]]
+    tmp <- input[[i]]
+    tmp[["experiment"]] <- experiment
+    data <- rbind(data, tmp)
+  }
+  data
+}
+
+# concatenate experiment and whole 
+combine_single_whole <- function(single, whole){
+  whole$experiment = "ALL"
+  rbind(whole, single)
+}
+
+# heatmap of emms
+heatmap <- function(data){
+  data <- data %>% 
+    reorder_variables(column_name = "variable") %>%
+    relevel_variables(column_name = "level") %>%
+    # Apply replacements batchwise across all columns
+    mutate(variable = recode(variable, !!!replacements)) %>%
+    # NEW: replacements for each level
+    #mutate(level = recode(level, !!!replacements)) %>%
+    # delete the experiment compairson in the full data
+    #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
+    # center around zero for better comparability
+    group_by(experiment) %>%
+    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+
+  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+    geom_tile() +
+    facet_grid(experiment~variable, scales="free") +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()) +
+    scale_fill_continuous_diverging(palette = "Blue-Red 3", 
+                                    l1 = 45, # luminance at endpoints
+                                    l2 = 100, # luminance at midpoints
+                                    p1 = .9, 
+                                    p2 = 1.2) +
+    labs(x="processing step",
+         y="",
+         fill="delta\nfrom\nmarginal\nmean\n(%)")  
+        # Percentage marginal mean discrepancy
+        # Distance from average (in %)
+        # Percent above/below average
+}
+
 
 reorder_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
@@ -884,6 +885,7 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
   # plot age
   p1 <- ggplot(data, aes(x=age, y=Intercept, color=sex)) +
     geom_point() +
+    geom_smooth(method="lm", se=TRUE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
     labs(x="Age", y="Random Intercept")
   
@@ -897,7 +899,7 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
     geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
     labs(x="Random Intercept", y="Count") +
-    scale_fill_viridis_d()
+    scale_fill_viridis_d(begin=0, end=0.8)
   
   ggarrange(p1,p2,p3, ncol=3) %>%
   annotate_figure(left = text_grob(experiment, 
@@ -1033,4 +1035,91 @@ check_convergence <- function(model){
   data.frame(CORR = c("ok"),
              SE = c("ok"),
              check_ignore = c(models$coefficients[, "Std. Error"][3]))
+}
+
+# Muscle artifact correction components per LPF 
+muscle_lpf <- function(ICA="EMG"){
+  
+  subjects = c("sub-001", "sub-002", "sub-003", "sub-004", "sub-005", "sub-006", "sub-007", "sub-008", "sub-009", "sub-010", "sub-011", "sub-012", "sub-013", "sub-014", "sub-015", "sub-016", "sub-017", "sub-018", "sub-019", "sub-020", "sub-021", "sub-022", "sub-023", "sub-024", "sub-025", "sub-026", "sub-027", "sub-028", "sub-029", "sub-030", "sub-031", "sub-032", "sub-033", "sub-034", "sub-035", "sub-036", "sub-037", "sub-038", "sub-039", "sub-040")
+  experiments = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  results = data.frame()
+  for (experiment in experiments){
+    for (sub in subjects){
+      example_char_file <- paste0("/Users/roman/GitHub/m4d/data/interim/",experiment,"/",sub,"/characteristics.json")
+      
+      # read the file
+      df <- jsonlite::fromJSON(example_char_file)
+      
+      if (ICA == "EMG"){
+        unique_emc_pipelines <- names(df$`ICA EMG`)
+      } else if (ICA == "EOG"){
+        unique_emc_pipelines <- names(df$`ICA EOG`)
+      }
+      # debug
+      #pipeline = unique_emc_pipelines[1]
+      
+      for (pipeline in unique_emc_pipelines) {
+        if (ICA == "EMG"){
+          n_comp <- df$`ICA EMG`[[pipeline[[1]][[1]]]]$n_components
+        } else if (ICA == "EOG"){
+          n_comp <- df$`ICA EOG`[[pipeline[[1]][[1]]]]$n_components
+        }
+        # split pipeline str at each underscore
+        splits <- strsplit(pipeline, "_")[[1]]
+        thisResult <- data.frame("ref" = splits[1],
+                                 "hpf" = splits[2],
+                                 "lpf" = splits[3],
+                                 #"emc" = splits[4],
+                                 #"mac" = splits[5],
+                                 "components" = n_comp,
+                                 "experiment" = experiment,
+                                 "subject" = sub)
+        results <- bind_rows(results, thisResult)
+      }
+    }
+  }
+  
+  results$lpf <- factor(results$lpf, levels = c("6", "20", "45", "None"))
+  library(ggplot2)
+  
+  # MAC
+  p <- ggplot(results, aes(x=lpf, y=components)) + 
+    geom_boxplot() +
+    labs(y="# of dropped components", x="Low-pass filter (Hz)", title = "Muscle artifact correction via ICA") +
+    facet_grid(experiment ~ .)
+  
+  return(p)
+}
+
+
+plot_multiverse_sankey <- function(data){
+  data %<>% 
+    filter(subject == "sub-001") %>%
+    filter(experiment == "N170") %>%
+    select(-c(subject, accuracy, experiment)) 
+  
+  # now change the names of all columns with the replacements
+  names(data) <- recode(names(data), !!!replacements)
+  
+  # make long
+  data_long <- data %>%
+    make_long(names(data)) %>%
+    mutate(node = recode(node, !!!replacements)) %>% # also replace with better names
+    mutate(next_node = recode(next_node, !!!replacements))
+  
+  
+  
+  ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
+    geom_sankey(flow.alpha = .6,
+                node.color = "gray20") +
+    geom_sankey_label(size = 4, color = "white", fill = "gray40") +
+    #scale_fill_viridis_d(drop = FALSE) +
+    #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
+    scale_fill_grey() +
+    theme_sankey(base_size = 18) +
+    labs(x = "processing step", title = "Multiverse") +
+    theme(legend.position = "none",
+          #plot.title = element_text(hjust = .5) # to make it central
+          )
 }

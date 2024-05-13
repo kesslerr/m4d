@@ -37,9 +37,9 @@ column_types = Dict(
 
 # import dataframe
 #data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
-data_raw = CSV.read(string("../targets/eegnet.csv"), DataFrame, types=column_types);
-data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
-select!(data_raw, Not(:dataset));
+data_raw = CSV.read(string("../targets/eegnet_reordered.csv"), DataFrame, types=column_types);
+#data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
+#select!(data_raw, Not(:dataset));
 #data = CSV.read("data_eegnet.csv", DataFrame) 
 
 unique_experiments = unique(data_raw.experiment)

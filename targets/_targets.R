@@ -25,6 +25,7 @@ tar_option_set( # packages that your targets use
                "GGally", # e.g. pairwise correlation plots (ggpairs)
                "ggdist", 
                "ggthemes", 
+               "ggsankey", # sankey plots
                "cowplot", # to overlay plots
                "pals", # some colorscales
                "readr", 
@@ -89,17 +90,17 @@ list(
   ## define raw data files
   tar_target(
     name = eegnet_file,
-    command = "eegnet.csv", # TODO: put this into a different folder
+    command = "eegnet_reordered.csv", # TODO: put this into a different folder
     format = "file"
   ),
   tar_target(
     name = sliding_file,
-    command = "sliding.csv",
+    command = "sliding_reordered.csv",
     format = "file"
   ),
   tar_target(
     name = tsum_file,
-    command = "sliding_tsums.csv",
+    command = "sliding_tsums_reordered.csv",
     format = "file"
   ),
   tar_target(
@@ -172,6 +173,25 @@ list(
   tar_target(
     name = demographics,
     command = {read_tsv(demographics_file) %>% mutate_if(is.character, as.factor)}
+  ),
+  
+  ## Multiverse sankey visualization
+  tar_target(
+    name = sankey,
+    command = plot_multiverse_sankey(data_eegnet)
+  ),
+  tar_target(
+    name = sankey_file,
+    command = {
+      ggsave(plot=sankey,
+             filename="sankey.png",
+             path=figure_output_dir,
+             scale=3,
+             width=12,
+             height=4,
+             units="cm",
+             dpi=500)
+    },
   ),
   
   ## Example results of Luck forking path
@@ -492,8 +512,13 @@ list(
                
                ggpairs(wide_data) + labs(title="Random Intercept Correlation Between Experiments")
              }
-  ),
+  ), # TODO: track the 7*40 files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
   
+  ## Characteristics of processing steps
+  ## Muscle Artifact ICA Components
+  tar_target(muscle_lpf_plot,
+             muscle_lpf(ICA="EMG")),
+
   ## Exports for Paper
 
   ### Figures
