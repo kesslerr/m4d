@@ -2,7 +2,7 @@
 # aggregate the results of eegnet and sliding 
 
 
-import os
+import os, sys
 import pandas as pd
 import numpy as np
 from natsort import natsorted
@@ -22,17 +22,18 @@ from src.config import experiments, subjects # ERPCORE
 
 for dataset in ["ERPCORE"]: #, "MIPDB"
     
-    for decoder in ["eegnet", "sliding"]:
+    for decoder in ["eegnet"]: #, "sliding"
 
-        model_folder = "/u/kroma/m4d/models/eegnet/"
+        model_folder = "/u/kroma/m4d/models/" + decoder
 
         # Get subdirectory names
-        experiments = [subdir for subdir in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, subdir))]
+        #experiments = [subdir for subdir in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, subdir))]
         # delete MIPDB
-        experiments = [x for x in experiments if x != "MIPDB"]
+        #experiments = [x for x in experiments if x != "MIPDB"]
         # DEBUG
         #experiments = ["ERN"]
-
+        experiments = ["ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3"]
+        
         subjects = [subdir for subdir in os.listdir(os.path.join(model_folder, experiments[0])) if os.path.isdir(os.path.join(model_folder, experiments[0], subdir))]
 
         #new_column_names = ['ref', 'hpf', 'lpf', 'emc', 'mac', 'base', 'det', 'ar']
@@ -74,17 +75,19 @@ for dataset in ["ERPCORE"]: #, "MIPDB"
         concatenated_data['ar'] = pd.Categorical(concatenated_data['ar'], categories=["False", "True"], ordered=True)
         concatenated_data['experiment'] = pd.Categorical(concatenated_data['experiment'])
 
-        concatenated_data["dataset"] = "ERPCORE"
-        concatenated_data['dataset'] = pd.Categorical(concatenated_data['dataset'])
+        #concatenated_data["dataset"] = "ERPCORE"
+        #concatenated_data['dataset'] = pd.Categorical(concatenated_data['dataset'])
+
+        concatenated_data.to_csv(os.path.join("/u/kroma/m4d/models/", f"{decoder}_reordered.csv"), index=False)
 
 
 # Output the combined data
 print(concatenated_data)
 
 #data_folder = "/u/kroma/m4d/model"
-concatenated_data.to_csv(os.path.join("/u/kroma/m4d/models/", "eegnet_reordered.csv"), index=False)
+#concatenated_data.to_csv(os.path.join("/u/kroma/m4d/models/", "eegnet_reordered.csv"), index=False)
 
-concatenated_data_1 = concatenated_data.copy()
+#concatenated_data_1 = concatenated_data.copy()
 #concatenated_data.to_csv(os.path.join(model_folder, "ERPCORE_eegnet.csv"), index=False)
 
 

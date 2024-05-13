@@ -70,7 +70,8 @@ for dataset in ['erpcore']: # TODO: add 'mipdb',
         print(f"Experiment: {experiment}")
 
         if dataset == "erpcore":
-            epoch_example_file = f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif"
+            epoch_example_file = f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/None_None_45_0.5_average_400ms_linear_False-epo.fif"
+            #epoch_example_file = f"/ptmp/kroma/m4d/data/processed/{experiment}/sub-001/average_0.5_45_None_None_400ms_linear_False-epo.fif"
             tmin = decoding_windows[experiment][0]
             tmax = decoding_windows[experiment][1]
         elif dataset == "mipdb":
@@ -130,7 +131,8 @@ for dataset in ['erpcore']: # TODO: add 'mipdb',
                     df_mean.loc[c[0]:c[-1]+1, "p"] = cluster_pv[i_c]
                     df_mean.loc[c[0]:c[-1]+1, "significance"] = True
 
-            df_mean[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            #df_mean[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            df_mean[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
             df_mean['forking_path'] = forking_path
             df_mean['experiment'] = experiment
             df_mean['dataset'] = dataset
@@ -141,15 +143,16 @@ for dataset in ['erpcore']: # TODO: add 'mipdb',
                 'experiment': experiment,
                 'dataset': dataset,
                 }, index=[0])
-            df_tsum[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            df_tsum[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
+            #df_tsum[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
             df_tsum['forking_path'] = forking_path
             df_tsums.append(df_tsum)
     
 df_results = pd.concat(df_results)
-df_results.to_csv(f"{base_dir}/models/sliding/sliding.csv", index=False)
+df_results.to_csv(f"{base_dir}/models/sliding/sliding_reordered.csv", index=False)
 
 df_tsums = pd.concat(df_tsums)
-df_tsums.to_csv(f"{base_dir}/models/sliding/sliding_tsums.csv", index=False)
+df_tsums.to_csv(f"{base_dir}/models/sliding/sliding_tsums_reordered.csv", index=False)
 
 
 ## PLOT exemplary FP results, and maybe stats
