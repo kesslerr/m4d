@@ -47,7 +47,7 @@ delete_triggers = { # ERPCORE
                    'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults, probably paperclip stimuli (for blinks) and responses to it
                    
                    # infants
-                   'RSVP': ["-1"]
+                   'RSVP': ["-1", "-2"]
                    }
 
 # collate triggers so conditions are merged for decoding

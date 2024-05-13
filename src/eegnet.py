@@ -7,12 +7,19 @@ import numpy as np
 import itertools
 import pandas as pd
 
-from braindecode.preprocessing import exponential_moving_standardize
+try:
+    from braindecode.preprocessing import exponential_moving_standardize
+    from braindecode import EEGClassifier
+    from braindecode.util import set_random_seeds
+
+except:
+    from braindecode.preprocessing import exponential_moving_standardize # workaround, because the second import usually works
+    from braindecode import EEGClassifier
+    from braindecode.util import set_random_seeds
+    
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from skorch.dataset import ValidSplit
 from skorch.callbacks import LRScheduler
-from braindecode import EEGClassifier
-from braindecode.util import set_random_seeds
 from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, cross_validate, StratifiedKFold
 from sklearn.utils import compute_class_weight
 import torch
@@ -26,15 +33,15 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
-from src.utils import get_forking_paths
+from src.utils import get_forking_paths, recode_conditions
 #from src.config import multiverse_params, epoch_windows, baseline_windows
 
 """ HEADER END """
 
 # DEBUG
-#experiment = "MMN"
+#experiment = "ERN"
 #subject = "sub-001"
-
+#rdm=True # TODO: code if a whole rdm shall be created
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -51,24 +58,45 @@ processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.
 model_folder = os.path.join(base_dir, "models", "eegnet", experiment, subject)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
+else:
+    _ = [os.remove(file) for file in glob(os.path.join(model_folder, "*"))]
+
 
 forking_paths, files, forking_paths_split = get_forking_paths(
                             base_dir="/ptmp/kroma/m4d/", 
                             experiment=experiment,
                             subject=subject, 
-                            sample=None)
+                            sample=None) # DEBUG 5 TODO None
     
 """ SPECIFICATIONS END"""
+
+rdm=False
 
 # DEBUG
 #forking_path = forking_paths[0]
 #file = files[0]
 
-
 def parallel_eegnet(forking_path, file):  
+    
+    try: # this is a quick and dirty workaround for an error, related to a RAVEN update and braindecode incompatibilities
+        from braindecode.preprocessing import exponential_moving_standardize # workaround, because the second import usually works
+        from braindecode import EEGClassifier
+        from braindecode.util import set_random_seeds
+    except:
+        from braindecode.preprocessing import exponential_moving_standardize
+        from braindecode import EEGClassifier
+        from braindecode.util import set_random_seeds
     
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
+    
+    if experiment == "RSVP":
+        if rdm == False:
+            # recode conditions
+            epochs = recode_conditions(epochs.copy(), version="superordinate")
+        elif rdm == True:
+            epochs = recode_conditions(epochs.copy(), version="categories")
+        # TODO change way of decoding for RDM
     
     # extract data from epochs
     X = epochs.get_data()
@@ -89,6 +117,12 @@ def parallel_eegnet(forking_path, file):
     # class weight for imbalanced learning
     class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
     
+    # get some information about the data
+    if "RSVP" in experiment:
+        sfreq = 250 # TODO: maybe this was the MIPDB error?
+    else:
+        sfreq = 256
+    
     # train model
     net = EEGClassifier(
         "EEGNetv4", 
@@ -97,7 +131,7 @@ def parallel_eegnet(forking_path, file):
         train_split=None, #ValidSplit(0.2),
         max_epochs=200, # TODO maybe increase, I saw consistent increase from 30 to 100, so maybe we can even more increase
         batch_size=16, # this worked better than no batch size (which is then very large compared to the amount of data available)
-        module__sfreq=256, 
+        module__sfreq=sfreq, 
         #optimizer__lr=lr,
         #module__drop_prob=0.25,
     )
@@ -120,9 +154,14 @@ def parallel_eegnet(forking_path, file):
                     'accuracy': [validation_acc],
                     })
     dfi.to_csv(f"{model_folder}/{forking_path}.csv", index=False)
+    # TODO: instead in a shared object?
 
 
 # parallel processing
 Parallel(n_jobs=-1)(delayed(parallel_eegnet)(forking_path, file) for forking_path, file in zip(forking_paths, files))
 
 # TODO: summarize all these across subjects and experiments in a big results dataframe (other script)
+
+# DEBUG
+#parallel_eegnet(forking_paths[0], files[0])
+#Parallel(n_jobs=10)(delayed(parallel_eegnet)(forking_path, file) for forking_path, file in zip(forking_paths, files))
