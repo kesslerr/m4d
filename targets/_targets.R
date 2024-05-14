@@ -160,15 +160,15 @@ list(
   ## import and recode datasets
   tar_target(
     name = data_eegnet,
-    command = {get_preprocess_data(eegnet_file) %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))} #forking_path, 
+    command = {get_preprocess_data(eegnet_file)} #  %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))
   ),
   tar_target(
     name = data_sliding,
-    command = {get_preprocess_data(sliding_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} # 
+    command = {get_preprocess_data(sliding_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
   ),
   tar_target(
     name = data_tsum,
-    command = {get_preprocess_data(tsum_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} #forking_path, 
+    command = {get_preprocess_data(tsum_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
   ),
   tar_target(
     name = demographics,
@@ -208,7 +208,7 @@ list(
   tar_target( # average across subjects for each pipeline
     name = overview_accuracy_avgsub,
     command = raincloud_acc(data_eegnet %>%
-                              group_by(ref, hpf, lpf, emc, mac, base, det, ar, experiment) %>%
+                              group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
                             title = "EEGNet")
@@ -250,7 +250,7 @@ list(
       plot_file = paste0(figure_output_dir, "ffx_z_values.png")
       dummy = system2(command = julia_executable, args = c(julia_z_script, plot_file),
                       wait=TRUE,# wait for process to be finished before continuing in R
-                      stdout = TRUE) # capture output (doesnt work)
+                      stdout = FALSE) # capture output (doesnt work)
       plot_file # TODO, slight errors might not lead to aborting the pipeline
     },
     format = "file"
@@ -296,14 +296,14 @@ list(
   ## LM for sliding
   tar_target(
     name = sliding_LMi2,
-    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
   tar_target(
     name = sliding_LMi3,
-    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 3", 
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 3", 
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
@@ -515,9 +515,9 @@ list(
   ), # TODO: track the 7*40 files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
   
   ## Characteristics of processing steps
-  ## Muscle Artifact ICA Components
-  tar_target(muscle_lpf_plot,
-             muscle_lpf(ICA="EMG")),
+  ## Muscle Artifact ICA Components, only necessary for old order of preprocessing steps
+  #tar_target(muscle_lpf_plot,
+  #           muscle_lpf(ICA="EMG")),
 
   ## Exports for Paper
 

@@ -25,7 +25,7 @@ get_preprocess_data <- function(file) {
   data$ar <- factor(tolower(data$ar), levels = c("false", "true"))
   #data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
   data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
-  data$dataset <- factor(data$dataset)
+  #data$dataset <- factor(data$dataset)
   
   # new: replace with paper-ready variable names / factor levels
   # col names
@@ -94,9 +94,9 @@ rjulia_r2 <- function(data){
         if (modeltype == "EEGNet"){
           julia_assign("data", data_tmp) # bring data into julia
           if (interaction == "true"){
-            julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));")
+            julia_command("formula = @formula(accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr( (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));")
           } else if (interaction == "false") {
-            julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+            julia_command("formula = @formula(accuracy ~ emc + mac + lpf + hpf + ref + base + det + ar + ( emc + mac + lpf + hpf + ref + base + det + ar | subject));")
           }
           julia_command("model = fit(LinearMixedModel, formula, data);")
           julia_command("predictions = predict(model, data);")
@@ -106,10 +106,10 @@ rjulia_r2 <- function(data){
           
         } else if (modeltype == "Time-resolved"){
             if (interaction=="true"){
-              mod <- lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2",
+              mod <- lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2",
                  data = data_tmp)
             } else if (interaction=="false"){
-              mod <- lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
+              mod <- lm(formula="tsum ~ emc + mac + lpf + hpf + ref + base + det + ar",
                  data = data_tmp)
             }
           ir2 <- summary(mod)$r.squared
@@ -139,7 +139,7 @@ rjulia_r2 <- function(data){
 }
 
 chord_plot <- function(plot_filepath){
-  varnames <- c("ref","hpf","lpf","emc","mac","base","det","ar")
+  varnames <- c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref","hpf","lpf","emc","mac","base","det","ar")
   varnames <- recode(varnames, !!!replacements)
   numbers <- c(0,1,1,0,0,0,0,1,
                1,0,1,1,1,1,1,1,
@@ -193,7 +193,7 @@ estimate_marginal_means_sliding <- function(data, per_exp = FALSE){
   }
   all_results <- data.frame()
   for (experiment_value in experiments){
-    for (variable in c("ref","hpf","lpf","base","det","ar","emc","mac")) {
+    for (variable in c("emc","mac","lpf","hpf","ref","base","det","ar",)) { #"ref","hpf","lpf","base","det","ar","emc","mac"
       
       result <- data %>%
         {if(per_exp==TRUE) filter(., experiment == experiment_value) else . } %>%
@@ -234,11 +234,11 @@ sliding_plot_experiment <- function(data){
 
 luckfps <- data.frame(
   experiment = c('ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3'),
-  ref = c('P9P10', 'P9P10', 'P9P10', 'average', 'P9P10', 'P9P10', 'P9P10'),
-  hpf = c('0.1', '0.1', '0.1', '0.1', '0.1', '0.1', '0.1'),
-  lpf = c('None', 'None', 'None', 'None', 'None', 'None', 'None'),
   emc = c('ica', 'ica', 'ica', 'ica', 'ica', 'ica', 'ica'),
   mac = c('ica', 'ica', 'ica', 'ica', 'ica', 'ica', 'ica'),
+  lpf = c('None', 'None', 'None', 'None', 'None', 'None', 'None'),
+  hpf = c('0.1', '0.1', '0.1', '0.1', '0.1', '0.1', '0.1'),
+  ref = c('P9P10', 'P9P10', 'P9P10', 'average', 'P9P10', 'P9P10', 'P9P10'),
   base = c('200ms', '200ms', '200ms', '200ms', '200ms', '200ms', '200ms'),
   det = c('offset', 'offset', 'offset', 'offset', 'offset', 'offset', 'offset'),
   #ar = c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE')
@@ -247,7 +247,7 @@ luckfps <- data.frame(
 
 timeresolved_plot <- function(data){
   data_fp <- semi_join(data, luckfps, 
-                       by = c("experiment", "ref", "hpf", "lpf", "emc", "mac", "base", "det", "ar"))
+                       by = c("experiment", "emc", "mac", "lpf", "hpf", "ref", "base", "det", "ar")) #c("experiment", "ref", "hpf", "lpf", "emc", "mac", "base", "det", "ar")
   # TR-Decoding with points as significance markers
   ggplot(data_fp, aes(x = times, y = `balanced accuracy`)) +
     geom_line() +
@@ -498,7 +498,7 @@ est_emm <- function(model, orig_data){
   #model <- model[[1]]
   
   
-  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
@@ -554,7 +554,7 @@ est_emm <- function(model, orig_data){
 
 est_emm_int <- function(model, data){
   experiment <- experiment <- unique(data$experiment)
-  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
   means = data.frame()
   contra = data.frame()
   for (variable.1 in variables) {
@@ -677,7 +677,7 @@ heatmap <- function(data){
 reorder_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
   #new_order = c("ref", "hpf","lpf","emc","mac","base","det","ar") # original
-  new_order = c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
+  new_order = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
@@ -1038,6 +1038,7 @@ check_convergence <- function(model){
 }
 
 # Muscle artifact correction components per LPF 
+# TODO: this only worked with the old order, not necessary now!
 muscle_lpf <- function(ICA="EMG"){
   
   subjects = c("sub-001", "sub-002", "sub-003", "sub-004", "sub-005", "sub-006", "sub-007", "sub-008", "sub-009", "sub-010", "sub-011", "sub-012", "sub-013", "sub-014", "sub-015", "sub-016", "sub-017", "sub-018", "sub-019", "sub-020", "sub-021", "sub-022", "sub-023", "sub-024", "sub-025", "sub-026", "sub-027", "sub-028", "sub-029", "sub-030", "sub-031", "sub-032", "sub-033", "sub-034", "sub-035", "sub-036", "sub-037", "sub-038", "sub-039", "sub-040")

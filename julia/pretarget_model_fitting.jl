@@ -75,7 +75,7 @@ for exp in unique_experiments
     #    data[!, :experiment] = categorical(data[!, :experiment], levels=levels_experiment);
     #end
 
-    formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));
+    formula = @formula(accuracy ~ ( emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr((emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));
     #formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject))
     #model = fit(LinearMixedModel, formula, data, fast = true) # suppress output into R
 
