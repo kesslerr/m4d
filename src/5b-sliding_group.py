@@ -40,7 +40,7 @@ os.chdir(base_dir)
 sys.path.append(base_dir)
 
 from src.utils import get_forking_paths, cluster_test, get_age
-from src.config import translation_table, luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, luck_forking_paths
+from src.config import translation_table, luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, luck_forking_paths, baseline_end
 
 
 
@@ -54,6 +54,8 @@ forking_paths, files, forking_paths_split = get_forking_paths(
 
 df_results = []
 df_tsums = []
+df_results_single = [] # new: also extract and save single participant timeseries
+df_avg_accs_single = []
 
 failed_subs = set()
 for dataset in ['erpcore']: # TODO: add 'mipdb', 
@@ -135,18 +137,33 @@ for dataset in ['erpcore']: # TODO: add 'mipdb',
             df_mean[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
             df_mean['forking_path'] = forking_path
             df_mean['experiment'] = experiment
-            df_mean['dataset'] = dataset
+            #df_mean['dataset'] = dataset
             df_results.append(df_mean)      
             
+            df[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
+            df['forking_path'] = forking_path
+            df['experiment'] = experiment
+            #df['dataset'] = dataset
+            df_results_single.append(df)      
+
             df_tsum = pd.DataFrame({
                 'tsum': tsum,
                 'experiment': experiment,
-                'dataset': dataset,
+                #'dataset': dataset,
                 }, index=[0])
             df_tsum[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
             #df_tsum[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
             df_tsum['forking_path'] = forking_path
             df_tsums.append(df_tsum)
+            
+            # extract average accuracies for each subject
+            dftmp = df[df.times >= baseline_end[experiment]]
+            df_avg_acc = dftmp.groupby(['subject']).agg({'balanced accuracy': 'mean'}).reset_index()
+            df_avg_acc[['emc','mac','lpf','hpf','ref','base','det','ar']] = forking_paths_split_i
+            #df_tsum[['ref','hpf','lpf','emc','mac','base','det','ar']] = forking_paths_split_i
+            df_avg_acc['experiment'] = experiment
+            df_avg_acc['forking_path'] = forking_path
+            df_avg_accs_single.append(df_avg_acc)
     
 df_results = pd.concat(df_results)
 df_results.to_csv(f"{base_dir}/models/sliding/sliding_reordered.csv", index=False)
@@ -154,6 +171,13 @@ df_results.to_csv(f"{base_dir}/models/sliding/sliding_reordered.csv", index=Fals
 df_tsums = pd.concat(df_tsums)
 df_tsums.to_csv(f"{base_dir}/models/sliding/sliding_tsums_reordered.csv", index=False)
 
+df_results_single = pd.concat(df_results_single)
+df_results_single.to_csv(f"{base_dir}/models/sliding/sliding_single_reordered.csv", index=False)
+
+df_avg_accs_single = pd.concat(df_avg_accs_single)
+df_avg_accs_single = df_avg_accs_single.rename(columns={'balanced accuracy': 'accuracy'})
+df_avg_accs_single.drop('forking_path', axis=1, inplace=True)
+df_avg_accs_single.to_csv(f"{base_dir}/models/sliding/sliding_avgacc_single_reordered.csv", index=False)
 
 ## PLOT exemplary FP results, and maybe stats
 

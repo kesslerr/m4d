@@ -186,6 +186,18 @@ baseline_windows = {
         },
     }    
 
+# for average accuracy estimataion
+baseline_end = {
+    "ERN": -0.2, 
+    "LRP": -0.4, # caution, this is after the 200ms version of the baseline to be fair with the 400ms version
+    "MMN": 0, 
+    "N170": 0, 
+    "N2pc": 0, 
+    "N400": 0, 
+    "P3": 0
+    }
+
+
 decoding_windows = epoch_windows.copy()
 
 # # if potential baseline should not be included

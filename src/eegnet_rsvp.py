@@ -110,7 +110,7 @@ def parallel_subject(subject):
     #for i in range(X.shape[0]):
     #    X[i,:,:] = exponential_moving_standardize(X[i,:,:], factor_new=0.001, init_block_size=None, eps=1e-4)
     set_random_seeds(108, cuda=False)
-    skfold = StratifiedKFold(n_splits=3, shuffle=True, random_state=None) # TODO: set seed?
+    skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=None) # TODO: set seed?
 
     # get some information about the data
     if "RSVP" in experiment:
