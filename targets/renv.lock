@@ -1390,6 +1390,27 @@
       ],
       "Hash": "15e9634c0fcd294799e9b2e929ed1b86"
     },
+    "gg3D": {
+      "Package": "gg3D",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "gg3D",
+      "RemoteUsername": "AckerDWM",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "f874f12c4bd9b0b8f69a915c47513c856a3445dd",
+      "Requirements": [
+        "R",
+        "dplyr",
+        "ggplot2",
+        "magrittr",
+        "plot3D",
+        "plyr",
+        "scales"
+      ],
+      "Hash": "fd700e0abf8c92e2ca9bd342bfd66883"
+    },
     "ggdist": {
       "Package": "ggdist",
       "Version": "3.3.2",
@@ -2249,6 +2270,19 @@
       ],
       "Hash": "f48238f8d4740426ca12f53f27d004dd"
     },
+    "misc3d": {
+      "Package": "misc3d",
+      "Version": "0.9-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "grDevices",
+        "graphics",
+        "stats",
+        "tcltk"
+      ],
+      "Hash": "c075218a4fc802bab009a7f5e01bb686"
+    },
     "modelr": {
       "Package": "modelr",
       "Version": "0.1.11",
@@ -2576,6 +2610,21 @@
         "withr"
       ],
       "Hash": "876c618df5ae610be84356d5d7a5d124"
+    },
+    "plot3D": {
+      "Package": "plot3D",
+      "Version": "1.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "grDevices",
+        "graphics",
+        "methods",
+        "misc3d",
+        "stats"
+      ],
+      "Hash": "b1e8f761a96fc80a1efa80e88e6daa62"
     },
     "plotly": {
       "Package": "plotly",
@@ -2946,6 +2995,20 @@
         "tibble"
       ],
       "Hash": "76c9e04c712a05848ae7a23d2f170a40"
+    },
+    "remotes": {
+      "Package": "remotes",
+      "Version": "2.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "methods",
+        "stats",
+        "tools",
+        "utils"
+      ],
+      "Hash": "3ee025083e66f18db6cf27b56e23e141"
     },
     "rentrez": {
       "Package": "rentrez",

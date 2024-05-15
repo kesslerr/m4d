@@ -3,6 +3,10 @@ options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.d
 #julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
 julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
 
+# my own colormap
+colors_dark <- c("#851e3e", "#537d7d", "#3c1d85") # red, green, purple
+colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
+
 
 get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
@@ -27,6 +31,10 @@ get_preprocess_data <- function(file) {
   data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
   #data$dataset <- factor(data$dataset)
   
+  if ("dataset" %in% names(data)) {
+    data <- subset(data, select = -c(dataset))
+  }
+  
   # new: replace with paper-ready variable names / factor levels
   # col names
   #names(data) <- recode(names(data), !!!replacements)
@@ -34,6 +42,31 @@ get_preprocess_data <- function(file) {
   
   data
 }
+
+timeresolved_avg_acc <- function(data, subject_wise = FALSE){
+  #data <- tar_read(data_sliding)
+  experiments <- c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  baseline_end = c(-0.2, -0.4, 0., 0., 0., 0., 0.) # TODO write paper: in LRP the baselines end at different timepoints, therefore the decoding windows are different for 200ms and 400ms, Here, I chose to equalize the AvgAccuracy esimation to keep it fair 
+  names(baseline_end) <- c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  new_data = data.frame()
+  for (exp in experiments) {
+    data_tmp <- data %>% 
+      filter(experiment == exp) %>%
+      filter(times >= baseline_end[exp])
+    avg_accuracy <- data_tmp %>%
+      group_by(emc, mac, lpf, hpf, ref, base, det, ar) %>%
+      summarize(accuracy = mean(`balanced accuracy`)) %>%
+      # reorder columns with accuracy on first place
+      select(accuracy, everything()) %>%
+      mutate(experiment = exp)
+    new_data <- rbind(new_data, avg_accuracy)
+  }
+  new_data$experiment <- factor(new_data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3"))
+  new_data
+}
+
 
 #DEBUG
 #data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
@@ -255,7 +288,7 @@ timeresolved_plot <- function(data){
     geom_vline(xintercept=0, linetype="dashed") +
     geom_point(data=filter(data_fp, significance=="TRUE"),
                aes(x=times, y=0.48),
-               color="aquamarine4",
+               color=colors_dark[3],
                size=1
     ) +
 
@@ -660,17 +693,23 @@ heatmap <- function(data){
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank()) +
-    scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-                                    l1 = 45, # luminance at endpoints
-                                    l2 = 100, # luminance at midpoints
-                                    p1 = .9, 
-                                    p2 = 1.2) +
+    #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
+    #                                l1 = 45, # luminance at endpoints
+    #                                l2 = 100, # luminance at midpoints
+    #                                p1 = .9, 
+    #                                p2 = 1.2) +
+    #scale_fill_gradientn(colours=brewer.prgn(100), guide = "colourbar") +
+    #scale_fill_gradientn(colours = c(colors_dark[1], "white", colors_dark[2]), # numerosity colors
+    #                     #values = scales::rescale(c(-2, -0.5, 0, 0.5, 2))
+    #                     ) +
+    scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
     labs(x="processing step",
          y="",
          fill="delta\nfrom\nmarginal\nmean\n(%)")  
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
+  
 }
 
 
@@ -702,25 +741,41 @@ interaction_plot <- function(means, title_prefix=""){
     mutate(variable.2 = recode(variable.2, !!!replacements))
   
   # own colorscale # TODO: outsource from this script?
-  cols_stepped <- stepped(20)
+  # cols_stepped <- stepped(20)
+  # cols <- c("None" = "black",
+  #           "0.1" = cols_stepped[1],    
+  #           "0.5" = cols_stepped[9],     
+  #           "6" = cols_stepped[1],       
+  #           "20" = cols_stepped[9],      
+  #           "45" = cols_stepped[17],      
+  #           "ica" = cols_stepped[1],     
+  #           "200ms" = "black",   
+  #           "400ms" = cols_stepped[1],   
+  #           "offset" = "black",  
+  #           "linear" = cols_stepped[1], 
+  #           "false" = "black",
+  #           "true" = cols_stepped[1],
+  #           "average" = "black",
+  #           "Cz" = cols_stepped[1],
+  #           "P9P10" = cols_stepped[9]
+  # )
   cols <- c("None" = "black",
-            "0.1" = cols_stepped[1],    
-            "0.5" = cols_stepped[9],     
-            "6" = cols_stepped[1],       
-            "20" = cols_stepped[9],      
-            "45" = cols_stepped[17],      
-            "ica" = cols_stepped[1],     
+            "0.1" = colors_dark[1],    
+            "0.5" = colors_dark[2],     
+            "6" = colors_dark[1],       
+            "20" = colors_dark[2],     
+            "45" = colors_dark[3],      
+            "ica" = colors_dark[1],     
             "200ms" = "black",   
-            "400ms" = cols_stepped[1],   
+            "400ms" = colors_dark[1],   
             "offset" = "black",  
-            "linear" = cols_stepped[1], 
+            "linear" = colors_dark[1], 
             "false" = "black",
-            "true" = cols_stepped[1],
+            "true" = colors_dark[1],
             "average" = "black",
-            "Cz" = cols_stepped[1],
-            "P9P10" = cols_stepped[9]
-  )
-  
+            "Cz" = colors_dark[1],
+            "P9P10" = colors_dark[2]
+  )  
   p1 <- ggplot(meansr, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(size = 1.2) + 
@@ -887,19 +942,22 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
     geom_point() +
     geom_smooth(method="lm", se=TRUE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
-    labs(x="Age", y="Random Intercept")
+    labs(x="Age", y="Random Intercept") +
+    scale_color_manual(values = colors_dark)
   
   p2 <- ggplot(data, aes(x=sex, y=Intercept, fill=sex)) +
     geom_boxplot(notch=FALSE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
     labs(x="Sex", y="Random Intercept") +
-    guides(fill = "none") # remove legend for "fill"
+    guides(fill = "none") +# remove legend for "fill"
+    scale_fill_manual(values = colors_dark)
   
   p3 <- ggplot(data, aes(x=Intercept, fill=handedness)) +
     geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
     labs(x="Random Intercept", y="Count") +
-    scale_fill_viridis_d(begin=0, end=0.8)
+    #scale_fill_viridis_d(begin=0, end=0.8) +
+    scale_fill_manual(values = c(colors_light[3], "grey"))
   
   ggarrange(p1,p2,p3, ncol=3) %>%
   annotate_figure(left = text_grob(experiment, 
@@ -1119,7 +1177,7 @@ plot_multiverse_sankey <- function(data){
     #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
     scale_fill_grey() +
     theme_sankey(base_size = 18) +
-    labs(x = "processing step", title = "Multiverse") +
+    labs(x = "processing step") + #, title = "Multiverse"
     theme(legend.position = "none",
           #plot.title = element_text(hjust = .5) # to make it central
           )

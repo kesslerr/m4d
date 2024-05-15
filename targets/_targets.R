@@ -104,6 +104,11 @@ list(
     format = "file"
   ),
   tar_target(
+    name = sliding_avgacc_single_file,
+    command = "sliding_avgacc_single_reordered.csv",
+    format = "file"
+  ),
+  tar_target(
     name = demographics_file,
     command = '../data/erpcore/participants.tsv',
     format = "file"
@@ -111,6 +116,7 @@ list(
   
   ## NEW: single LMM files
   ## first, test if multiple files can be tracked at the same time
+  ## EEGNET
   tar_target(
     name = jLMM_file_ERN,
     command = '../julia/model_ERN.rds',
@@ -146,6 +152,42 @@ list(
     command = '../julia/model_P3.rds',
     format = "file"
   ),
+  ## SLIDING
+  tar_target(
+    name = jLMM_file_ERN_tr,
+    command = '../julia/model_ERN_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_LRP_tr,
+    command = '../julia/model_LRP_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_MMN_tr,
+    command = '../julia/model_MMN_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N170_tr,
+    command = '../julia/model_N170_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N2pc_tr,
+    command = '../julia/model_N2pc_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N400_tr,
+    command = '../julia/model_N400_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_P3_tr,
+    command = '../julia/model_P3_tr.rds',
+    format = "file"
+  ),
   
   tar_target(
     name = jLMM_files,
@@ -154,6 +196,14 @@ list(
   tar_target(name = eegnet_HLMi2, 
              readRDS(jLMM_files),
              pattern=jLMM_files,
+             iteration="list"),
+  tar_target(
+    name = jLMM_files_tr,
+    command = c(jLMM_file_ERN_tr, jLMM_file_LRP_tr, jLMM_file_MMN_tr, jLMM_file_N170_tr, jLMM_file_N2pc_tr, jLMM_file_N400_tr, jLMM_file_P3_tr),
+  ),
+  tar_target(name = sliding_HLMi2, 
+             readRDS(jLMM_files_tr),
+             pattern=jLMM_files_tr,
              iteration="list"),
   
 
@@ -174,6 +224,15 @@ list(
     name = demographics,
     command = {read_tsv(demographics_file) %>% mutate_if(is.character, as.factor)}
   ),
+  # single participant average accuracy
+  tar_target(
+    name = data_avgaccs,
+    command = {get_preprocess_data(sliding_avgacc_single_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
+  ),
+  
+  # average accuracy for each pipeline acorss participants
+  tar_target(data_avgacc,
+             timeresolved_avg_acc(data_sliding)),
   
   ## Multiverse sankey visualization
   tar_target(
@@ -218,6 +277,19 @@ list(
     command = raincloud_acc(data_tsum, title = "Time-Resolved")
   ),
   tar_target(
+    name = overview_avgacc,
+    command = raincloud_acc(data_avgacc, title = "Time-Resolved")
+  ),
+  tar_target( # average across subjects for each pipeline
+    name = overview_avgaccs_avgsub,
+    command = raincloud_acc(data_avgaccs %>%
+                              group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
+                              summarize(accuracy = mean(accuracy)) %>% 
+                              select(accuracy, everything()), # put the accuracy in the first column
+                            title = "Time-Resolved")
+  ),
+  
+  tar_target(
     name = overview,
     command = {
       ggarrange(overview_accuracy_avgsub, overview_tsum, 
@@ -236,6 +308,16 @@ list(
   tar_group_by(
     data_tsum_exp, 
     data_tsum, 
+    experiment 
+  ),    
+  tar_group_by(
+    data_avgacc_exp, 
+    data_avgacc, 
+    experiment 
+  ),  
+  tar_group_by(
+    data_avgaccs_exp, 
+    data_avgaccs, 
     experiment 
   ),  
   
@@ -308,6 +390,14 @@ list(
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),  
+
+  tar_target(
+    name = sliding_LMi2avgacc,
+    command=lm(formula="accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+               data = data_avgacc_exp),
+    pattern = map(data_avgacc_exp),
+    iteration = "list"
+  ),
   
   ## Estimated marginal means
   
@@ -363,6 +453,27 @@ list(
   tar_target(sliding_LMi2_emm_contrasts, sliding_LMi2_emm[[2]], pattern=map(sliding_LMi2_emm)),
   # TODO F values?
   
+  ### Sliding Avgacc
+  tar_target(
+    name=sliding_LMi2avgacc_emm,
+    command=est_emm(sliding_LMi2avgacc,
+                        data_avgacc_exp),
+    pattern = map(sliding_LMi2avgacc, data_avgacc_exp),
+    iteration = "list"
+  ),
+  tar_target(sliding_LMi2avgacc_emm_means, sliding_LMi2avgacc_emm[[1]], pattern=map(sliding_LMi2avgacc_emm)), #, iteration="list"
+  tar_target(sliding_LMi2avgacc_emm_contrasts, sliding_LMi2avgacc_emm[[2]], pattern=map(sliding_LMi2avgacc_emm)),
+  ### Sliding Avgaccs (Single)
+  tar_target(
+    name=sliding_HLMi2_emm,
+    command=est_emm(sliding_HLMi2,
+                    data_avgaccs_exp),
+    pattern = map(sliding_HLMi2, data_avgaccs_exp),
+    iteration = "list"
+  ),
+  tar_target(sliding_HLMi2_emm_means, sliding_HLMi2_emm[[1]], pattern=map(sliding_HLMi2_emm)), #, iteration="list"
+  tar_target(sliding_HLMi2_emm_contrasts, sliding_HLMi2_emm[[2]], pattern=map(sliding_HLMi2_emm)),
+  
   
   ## heatmaps of EMMs
   # TODO: use the omni test significances to highlight the facets
@@ -370,6 +481,10 @@ list(
             command=heatmap(eegnet_HLM_emm_means)),
   tar_target(sliding_heatmap,
              heatmap(sliding_LM_emm_means)),
+  tar_target(slidingavgacc_heatmap,
+             heatmap(sliding_LMi2avgacc_emm_means)),
+  tar_target(slidingavgaccs_heatmap,
+             heatmap(sliding_HLMi2_emm_means)),
   tar_target(
     name = heatmaps,
     command = {
@@ -576,6 +691,21 @@ list(
              scale=2,
              width=12,
              height=12,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  # heatmap of the alternative performance metric (average accuracy) for sliding window slidingavgacc_heatmap
+  tar_target(
+    name =heatmaps_file_avgacc,
+    command = {
+      ggsave(plot=slidingavgacc_heatmap,
+             filename="heatmap_avgacc.png",
+             path=figure_output_dir,
+             scale=2,
+             width=12,
+             height=6,
              units="cm",
              dpi=500)
     },
