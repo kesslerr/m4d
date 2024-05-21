@@ -83,7 +83,7 @@ list(
   # ),
   # tar_target(
   #   model_types,
-  #   c("EEGNET","Time-Resolved")
+  #   c("EEGNET","Time-resolved")
   # ),
   # 
   
@@ -227,7 +227,7 @@ list(
   # single participant average accuracy
   tar_target(
     name = data_avgaccs,
-    command = {get_preprocess_data(sliding_avgacc_single_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
+    command = {get_preprocess_data(sliding_avgacc_single_file)} # , dataset  %>% filter(dataset == "ERPCORE")  %>% select(-c(forking_path))
   ),
   
   # average accuracy for each pipeline acorss participants
@@ -274,11 +274,11 @@ list(
   ),
   tar_target(
     name = overview_tsum,
-    command = raincloud_acc(data_tsum, title = "Time-Resolved")
+    command = raincloud_acc(data_tsum, title = "Time-resolved")
   ),
   tar_target(
     name = overview_avgacc,
-    command = raincloud_acc(data_avgacc, title = "Time-Resolved")
+    command = raincloud_acc(data_avgacc, title = "Time-resolved")
   ),
   tar_target( # average across subjects for each pipeline
     name = overview_avgaccs_avgsub,
@@ -286,7 +286,7 @@ list(
                               group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
-                            title = "Time-Resolved")
+                            title = "Time-resolved")
   ),
   
   tar_target(
@@ -297,7 +297,22 @@ list(
                 ncol = 1, nrow = 2)
     }
   ), 
-  # TODO: HLM simulations in pipeline?
+  tar_target(
+    name = overview_horizontal,
+    command = {
+      ggarrange(overview_accuracy_avgsub, overview_avgaccs_avgsub, 
+                #labels = c("", ""),
+                ncol = 2, nrow = 1)
+    }
+  ), 
+  tar_target(
+    name = overview_poster,
+    command = {
+      ggarrange(overview_accuracy_avgsub, overview_avgaccs_avgsub, 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+    }
+  ), 
   
   ## GROUPINGS
   tar_group_by(
@@ -350,8 +365,13 @@ list(
         ggplot(aes(y=value, x=experiment, fill=interactions)) +
         geom_bar(stat = "identity", position="dodge") +
         scale_fill_grey(start=0.2, end=0.6) +
-        facet_wrap(metric ~ model, scales = "free_y") +
+        facet_wrap(metric ~ model, scales = "free_y",
+                   labeller = labeller(metric = label_both)) +
         labs(y="")
+      
+      #facet_wrap(metric ~ model, scales = "free_y", 
+      #           labeller = labeller(metric = label_both)) +
+      #  labs(y = "Value", x = "Experiment", fill = "Interactions")
     }
   ),
   tar_target(
@@ -493,6 +513,14 @@ list(
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
+  tar_target(
+    name = heatmaps_avgacc,
+    command = {
+      ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
+                slidingavgaccs_heatmap + labs(title="Time-resolved"), 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+    }),
   # TODO: main effects with only means?
   
   ## interaction plots of EMMs
@@ -542,7 +570,7 @@ list(
     iteration ="list"),
   tar_target(sliding_LM_qq_comb,
     {plt <- ggarrange(plotlist = sliding_LM_qq)
-    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
+    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-resolved", 
                     color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
@@ -563,7 +591,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_rvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_rvf)
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   ### sqrt abs std res_vs_fitted plots
@@ -584,7 +612,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_sasrvf)
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-Resolved", 
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   
@@ -644,7 +672,7 @@ list(
       ggsave(plot=overview,
              filename="overview.png",
              path=figure_output_dir,
-             scale=2,
+             scale=1.5,
              width=12,
              height=9,
              units="cm",
@@ -652,13 +680,55 @@ list(
     },
     format="file"
   ),  
+tar_target(
+  name = overview_poster_file,
+  command = {
+    ggsave(plot=overview_poster,
+           filename="overview_poster.png",
+           path=figure_output_dir,
+           scale=1,
+           width=12,
+           height=16,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
+tar_target(
+  name = overview_horizontal_file,
+  command = {
+    ggsave(plot=overview_horizontal,
+           filename="overview_horizontal.png",
+           path=figure_output_dir,
+           scale=1.5,
+           width=12,
+           height=9,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
   tar_target(
     name = overview_eegnet_subjects_file,
     command = {
       ggsave(plot=overview_accuracy,
              filename="overview_eegnet_subjects.png",
              path=figure_output_dir,
-             scale=2,
+             scale=1.5,
+             width=12,
+             height=5,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  tar_target(
+    name = overview_sliding_avgaccs_file,
+    command = {
+      ggsave(plot=overview_avgaccs_avgsub,
+             filename="overview_sliding_avgaccs.png",
+             path=figure_output_dir,
+             scale=1.5,
              width=12,
              height=5,
              units="cm",
@@ -688,14 +758,28 @@ list(
       ggsave(plot=heatmaps,
              filename="heatmaps.png",
              path=figure_output_dir,
-             scale=2,
-             width=12,
+             scale=1.5,
+             width=18,
              height=12,
              units="cm",
              dpi=500)
     },
     format="file"
   ),  
+tar_target(
+  name =heatmaps_file_poster,
+  command = {
+    ggsave(plot=heatmaps_avgacc,
+           filename="heatmaps_avgacc.png",
+           path=figure_output_dir,
+           scale=1.5,
+           width=18,
+           height=12,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
   # heatmap of the alternative performance metric (average accuracy) for sliding window slidingavgacc_heatmap
   tar_target(
     name =heatmaps_file_avgacc,
@@ -703,9 +787,9 @@ list(
       ggsave(plot=slidingavgacc_heatmap,
              filename="heatmap_avgacc.png",
              path=figure_output_dir,
-             scale=2,
-             width=12,
-             height=6,
+             scale=1.5,
+             width=16,
+             height=7,
              units="cm",
              dpi=500)
     },

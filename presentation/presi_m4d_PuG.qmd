@@ -54,7 +54,7 @@ We use multiverse preprocessing to investigate the impact of single steps on dec
 
 ## A multiverse for preprocessing
 
-![](plots/sankey.png){.fragment width="1000" height="350"} 
+![](../manuscript/plots/sankey.png){.fragment width="1000" height="350"} 
 
 
 
@@ -73,7 +73,7 @@ We use multiverse preprocessing to investigate the impact of single steps on dec
 
 ## ERPs (one forking path)
 
-![](./plots/evokeds.png){.absolute top=70 left=300 width="500" height="900"}
+![](../manuscript/plots/evokeds.png){.absolute top=70 left=300 width="500" height="900"}
 
 ## Decoding approaches
 
@@ -91,11 +91,40 @@ We use multiverse preprocessing to investigate the impact of single steps on dec
 
 ## Time-resolved decoding (one forking path)
 
-![](./plots/timeresolved_luck.png){.absolute top=70 left=300 width="500" height="900"}
+![](../manuscript/plots/timeresolved_luck.png){.absolute top=70 left=300 width="500" height="900"}
 
 ## Overview of decoding performances
 
-![](./plots/overview.png){.absolute top=70 left=100 width="800"}
+![](../manuscript/plots/overview.png){.absolute top=70 left=100 width="800"}
+
+## Modeling the impact of the analysis steps on decoding accuracy
+
+*EEGNet, Linear Mixed Model*
+
+$$
+\text{accuracy} \sim\\
+1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...}  \\
++ (1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...} |\text{participant})
+$$
+
+*EEGNet, Linear Mixed Model*
+
+$$
+\text{accuracy} \sim
+1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...}  
++ (1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...} |\text{sub})
+$$
+
+
+*Time-resolved, Linear Model*
+
+$$
+\text{Tsum} \sim 1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...} 
+$$
+  
+&nbsp;   
+  
+&rarr; Estimate marginal means and contrasts
 
 
 ## Modeling the impact of the analysis steps on decoding accuracy
@@ -122,7 +151,7 @@ $$
 
 main effects
 
-![](./plots/heatmaps.png){.absolute top=70 left=300 width="700"}
+![](../manuscript/plots/heatmaps.png){.absolute top=70 left=300 width="700"}
 
 ## Marginal means
 
@@ -148,7 +177,7 @@ experiment: ERN
 
 EEGNet 
 
-![](./plots/interactions_eegnet_ERN.png){.absolute top=70 left=300 width="800"}
+![](../manuscript/plots/interactions_eegnet_ERN.png){.absolute top=70 left=300 width="800"}
 
 
 ## Marginal means
@@ -160,7 +189,7 @@ experiment: ERN
 time-resolved 
 
 
-![](./plots/interactions_sliding_ERN.png){.absolute top=70 left=300 width="800"}
+![](../manuscript/plots/interactions_sliding_ERN.png){.absolute top=70 left=300 width="800"}
 
 ## Discussion
 
@@ -173,7 +202,7 @@ time-resolved
 
 ## Participant demographics {visibility="hidden"}
 
-![](./plots/RFXpairs.png){.absolute top=70 left=200 width="600"}
+![](../manuscript/plots/RFXpairs.png){.absolute top=70 left=200 width="600"}
 
 
 

@@ -29,14 +29,14 @@ data <- tar_read(data_sliding) %>%
   filter(lpf=="20", hpf=="0.1", emc=="ica", mac=="ica", ref=="average", base=="400ms", det=="linear", ar=="false")
 
 p1 <- ggplot(data, aes(x=times, y=`balanced accuracy`)) +
-  geom_line(lwd=2) +
-  geom_hline(yintercept = 0.5, linetype="dotted", lwd=2) +
-  geom_vline(xintercept = 0., linetype="dotted", lwd=2) +
+  geom_line(lwd=1.5) +
+  geom_hline(yintercept = 0.5, linetype="dotted", lwd=1.5) +
+  geom_vline(xintercept = 0., linetype="dotted", lwd=1.5) +
   theme_minimal() +
   theme(
-    text = element_text(size = 20, face = "bold"),
-    axis.text = element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 20, face = "bold"),
+    text = element_text(size = 20), #, face = "bold"
+    axis.text = element_text(size = 18), #, face = "bold"
+    axis.title = element_text(size = 20), #, face = "bold"
     axis.line = element_blank(), #element_line(color = "black", size = 2),
     axis.ticks = element_blank(), #element_line(color = "black", size = 2),
     panel.grid.major = element_blank(), #element_line(color = "gray", size = 1),
@@ -54,12 +54,12 @@ iris <- iris %>% filter(Species %in% c("virginica", "versicolor"))
 set.seed(123)
 
 p2a <- ggplot(iris, aes(x=Petal.Width, y=Sepal.Width, z=Petal.Length, color=Species)) + 
-  geom_point(size=3) +
+  geom_point(size=2) +
   theme_minimal() +
   theme(
-    text = element_text(size = 20, face = "bold"),
+    text = element_text(size = 20), #, face = "bold"
     axis.text = element_blank(), #element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 20), #, face = "bold"
     axis.line = element_blank(), #element_line(color = "black", size = 2),
     axis.ticks = element_blank(), #element_line(color = "black", size = 2),
     panel.grid.major = element_blank(), #element_line(color = "gray", size = 1),
@@ -82,13 +82,13 @@ iris <- iris %>% filter(Species %in% c("virginica", "versicolor"))
 
 set.seed(123)
 p2b <- ggplot(iris, aes(x=Petal.Length, y=Sepal.Width, color=Species)) + 
-  geom_point(size=3) +
+  geom_point(size=2) +
   theme_minimal() +
   theme(
-    text = element_text(size = 20, face = "bold"),
+    text = element_text(size = 20), #, face = "bold"
     axis.text = element_blank(), #
     #axis.text = element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 20), #, face = "bold"
     axis.line = element_blank(), #element_line(color = "black", size = 2),
     axis.ticks = element_blank(), #element_line(color = "black", size = 2),
     panel.grid.major = element_blank(), #element_line(color = "gray", size = 1),
@@ -110,13 +110,13 @@ iris <- iris %>% filter(Species %in% c("virginica", "versicolor"))
 
 set.seed(123)
 p2c <- ggplot(iris, aes(x=Petal.Width, y=Petal.Length, color=Species)) + 
-  geom_point(size=3) +
+  geom_point(size=2) +
   theme_minimal() +
   theme(
-    text = element_text(size = 20, face = "bold"),
+    text = element_text(size = 20), #, face = "bold"
     axis.text = element_blank(), #
     #axis.text = element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 20), #, face = "bold"
     axis.line = element_blank(), #element_line(color = "black", size = 2),
     axis.ticks = element_blank(), #element_line(color = "black", size = 2),
     panel.grid.major = element_blank(), #element_line(color = "gray", size = 1),
@@ -140,10 +140,10 @@ p2leg <- ggplot(iris, aes(x=Petal.Width, y=Petal.Length, color=Class)) +
   scale_color_manual(values=purples) +
   theme_minimal() +
   theme(
-    text = element_text(size = 20, face = "bold"),
+    text = element_text(size = 20), #, face = "bold"
     axis.text = element_blank(), #
     #axis.text = element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 20), #, face = "bold"
     axis.line = element_blank(), #element_line(color = "black", size = 2),
     axis.ticks = element_blank(), #element_line(color = "black", size = 2),
     panel.grid.major = element_blank(), #element_line(color = "gray", size = 1),
@@ -198,4 +198,4 @@ ggarrange(
   labels = ""       # Label of the line plot
 ) 
 
-ggsave("/Users/roman/GitHub/m4d/presentation/plots/timeresolved_schema.png", dpi=300, width=10, height=7)
+ggsave("/Users/roman/GitHub/m4d/presentation/plots/timeresolved_schema.png", dpi=500, width=8, height=6)

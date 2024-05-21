@@ -373,7 +373,7 @@ Roman Kessler, Alexander Enge, Michael A. Skeide
 </section>
 <section id="a-multiverse-for-preprocessing" class="slide level2">
 <h2>A multiverse for preprocessing</h2>
-<p><img data-src="plots/sankey.png" class="fragment" width="1000" height="350"></p>
+<p><img data-src="../manuscript/plots/sankey.png" class="fragment" width="1000" height="350"></p>
 <div class="r-stack">
 <p><img data-src="tables/steps.png" class="fragment" width="500" height="250"></p>
 </div>
@@ -387,7 +387,7 @@ Roman Kessler, Alexander Enge, Michael A. Skeide
 </section>
 <section id="erps-one-forking-path" class="slide level2">
 <h2>ERPs (one forking path)</h2>
-<p><img data-src="./plots/evokeds.png" class="absolute" style="top: 70px; left: 300px; width: 500px; height: 900px; "></p>
+<p><img data-src="../manuscript/plots/evokeds.png" class="absolute" style="top: 70px; left: 300px; width: 500px; height: 900px; "></p>
 </section>
 <section id="decoding-approaches" class="slide level2">
 <h2>Decoding approaches</h2>
@@ -409,13 +409,34 @@ Roman Kessler, Alexander Enge, Michael A. Skeide
 </section>
 <section id="time-resolved-decoding-one-forking-path" class="slide level2">
 <h2>Time-resolved decoding (one forking path)</h2>
-<p><img data-src="./plots/timeresolved_luck.png" class="absolute" style="top: 70px; left: 300px; width: 500px; height: 900px; "></p>
+<p><img data-src="../manuscript/plots/timeresolved_luck.png" class="absolute" style="top: 70px; left: 300px; width: 500px; height: 900px; "></p>
 </section>
 <section id="overview-of-decoding-performances" class="slide level2">
 <h2>Overview of decoding performances</h2>
-<p><img data-src="./plots/overview.png" class="absolute" style="top: 70px; left: 100px; width: 800px; "></p>
+<p><img data-src="../manuscript/plots/overview.png" class="absolute" style="top: 70px; left: 100px; width: 800px; "></p>
 </section>
 <section id="modeling-the-impact-of-the-analysis-steps-on-decoding-accuracy" class="slide level2">
+<h2>Modeling the impact of the analysis steps on decoding accuracy</h2>
+<p><em>EEGNet, Linear Mixed Model</em></p>
+<p><span class="math display">\[
+\text{accuracy} \sim\\
+1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...}  \\
++ (1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...} |\text{participant})
+\]</span></p>
+<p><em>EEGNet, Linear Mixed Model</em></p>
+<p><span class="math display">\[
+\text{accuracy} \sim
+1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...}  
++ (1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...} |\text{sub})
+\]</span></p>
+<p><em>Time-resolved, Linear Model</em></p>
+<p><span class="math display">\[
+\text{Tsum} \sim 1 + \text{step}_1 + \text{step}_2 + \text{step}_1*\text{step}_2 + \text{...}
+\]</span></p>
+<p>&nbsp;</p>
+<p>→ Estimate marginal means and contrasts</p>
+</section>
+<section id="modeling-the-impact-of-the-analysis-steps-on-decoding-accuracy-1" class="slide level2">
 <h2>Modeling the impact of the analysis steps on decoding accuracy</h2>
 <p><em>EEGNet, Linear Mixed Model</em></p>
 <p><span class="math display">\[
@@ -433,7 +454,7 @@ Roman Kessler, Alexander Enge, Michael A. Skeide
 <section id="marginal-means" class="slide level2">
 <h2>Marginal means</h2>
 <p>main effects</p>
-<p><img data-src="./plots/heatmaps.png" class="absolute" style="top: 70px; left: 300px; width: 700px; "></p>
+<p><img data-src="../manuscript/plots/heatmaps.png" class="absolute" style="top: 70px; left: 300px; width: 700px; "></p>
 </section>
 <section id="marginal-means-1" class="slide level2">
 <h2>Marginal means</h2>
@@ -461,14 +482,14 @@ Roman Kessler, Alexander Enge, Michael A. Skeide
 <p>interactions</p>
 <p>experiment: ERN</p>
 <p>EEGNet</p>
-<p><img data-src="./plots/interactions_eegnet_ERN.png" class="absolute" style="top: 70px; left: 300px; width: 800px; "></p>
+<p><img data-src="../manuscript/plots/interactions_eegnet_ERN.png" class="absolute" style="top: 70px; left: 300px; width: 800px; "></p>
 </section>
 <section id="marginal-means-3" class="slide level2">
 <h2>Marginal means</h2>
 <p>interactions</p>
 <p>experiment: ERN</p>
 <p>time-resolved</p>
-<p><img data-src="./plots/interactions_sliding_ERN.png" class="absolute" style="top: 70px; left: 300px; width: 800px; "></p>
+<p><img data-src="../manuscript/plots/interactions_sliding_ERN.png" class="absolute" style="top: 70px; left: 300px; width: 800px; "></p>
 </section>
 <section id="discussion" class="slide level2">
 <h2>Discussion</h2>

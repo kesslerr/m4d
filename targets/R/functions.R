@@ -3,9 +3,11 @@ options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.d
 #julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
 julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
 
-# my own colormap
-colors_dark <- c("#851e3e", "#537d7d", "#3c1d85") # red, green, purple
+# colormap from the numerosity paper
+colors_dark <- c("#851e3e", "#4f7871", "#3c1d85") # red, green, purple "#537d7d", 
 colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
+
+
 
 
 get_preprocess_data <- function(file) {
@@ -386,8 +388,8 @@ replacements <- list(
   "lpf" = "low pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
-  "mac" = "muscle art. corr.",
-  "emc" = "eye mov. corr.",
+  "mac" = "muscle",
+  "emc" = "ocular",
   "base" = "baseline",
   "det" = "detrending",
   "0.1" = "0.1 Hz",
@@ -395,6 +397,30 @@ replacements <- list(
   "6" = "6 Hz",
   "20" = "20 Hz",
   "45" = "45 Hz",
+  "FALSE" = "False",
+  "false" = "False",
+  "TRUE" = "True",
+  "true" = "True",
+  "ica" = "ICA",
+  "200ms" = "200 ms",
+  "400ms" = "400 ms",
+  "ica" = "ICA",
+  "P9P10" = "P9/P10"
+)
+replacements_sparse <- list(
+  "hpf" = "high pass", # [Hz]
+  "lpf" = "low pass", # [Hz]
+  "ref" = "reference",
+  "ar" = "autoreject",
+  "mac" = "muscle",
+  "emc" = "ocular",
+  "base" = "baseline",
+  "det" = "detrending",
+  #"0.1" = "0.1 Hz",
+  #"0.5" = "0.5 Hz",
+  #"6" = "6 Hz",
+  #"20" = "20 Hz",
+  #"45" = "45 Hz",
   "FALSE" = "False",
   "false" = "False",
   "TRUE" = "True",
@@ -460,11 +486,11 @@ raincloud_acc <- function(data, title = ""){
       # adjust bandwidth
       adjust = 0.5,
       # move to the right
-      justification = -0.2,
+      justification = -0.1,
       # remove the slub interval
       .width = 0,
       point_colour = NA,
-      scale = 0.5 ##  <(**new parameter**)
+      scale = 0.8 ##  <(**new parameter**)
     ) +
     geom_boxplot(
       width = 0.12,
@@ -477,6 +503,7 @@ raincloud_acc <- function(data, title = ""){
          y=DV)
   if (DV=="Accuracy"){
     p <- p + geom_hline(yintercept=0.5, lty="dashed")
+    p <- p + lims(y=c(0.46,NA))
   }
   p
 }
@@ -680,8 +707,8 @@ heatmap <- function(data){
     relevel_variables(column_name = "level") %>%
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements)) %>%
-    # NEW: replacements for each level
-    #mutate(level = recode(level, !!!replacements)) %>%
+    # NEW: replacements for some levels, to not overload the image too much
+    mutate(level = recode(level, !!!replacements_sparse)) %>%
     # delete the experiment compairson in the full data
     #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
     # center around zero for better comparability
@@ -692,7 +719,8 @@ heatmap <- function(data){
     geom_tile() +
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()) +
+          axis.ticks.y = element_blank(),
+          strip.text.y = element_text(angle=0)) + # rotate the experiment labels
     #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
     #                                l1 = 45, # luminance at endpoints
     #                                l2 = 100, # luminance at midpoints
@@ -702,10 +730,13 @@ heatmap <- function(data){
     #scale_fill_gradientn(colours = c(colors_dark[1], "white", colors_dark[2]), # numerosity colors
     #                     #values = scales::rescale(c(-2, -0.5, 0, 0.5, 2))
     #                     ) +
+    #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
+    #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
     scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
     labs(x="processing step",
          y="",
-         fill="delta\nfrom\nmarginal\nmean\n(%)")  
+         #fill="% change\naccuracy")  
+         fill="% deviation from\nmarginal mean")  
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
@@ -1167,7 +1198,10 @@ plot_multiverse_sankey <- function(data){
     mutate(node = recode(node, !!!replacements)) %>% # also replace with better names
     mutate(next_node = recode(next_node, !!!replacements))
   
-  
+  # reorder factors in node and next_node
+  data_long <- data_long %>%
+    mutate(node = factor(node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
+           next_node = factor(next_node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
   
   ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
     geom_sankey(flow.alpha = .6,

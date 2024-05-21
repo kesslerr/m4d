@@ -61,6 +61,10 @@ data/ds005106-download/*
 # additional toolboxes or external apps (not allowed to share)
 adhered/*
 
+# poster stuff
+poster/archive
+presentation/archive
+
 # folders which contain a lot of data
 models/*
 targets/.RData
