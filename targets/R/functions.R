@@ -3,6 +3,12 @@ options(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.d
 #julia_executable <- "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/julia"
 julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.apple.darwin14/bin/")
 
+# colormap from the numerosity paper
+colors_dark <- c("#851e3e", "#4f7871", "#3c1d85") # red, green, purple "#537d7d", 
+colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
+
+
+
 
 get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
@@ -25,7 +31,11 @@ get_preprocess_data <- function(file) {
   data$ar <- factor(tolower(data$ar), levels = c("false", "true"))
   #data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
   data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
-  data$dataset <- factor(data$dataset)
+  #data$dataset <- factor(data$dataset)
+  
+  if ("dataset" %in% names(data)) {
+    data <- subset(data, select = -c(dataset))
+  }
   
   # new: replace with paper-ready variable names / factor levels
   # col names
@@ -34,6 +44,31 @@ get_preprocess_data <- function(file) {
   
   data
 }
+
+timeresolved_avg_acc <- function(data, subject_wise = FALSE){
+  #data <- tar_read(data_sliding)
+  experiments <- c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  baseline_end = c(-0.2, -0.4, 0., 0., 0., 0., 0.) # TODO write paper: in LRP the baselines end at different timepoints, therefore the decoding windows are different for 200ms and 400ms, Here, I chose to equalize the AvgAccuracy esimation to keep it fair 
+  names(baseline_end) <- c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  new_data = data.frame()
+  for (exp in experiments) {
+    data_tmp <- data %>% 
+      filter(experiment == exp) %>%
+      filter(times >= baseline_end[exp])
+    avg_accuracy <- data_tmp %>%
+      group_by(emc, mac, lpf, hpf, ref, base, det, ar) %>%
+      summarize(accuracy = mean(`balanced accuracy`)) %>%
+      # reorder columns with accuracy on first place
+      select(accuracy, everything()) %>%
+      mutate(experiment = exp)
+    new_data <- rbind(new_data, avg_accuracy)
+  }
+  new_data$experiment <- factor(new_data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3"))
+  new_data
+}
+
 
 #DEBUG
 #data = tar_read(data_eegnet_exp, branches=1) %>% filter(experiment == "ERN")
@@ -94,9 +129,9 @@ rjulia_r2 <- function(data){
         if (modeltype == "EEGNet"){
           julia_assign("data", data_tmp) # bring data into julia
           if (interaction == "true"){
-            julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));")
+            julia_command("formula = @formula(accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr( (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));")
           } else if (interaction == "false") {
-            julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + ( ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+            julia_command("formula = @formula(accuracy ~ emc + mac + lpf + hpf + ref + base + det + ar + ( emc + mac + lpf + hpf + ref + base + det + ar | subject));")
           }
           julia_command("model = fit(LinearMixedModel, formula, data);")
           julia_command("predictions = predict(model, data);")
@@ -106,10 +141,10 @@ rjulia_r2 <- function(data){
           
         } else if (modeltype == "Time-resolved"){
             if (interaction=="true"){
-              mod <- lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2",
+              mod <- lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2",
                  data = data_tmp)
             } else if (interaction=="false"){
-              mod <- lm(formula="tsum ~ ref + hpf + lpf + emc + mac + base + det + ar",
+              mod <- lm(formula="tsum ~ emc + mac + lpf + hpf + ref + base + det + ar",
                  data = data_tmp)
             }
           ir2 <- summary(mod)$r.squared
@@ -139,7 +174,7 @@ rjulia_r2 <- function(data){
 }
 
 chord_plot <- function(plot_filepath){
-  varnames <- c("ref","hpf","lpf","emc","mac","base","det","ar")
+  varnames <- c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref","hpf","lpf","emc","mac","base","det","ar")
   varnames <- recode(varnames, !!!replacements)
   numbers <- c(0,1,1,0,0,0,0,1,
                1,0,1,1,1,1,1,1,
@@ -193,7 +228,7 @@ estimate_marginal_means_sliding <- function(data, per_exp = FALSE){
   }
   all_results <- data.frame()
   for (experiment_value in experiments){
-    for (variable in c("ref","hpf","lpf","base","det","ar","emc","mac")) {
+    for (variable in c("emc","mac","lpf","hpf","ref","base","det","ar",)) { #"ref","hpf","lpf","base","det","ar","emc","mac"
       
       result <- data %>%
         {if(per_exp==TRUE) filter(., experiment == experiment_value) else . } %>%
@@ -234,11 +269,11 @@ sliding_plot_experiment <- function(data){
 
 luckfps <- data.frame(
   experiment = c('ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3'),
-  ref = c('P9P10', 'P9P10', 'P9P10', 'average', 'P9P10', 'P9P10', 'P9P10'),
-  hpf = c('0.1', '0.1', '0.1', '0.1', '0.1', '0.1', '0.1'),
-  lpf = c('None', 'None', 'None', 'None', 'None', 'None', 'None'),
   emc = c('ica', 'ica', 'ica', 'ica', 'ica', 'ica', 'ica'),
   mac = c('ica', 'ica', 'ica', 'ica', 'ica', 'ica', 'ica'),
+  lpf = c('None', 'None', 'None', 'None', 'None', 'None', 'None'),
+  hpf = c('0.1', '0.1', '0.1', '0.1', '0.1', '0.1', '0.1'),
+  ref = c('P9P10', 'P9P10', 'P9P10', 'average', 'P9P10', 'P9P10', 'P9P10'),
   base = c('200ms', '200ms', '200ms', '200ms', '200ms', '200ms', '200ms'),
   det = c('offset', 'offset', 'offset', 'offset', 'offset', 'offset', 'offset'),
   #ar = c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE')
@@ -247,7 +282,7 @@ luckfps <- data.frame(
 
 timeresolved_plot <- function(data){
   data_fp <- semi_join(data, luckfps, 
-                       by = c("experiment", "ref", "hpf", "lpf", "emc", "mac", "base", "det", "ar"))
+                       by = c("experiment", "emc", "mac", "lpf", "hpf", "ref", "base", "det", "ar")) #c("experiment", "ref", "hpf", "lpf", "emc", "mac", "base", "det", "ar")
   # TR-Decoding with points as significance markers
   ggplot(data_fp, aes(x = times, y = `balanced accuracy`)) +
     geom_line() +
@@ -255,7 +290,7 @@ timeresolved_plot <- function(data){
     geom_vline(xintercept=0, linetype="dashed") +
     geom_point(data=filter(data_fp, significance=="TRUE"),
                aes(x=times, y=0.48),
-               color="aquamarine4",
+               color=colors_dark[3],
                size=1
     ) +
 
@@ -353,8 +388,8 @@ replacements <- list(
   "lpf" = "low pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
-  "mac" = "muscle art. corr.",
-  "emc" = "eye mov. corr.",
+  "mac" = "muscle",
+  "emc" = "ocular",
   "base" = "baseline",
   "det" = "detrending",
   "0.1" = "0.1 Hz",
@@ -362,6 +397,30 @@ replacements <- list(
   "6" = "6 Hz",
   "20" = "20 Hz",
   "45" = "45 Hz",
+  "FALSE" = "False",
+  "false" = "False",
+  "TRUE" = "True",
+  "true" = "True",
+  "ica" = "ICA",
+  "200ms" = "200 ms",
+  "400ms" = "400 ms",
+  "ica" = "ICA",
+  "P9P10" = "P9/P10"
+)
+replacements_sparse <- list(
+  "hpf" = "high pass", # [Hz]
+  "lpf" = "low pass", # [Hz]
+  "ref" = "reference",
+  "ar" = "autoreject",
+  "mac" = "muscle",
+  "emc" = "ocular",
+  "base" = "baseline",
+  "det" = "detrending",
+  #"0.1" = "0.1 Hz",
+  #"0.5" = "0.5 Hz",
+  #"6" = "6 Hz",
+  #"20" = "20 Hz",
+  #"45" = "45 Hz",
   "FALSE" = "False",
   "false" = "False",
   "TRUE" = "True",
@@ -427,11 +486,11 @@ raincloud_acc <- function(data, title = ""){
       # adjust bandwidth
       adjust = 0.5,
       # move to the right
-      justification = -0.2,
+      justification = -0.1,
       # remove the slub interval
       .width = 0,
       point_colour = NA,
-      scale = 0.5 ##  <(**new parameter**)
+      scale = 0.8 ##  <(**new parameter**)
     ) +
     geom_boxplot(
       width = 0.12,
@@ -444,6 +503,7 @@ raincloud_acc <- function(data, title = ""){
          y=DV)
   if (DV=="Accuracy"){
     p <- p + geom_hline(yintercept=0.5, lty="dashed")
+    p <- p + lims(y=c(0.46,NA))
   }
   p
 }
@@ -498,7 +558,7 @@ est_emm <- function(model, orig_data){
   #model <- model[[1]]
   
   
-  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
@@ -533,11 +593,10 @@ est_emm <- function(model, orig_data){
     dfc <- dfc[, c(8, 1, 2, 3, 4, 5, 6, 7)]
     contra <- rbind(contra, dfc)
     
-    # omnibus tests for each factor
-    f <- joint_tests(emm)
-    fs <- rbind(fs, f)
-    
   }
+  # omnibus tests for each factor
+  fs <- joint_tests(model, data=orig_data)
+  
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
   fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
@@ -553,62 +612,9 @@ est_emm <- function(model, orig_data){
   
 }
 
-# ungroup targets across all branches
-ungrouping <- function(input){
-  data = data.frame()
-  i <- 0
-  for (experiment in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
-    i <- i + 1
-    #tmp <- tar_read(eegnet_HLM_exp_emm_means, branches=i)[[1]]
-    tmp <- input[[i]]
-    tmp[["experiment"]] <- experiment
-    data <- rbind(data, tmp)
-  }
-  data
-}
-
-# concatenate experiment and whole 
-combine_single_whole <- function(single, whole){
-  whole$experiment = "ALL"
-  rbind(whole, single)
-}
-
-# heatmap of emms
-heatmap <- function(data){
-  data <- data %>% 
-    reorder_variables(column_name = "variable") %>%
-    relevel_variables(column_name = "level") %>%
-    # Apply replacements batchwise across all columns
-    mutate(variable = recode(variable, !!!replacements)) %>%
-    # NEW: replacements for each level
-    #mutate(level = recode(level, !!!replacements)) %>%
-    # delete the experiment compairson in the full data
-    #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
-    # center around zero for better comparability
-    group_by(experiment) %>%
-    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
-
-  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
-    geom_tile() +
-    facet_grid(experiment~variable, scales="free") +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()) +
-    scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-                                    l1 = 45, # luminance at endpoints
-                                    l2 = 100, # luminance at midpoints
-                                    p1 = .9, 
-                                    p2 = 1.2) +
-    labs(x="processing step",
-         y="",
-         fill="delta\nfrom\nmarginal\nmean\n(%)")  
-        # Percentage marginal mean discrepancy
-        # Distance from average (in %)
-        # Percent above/below average
-}
-
 est_emm_int <- function(model, data){
   experiment <- experiment <- unique(data$experiment)
-  variables = c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
   means = data.frame()
   contra = data.frame()
   for (variable.1 in variables) {
@@ -673,10 +679,75 @@ est_emm_int <- function(model, data){
   return(list(means, contra))
 }
 
+
+# ungroup targets across all branches
+ungrouping <- function(input){
+  data = data.frame()
+  i <- 0
+  for (experiment in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
+    i <- i + 1
+    #tmp <- tar_read(eegnet_HLM_exp_emm_means, branches=i)[[1]]
+    tmp <- input[[i]]
+    tmp[["experiment"]] <- experiment
+    data <- rbind(data, tmp)
+  }
+  data
+}
+
+# concatenate experiment and whole 
+combine_single_whole <- function(single, whole){
+  whole$experiment = "ALL"
+  rbind(whole, single)
+}
+
+# heatmap of emms
+heatmap <- function(data){
+  data <- data %>% 
+    reorder_variables(column_name = "variable") %>%
+    relevel_variables(column_name = "level") %>%
+    # Apply replacements batchwise across all columns
+    mutate(variable = recode(variable, !!!replacements)) %>%
+    # NEW: replacements for some levels, to not overload the image too much
+    mutate(level = recode(level, !!!replacements_sparse)) %>%
+    # delete the experiment compairson in the full data
+    #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
+    # center around zero for better comparability
+    group_by(experiment) %>%
+    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+
+  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+    geom_tile() +
+    facet_grid(experiment~variable, scales="free") +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          strip.text.y = element_text(angle=0)) + # rotate the experiment labels
+    #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
+    #                                l1 = 45, # luminance at endpoints
+    #                                l2 = 100, # luminance at midpoints
+    #                                p1 = .9, 
+    #                                p2 = 1.2) +
+    #scale_fill_gradientn(colours=brewer.prgn(100), guide = "colourbar") +
+    #scale_fill_gradientn(colours = c(colors_dark[1], "white", colors_dark[2]), # numerosity colors
+    #                     #values = scales::rescale(c(-2, -0.5, 0, 0.5, 2))
+    #                     ) +
+    #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
+    #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
+    scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
+    labs(x="processing step",
+         y="",
+         #fill="% change\naccuracy")  
+         fill="% deviation from\nmarginal mean")  
+        # Percentage marginal mean discrepancy
+        # Distance from average (in %)
+        # Percent above/below average
+  
+}
+
+
 reorder_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
   #new_order = c("ref", "hpf","lpf","emc","mac","base","det","ar") # original
-  new_order = c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
+  new_order = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
@@ -701,25 +772,41 @@ interaction_plot <- function(means, title_prefix=""){
     mutate(variable.2 = recode(variable.2, !!!replacements))
   
   # own colorscale # TODO: outsource from this script?
-  cols_stepped <- stepped(20)
+  # cols_stepped <- stepped(20)
+  # cols <- c("None" = "black",
+  #           "0.1" = cols_stepped[1],    
+  #           "0.5" = cols_stepped[9],     
+  #           "6" = cols_stepped[1],       
+  #           "20" = cols_stepped[9],      
+  #           "45" = cols_stepped[17],      
+  #           "ica" = cols_stepped[1],     
+  #           "200ms" = "black",   
+  #           "400ms" = cols_stepped[1],   
+  #           "offset" = "black",  
+  #           "linear" = cols_stepped[1], 
+  #           "false" = "black",
+  #           "true" = cols_stepped[1],
+  #           "average" = "black",
+  #           "Cz" = cols_stepped[1],
+  #           "P9P10" = cols_stepped[9]
+  # )
   cols <- c("None" = "black",
-            "0.1" = cols_stepped[1],    
-            "0.5" = cols_stepped[9],     
-            "6" = cols_stepped[1],       
-            "20" = cols_stepped[9],      
-            "45" = cols_stepped[17],      
-            "ica" = cols_stepped[1],     
+            "0.1" = colors_dark[1],    
+            "0.5" = colors_dark[2],     
+            "6" = colors_dark[1],       
+            "20" = colors_dark[2],     
+            "45" = colors_dark[3],      
+            "ica" = colors_dark[1],     
             "200ms" = "black",   
-            "400ms" = cols_stepped[1],   
+            "400ms" = colors_dark[1],   
             "offset" = "black",  
-            "linear" = cols_stepped[1], 
+            "linear" = colors_dark[1], 
             "false" = "black",
-            "true" = cols_stepped[1],
+            "true" = colors_dark[1],
             "average" = "black",
-            "Cz" = cols_stepped[1],
-            "P9P10" = cols_stepped[9]
-  )
-  
+            "Cz" = colors_dark[1],
+            "P9P10" = colors_dark[2]
+  )  
   p1 <- ggplot(meansr, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(size = 1.2) + 
@@ -884,20 +971,24 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
   # plot age
   p1 <- ggplot(data, aes(x=age, y=Intercept, color=sex)) +
     geom_point() +
+    geom_smooth(method="lm", se=TRUE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
-    labs(x="Age", y="Random Intercept")
+    labs(x="Age", y="Random Intercept") +
+    scale_color_manual(values = colors_dark)
   
   p2 <- ggplot(data, aes(x=sex, y=Intercept, fill=sex)) +
     geom_boxplot(notch=FALSE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
     labs(x="Sex", y="Random Intercept") +
-    guides(fill = "none") # remove legend for "fill"
+    guides(fill = "none") +# remove legend for "fill"
+    scale_fill_manual(values = colors_dark)
   
   p3 <- ggplot(data, aes(x=Intercept, fill=handedness)) +
     geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
     labs(x="Random Intercept", y="Count") +
-    scale_fill_viridis_d()
+    #scale_fill_viridis_d(begin=0, end=0.8) +
+    scale_fill_manual(values = c(colors_light[3], "grey"))
   
   ggarrange(p1,p2,p3, ncol=3) %>%
   annotate_figure(left = text_grob(experiment, 
@@ -1033,4 +1124,95 @@ check_convergence <- function(model){
   data.frame(CORR = c("ok"),
              SE = c("ok"),
              check_ignore = c(models$coefficients[, "Std. Error"][3]))
+}
+
+# Muscle artifact correction components per LPF 
+# TODO: this only worked with the old order, not necessary now!
+muscle_lpf <- function(ICA="EMG"){
+  
+  subjects = c("sub-001", "sub-002", "sub-003", "sub-004", "sub-005", "sub-006", "sub-007", "sub-008", "sub-009", "sub-010", "sub-011", "sub-012", "sub-013", "sub-014", "sub-015", "sub-016", "sub-017", "sub-018", "sub-019", "sub-020", "sub-021", "sub-022", "sub-023", "sub-024", "sub-025", "sub-026", "sub-027", "sub-028", "sub-029", "sub-030", "sub-031", "sub-032", "sub-033", "sub-034", "sub-035", "sub-036", "sub-037", "sub-038", "sub-039", "sub-040")
+  experiments = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")
+  
+  results = data.frame()
+  for (experiment in experiments){
+    for (sub in subjects){
+      example_char_file <- paste0("/Users/roman/GitHub/m4d/data/interim/",experiment,"/",sub,"/characteristics.json")
+      
+      # read the file
+      df <- jsonlite::fromJSON(example_char_file)
+      
+      if (ICA == "EMG"){
+        unique_emc_pipelines <- names(df$`ICA EMG`)
+      } else if (ICA == "EOG"){
+        unique_emc_pipelines <- names(df$`ICA EOG`)
+      }
+      # debug
+      #pipeline = unique_emc_pipelines[1]
+      
+      for (pipeline in unique_emc_pipelines) {
+        if (ICA == "EMG"){
+          n_comp <- df$`ICA EMG`[[pipeline[[1]][[1]]]]$n_components
+        } else if (ICA == "EOG"){
+          n_comp <- df$`ICA EOG`[[pipeline[[1]][[1]]]]$n_components
+        }
+        # split pipeline str at each underscore
+        splits <- strsplit(pipeline, "_")[[1]]
+        thisResult <- data.frame("ref" = splits[1],
+                                 "hpf" = splits[2],
+                                 "lpf" = splits[3],
+                                 #"emc" = splits[4],
+                                 #"mac" = splits[5],
+                                 "components" = n_comp,
+                                 "experiment" = experiment,
+                                 "subject" = sub)
+        results <- bind_rows(results, thisResult)
+      }
+    }
+  }
+  
+  results$lpf <- factor(results$lpf, levels = c("6", "20", "45", "None"))
+  library(ggplot2)
+  
+  # MAC
+  p <- ggplot(results, aes(x=lpf, y=components)) + 
+    geom_boxplot() +
+    labs(y="# of dropped components", x="Low-pass filter (Hz)", title = "Muscle artifact correction via ICA") +
+    facet_grid(experiment ~ .)
+  
+  return(p)
+}
+
+
+plot_multiverse_sankey <- function(data){
+  data %<>% 
+    filter(subject == "sub-001") %>%
+    filter(experiment == "N170") %>%
+    select(-c(subject, accuracy, experiment)) 
+  
+  # now change the names of all columns with the replacements
+  names(data) <- recode(names(data), !!!replacements)
+  
+  # make long
+  data_long <- data %>%
+    make_long(names(data)) %>%
+    mutate(node = recode(node, !!!replacements)) %>% # also replace with better names
+    mutate(next_node = recode(next_node, !!!replacements))
+  
+  # reorder factors in node and next_node
+  data_long <- data_long %>%
+    mutate(node = factor(node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
+           next_node = factor(next_node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
+  
+  ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
+    geom_sankey(flow.alpha = .6,
+                node.color = "gray20") +
+    geom_sankey_label(size = 4, color = "white", fill = "gray40") +
+    #scale_fill_viridis_d(drop = FALSE) +
+    #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
+    scale_fill_grey() +
+    theme_sankey(base_size = 18) +
+    labs(x = "processing step") + #, title = "Multiverse"
+    theme(legend.position = "none",
+          #plot.title = element_text(hjust = .5) # to make it central
+          )
 }

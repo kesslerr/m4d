@@ -37,9 +37,9 @@ column_types = Dict(
 
 # import dataframe
 #data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
-data_raw = CSV.read(string("../targets/eegnet.csv"), DataFrame, types=column_types);
-data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
-select!(data_raw, Not(:dataset));
+data_raw = CSV.read(string("../targets/eegnet_reordered.csv"), DataFrame, types=column_types);
+#data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
+#select!(data_raw, Not(:dataset));
 #data = CSV.read("data_eegnet.csv", DataFrame) 
 
 unique_experiments = unique(data_raw.experiment)
@@ -75,7 +75,7 @@ for exp in unique_experiments
     #    data[!, :experiment] = categorical(data[!, :experiment], levels=levels_experiment);
     #end
 
-    formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + zerocorr( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject));
+    formula = @formula(accuracy ~ ( emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr((emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));
     #formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject))
     #model = fit(LinearMixedModel, formula, data, fast = true) # suppress output into R
 

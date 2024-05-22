@@ -25,6 +25,7 @@ tar_option_set( # packages that your targets use
                "GGally", # e.g. pairwise correlation plots (ggpairs)
                "ggdist", 
                "ggthemes", 
+               "ggsankey", # sankey plots
                "cowplot", # to overlay plots
                "pals", # some colorscales
                "readr", 
@@ -82,24 +83,29 @@ list(
   # ),
   # tar_target(
   #   model_types,
-  #   c("EEGNET","Time-Resolved")
+  #   c("EEGNET","Time-resolved")
   # ),
   # 
   
   ## define raw data files
   tar_target(
     name = eegnet_file,
-    command = "eegnet.csv", # TODO: put this into a different folder
+    command = "eegnet_reordered.csv", # TODO: put this into a different folder
     format = "file"
   ),
   tar_target(
     name = sliding_file,
-    command = "sliding.csv",
+    command = "sliding_reordered.csv",
     format = "file"
   ),
   tar_target(
     name = tsum_file,
-    command = "sliding_tsums.csv",
+    command = "sliding_tsums_reordered.csv",
+    format = "file"
+  ),
+  tar_target(
+    name = sliding_avgacc_single_file,
+    command = "sliding_avgacc_single_reordered.csv",
     format = "file"
   ),
   tar_target(
@@ -110,6 +116,7 @@ list(
   
   ## NEW: single LMM files
   ## first, test if multiple files can be tracked at the same time
+  ## EEGNET
   tar_target(
     name = jLMM_file_ERN,
     command = '../julia/model_ERN.rds',
@@ -145,6 +152,42 @@ list(
     command = '../julia/model_P3.rds',
     format = "file"
   ),
+  ## SLIDING
+  tar_target(
+    name = jLMM_file_ERN_tr,
+    command = '../julia/model_ERN_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_LRP_tr,
+    command = '../julia/model_LRP_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_MMN_tr,
+    command = '../julia/model_MMN_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N170_tr,
+    command = '../julia/model_N170_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N2pc_tr,
+    command = '../julia/model_N2pc_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_N400_tr,
+    command = '../julia/model_N400_tr.rds',
+    format = "file"
+  ),
+  tar_target(
+    name = jLMM_file_P3_tr,
+    command = '../julia/model_P3_tr.rds',
+    format = "file"
+  ),
   
   tar_target(
     name = jLMM_files,
@@ -154,24 +197,60 @@ list(
              readRDS(jLMM_files),
              pattern=jLMM_files,
              iteration="list"),
+  tar_target(
+    name = jLMM_files_tr,
+    command = c(jLMM_file_ERN_tr, jLMM_file_LRP_tr, jLMM_file_MMN_tr, jLMM_file_N170_tr, jLMM_file_N2pc_tr, jLMM_file_N400_tr, jLMM_file_P3_tr),
+  ),
+  tar_target(name = sliding_HLMi2, 
+             readRDS(jLMM_files_tr),
+             pattern=jLMM_files_tr,
+             iteration="list"),
   
 
   ## import and recode datasets
   tar_target(
     name = data_eegnet,
-    command = {get_preprocess_data(eegnet_file) %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))} #forking_path, 
+    command = {get_preprocess_data(eegnet_file)} #  %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))
   ),
   tar_target(
     name = data_sliding,
-    command = {get_preprocess_data(sliding_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} # 
+    command = {get_preprocess_data(sliding_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
   ),
   tar_target(
     name = data_tsum,
-    command = {get_preprocess_data(tsum_file) %>% filter(dataset == "ERPCORE") %>% select(-c(forking_path, dataset))} #forking_path, 
+    command = {get_preprocess_data(tsum_file) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
   ),
   tar_target(
     name = demographics,
     command = {read_tsv(demographics_file) %>% mutate_if(is.character, as.factor)}
+  ),
+  # single participant average accuracy
+  tar_target(
+    name = data_avgaccs,
+    command = {get_preprocess_data(sliding_avgacc_single_file)} # , dataset  %>% filter(dataset == "ERPCORE")  %>% select(-c(forking_path))
+  ),
+  
+  # average accuracy for each pipeline acorss participants
+  tar_target(data_avgacc,
+             timeresolved_avg_acc(data_sliding)),
+  
+  ## Multiverse sankey visualization
+  tar_target(
+    name = sankey,
+    command = plot_multiverse_sankey(data_eegnet)
+  ),
+  tar_target(
+    name = sankey_file,
+    command = {
+      ggsave(plot=sankey,
+             filename="sankey.png",
+             path=figure_output_dir,
+             scale=3,
+             width=12,
+             height=4,
+             units="cm",
+             dpi=500)
+    },
   ),
   
   ## Example results of Luck forking path
@@ -188,15 +267,28 @@ list(
   tar_target( # average across subjects for each pipeline
     name = overview_accuracy_avgsub,
     command = raincloud_acc(data_eegnet %>%
-                              group_by(ref, hpf, lpf, emc, mac, base, det, ar, experiment) %>%
+                              group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
                             title = "EEGNet")
   ),
   tar_target(
     name = overview_tsum,
-    command = raincloud_acc(data_tsum, title = "Time-Resolved")
+    command = raincloud_acc(data_tsum, title = "Time-resolved")
   ),
+  tar_target(
+    name = overview_avgacc,
+    command = raincloud_acc(data_avgacc, title = "Time-resolved")
+  ),
+  tar_target( # average across subjects for each pipeline
+    name = overview_avgaccs_avgsub,
+    command = raincloud_acc(data_avgaccs %>%
+                              group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
+                              summarize(accuracy = mean(accuracy)) %>% 
+                              select(accuracy, everything()), # put the accuracy in the first column
+                            title = "Time-resolved")
+  ),
+  
   tar_target(
     name = overview,
     command = {
@@ -205,7 +297,22 @@ list(
                 ncol = 1, nrow = 2)
     }
   ), 
-  # TODO: HLM simulations in pipeline?
+  tar_target(
+    name = overview_horizontal,
+    command = {
+      ggarrange(overview_accuracy_avgsub, overview_avgaccs_avgsub, 
+                #labels = c("", ""),
+                ncol = 2, nrow = 1)
+    }
+  ), 
+  tar_target(
+    name = overview_poster,
+    command = {
+      ggarrange(overview_accuracy_avgsub, overview_avgaccs_avgsub, 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+    }
+  ), 
   
   ## GROUPINGS
   tar_group_by(
@@ -216,6 +323,16 @@ list(
   tar_group_by(
     data_tsum_exp, 
     data_tsum, 
+    experiment 
+  ),    
+  tar_group_by(
+    data_avgacc_exp, 
+    data_avgacc, 
+    experiment 
+  ),  
+  tar_group_by(
+    data_avgaccs_exp, 
+    data_avgaccs, 
     experiment 
   ),  
   
@@ -230,7 +347,7 @@ list(
       plot_file = paste0(figure_output_dir, "ffx_z_values.png")
       dummy = system2(command = julia_executable, args = c(julia_z_script, plot_file),
                       wait=TRUE,# wait for process to be finished before continuing in R
-                      stdout = TRUE) # capture output (doesnt work)
+                      stdout = FALSE) # capture output (doesnt work)
       plot_file # TODO, slight errors might not lead to aborting the pipeline
     },
     format = "file"
@@ -248,8 +365,13 @@ list(
         ggplot(aes(y=value, x=experiment, fill=interactions)) +
         geom_bar(stat = "identity", position="dodge") +
         scale_fill_grey(start=0.2, end=0.6) +
-        facet_wrap(metric ~ model, scales = "free_y") +
+        facet_wrap(metric ~ model, scales = "free_y",
+                   labeller = labeller(metric = label_both)) +
         labs(y="")
+      
+      #facet_wrap(metric ~ model, scales = "free_y", 
+      #           labeller = labeller(metric = label_both)) +
+      #  labs(y = "Value", x = "Experiment", fill = "Interactions")
     }
   ),
   tar_target(
@@ -276,18 +398,26 @@ list(
   ## LM for sliding
   tar_target(
     name = sliding_LMi2,
-    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
   tar_target(
     name = sliding_LMi3,
-    command=lm(formula="tsum ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 3", 
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 3", 
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),  
+
+  tar_target(
+    name = sliding_LMi2avgacc,
+    command=lm(formula="accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+               data = data_avgacc_exp),
+    pattern = map(data_avgacc_exp),
+    iteration = "list"
+  ),
   
   ## Estimated marginal means
   
@@ -343,6 +473,27 @@ list(
   tar_target(sliding_LMi2_emm_contrasts, sliding_LMi2_emm[[2]], pattern=map(sliding_LMi2_emm)),
   # TODO F values?
   
+  ### Sliding Avgacc
+  tar_target(
+    name=sliding_LMi2avgacc_emm,
+    command=est_emm(sliding_LMi2avgacc,
+                        data_avgacc_exp),
+    pattern = map(sliding_LMi2avgacc, data_avgacc_exp),
+    iteration = "list"
+  ),
+  tar_target(sliding_LMi2avgacc_emm_means, sliding_LMi2avgacc_emm[[1]], pattern=map(sliding_LMi2avgacc_emm)), #, iteration="list"
+  tar_target(sliding_LMi2avgacc_emm_contrasts, sliding_LMi2avgacc_emm[[2]], pattern=map(sliding_LMi2avgacc_emm)),
+  ### Sliding Avgaccs (Single)
+  tar_target(
+    name=sliding_HLMi2_emm,
+    command=est_emm(sliding_HLMi2,
+                    data_avgaccs_exp),
+    pattern = map(sliding_HLMi2, data_avgaccs_exp),
+    iteration = "list"
+  ),
+  tar_target(sliding_HLMi2_emm_means, sliding_HLMi2_emm[[1]], pattern=map(sliding_HLMi2_emm)), #, iteration="list"
+  tar_target(sliding_HLMi2_emm_contrasts, sliding_HLMi2_emm[[2]], pattern=map(sliding_HLMi2_emm)),
+  
   
   ## heatmaps of EMMs
   # TODO: use the omni test significances to highlight the facets
@@ -350,11 +501,23 @@ list(
             command=heatmap(eegnet_HLM_emm_means)),
   tar_target(sliding_heatmap,
              heatmap(sliding_LM_emm_means)),
+  tar_target(slidingavgacc_heatmap,
+             heatmap(sliding_LMi2avgacc_emm_means)),
+  tar_target(slidingavgaccs_heatmap,
+             heatmap(sliding_HLMi2_emm_means)),
   tar_target(
     name = heatmaps,
     command = {
       ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
                 sliding_heatmap + labs(title="Time-resolved"), 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+    }),
+  tar_target(
+    name = heatmaps_avgacc,
+    command = {
+      ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
+                slidingavgaccs_heatmap + labs(title="Time-resolved"), 
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
@@ -407,7 +570,7 @@ list(
     iteration ="list"),
   tar_target(sliding_LM_qq_comb,
     {plt <- ggarrange(plotlist = sliding_LM_qq)
-    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-Resolved", 
+    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-resolved", 
                     color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
@@ -428,7 +591,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_rvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_rvf)
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-Resolved", 
+             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   ### sqrt abs std res_vs_fitted plots
@@ -449,7 +612,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_sasrvf)
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-Resolved", 
+             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   
@@ -492,8 +655,13 @@ list(
                
                ggpairs(wide_data) + labs(title="Random Intercept Correlation Between Experiments")
              }
-  ),
+  ), # TODO: track the 7*40 files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
   
+  ## Characteristics of processing steps
+  ## Muscle Artifact ICA Components, only necessary for old order of preprocessing steps
+  #tar_target(muscle_lpf_plot,
+  #           muscle_lpf(ICA="EMG")),
+
   ## Exports for Paper
 
   ### Figures
@@ -504,7 +672,7 @@ list(
       ggsave(plot=overview,
              filename="overview.png",
              path=figure_output_dir,
-             scale=2,
+             scale=1.5,
              width=12,
              height=9,
              units="cm",
@@ -512,13 +680,55 @@ list(
     },
     format="file"
   ),  
+tar_target(
+  name = overview_poster_file,
+  command = {
+    ggsave(plot=overview_poster,
+           filename="overview_poster.png",
+           path=figure_output_dir,
+           scale=1,
+           width=12,
+           height=16,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
+tar_target(
+  name = overview_horizontal_file,
+  command = {
+    ggsave(plot=overview_horizontal,
+           filename="overview_horizontal.png",
+           path=figure_output_dir,
+           scale=1.5,
+           width=12,
+           height=9,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
   tar_target(
     name = overview_eegnet_subjects_file,
     command = {
       ggsave(plot=overview_accuracy,
              filename="overview_eegnet_subjects.png",
              path=figure_output_dir,
-             scale=2,
+             scale=1.5,
+             width=12,
+             height=5,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+  tar_target(
+    name = overview_sliding_avgaccs_file,
+    command = {
+      ggsave(plot=overview_avgaccs_avgsub,
+             filename="overview_sliding_avgaccs.png",
+             path=figure_output_dir,
+             scale=1.5,
              width=12,
              height=5,
              units="cm",
@@ -548,9 +758,38 @@ list(
       ggsave(plot=heatmaps,
              filename="heatmaps.png",
              path=figure_output_dir,
-             scale=2,
-             width=12,
+             scale=1.5,
+             width=18,
              height=12,
+             units="cm",
+             dpi=500)
+    },
+    format="file"
+  ),  
+tar_target(
+  name =heatmaps_file_poster,
+  command = {
+    ggsave(plot=heatmaps_avgacc,
+           filename="heatmaps_avgacc.png",
+           path=figure_output_dir,
+           scale=1.5,
+           width=18,
+           height=12,
+           units="cm",
+           dpi=500)
+  },
+  format="file"
+),  
+  # heatmap of the alternative performance metric (average accuracy) for sliding window slidingavgacc_heatmap
+  tar_target(
+    name =heatmaps_file_avgacc,
+    command = {
+      ggsave(plot=slidingavgacc_heatmap,
+             filename="heatmap_avgacc.png",
+             path=figure_output_dir,
+             scale=1.5,
+             width=16,
+             height=7,
              units="cm",
              dpi=500)
     },

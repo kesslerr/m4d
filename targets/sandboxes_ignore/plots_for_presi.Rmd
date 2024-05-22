@@ -1,0 +1,82 @@
+---
+title: "plots"
+output: html_document
+date: "2024-05-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## decodubg time series
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(targets)
+
+# import N170 sliding data
+data <- tar_read(data_sliding) %>% filter(experiment == "N170")
+
+# generate a time series from x= -0.4 to 0.8 around y=0.5, with increasing y after x=0.2
+
+data <- data.frame(x = seq(-0.4, 0.8, 0.01), 
+                   y = rep(0.5, 121))
+# add rnorm noise to y
+data$y <- data$y + rnorm(121, 0, 0.01)
+# increase y after x=0.2
+data$y[data$x > 0.2] <- data$y[data$x > 0.2] + 0.2 * data$x[data$x > 0.2]
+# decrease after 0.6
+data$y[data$x > 0.6] <- data$y[data$x > 0.6] - 0.2 * data$x[data$x > 0.6]
+# plot time series
+p <- ggplot(data, aes(x = x, y = y)) + 
+  geom_line() +
+  geom_hline(aes(yintercept=0.5)) +
+  lims(x = c(-0.4, 0.8), y = c(0.4, 1))
+  #geom_point() + 
+  #geom_text(aes(label = x), hjust = 0, vjust = 0)
+  #theme_minimal()
+p
+
+```
+
+
+## single hyperplane
+
+```{r}
+remotes::install_github("AckerDWM/gg3D")
+
+library(ggplot2)
+library(gg3D) 
+library(dplyr)
+
+data3d <- data.frame(x=c(-1, 1, 1, -1), y=c(-1, -1, 1, 1), z=c(0, 0, 0, 0))
+
+data(iris)
+iris <- iris %>% filter(Species %in% c("virginica", "versicolor"))
+set.seed(123)
+
+ggplot(iris, aes(x=Petal.Width, y=Sepal.Width, z=Petal.Length, color=Species)) + 
+  theme_void() +
+  axes_3D() +
+  stat_3D() + 
+  # turn off legend
+  theme(legend.position = "none") +
+  # add a single hyperplane
+  geom_hyperplane(a = 0.5, b = 0.5, c = 0.5, d = 0.5, fill = "red", alpha = 0.5)
+
+
+```
+
+
+# latex
+
+add some latex formula
+
+\[
+\int_{a}^{b} x^2 dx
+\]
+
+
+
+
