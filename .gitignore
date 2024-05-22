@@ -25,6 +25,7 @@ data/ds005106-download/*
 **/*.pkl
 **/*.pck
 **/*.pickle
+#**/*.json
 
 # julia
 **/*.rds # R object
