@@ -38,9 +38,10 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #ptmp_dir = "/ptmp/kroma/m4d/"
 os.chdir(base_dir)
 sys.path.append(base_dir)
+plot_dir = os.path.join(base_dir, "plots")
 
 from src.utils import get_forking_paths, cluster_test, get_age
-from src.config import translation_table, luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, luck_forking_paths, baseline_end
+from src.config import translation_table, luck_forking_paths_clean2 as luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, baseline_end
 
 
 
@@ -179,63 +180,70 @@ df_avg_accs_single = df_avg_accs_single.rename(columns={'balanced accuracy': 'ac
 df_avg_accs_single.drop('forking_path', axis=1, inplace=True)
 df_avg_accs_single.to_csv(f"{base_dir}/models/sliding/sliding_avgacc_single_reordered.csv", index=False)
 
-## PLOT exemplary FP results, and maybe stats
+
+
+""" PLOT exemplary FP results, and stats """
+
 
 # analyze and plot the performances only on the luck forking path for each experiment for exemplary visualization
-# TODO: continue here with some result plots
 
+df_results = pd.read_csv(f"{base_dir}/models/sliding/sliding_reordered.csv")
+# rename dfs_single balanced accuracy column to accuracy
+df_results = df_results.rename(columns={'balanced accuracy': 'accuracy'})
+df_results.head()
 
-# df_results = pd.read_csv(f"{base_dir}/models/sliding/sliding.csv")
-# df_results.head()
+# select the forking path of Luck et al.
 
-# # select the forking path of Luck et al.
-# # DEBUG
-# #experiment = "N170"
-# dfs_single = []
-# for experiment in experiments:
+dfs_single = []
+for experiment in experiments_erpcore:
 
-#     forking_path = luck_forking_paths[experiment].translate(translation_table)
-#     df_single = df_results[df_results['forking_path'] == forking_path]
-#     df_single.shape
-#     dfs_single.append(df_single)
+    forking_path = luck_forking_paths[experiment].translate(translation_table)
+    df_single = df_results[df_results['forking_path'] == forking_path]
+    df_single.shape
+    dfs_single.append(df_single)
 
-# dfs_single = pd.concat(dfs_single)
+dfs_single = pd.concat(dfs_single)
+dfs_single
 
-# for dataset in ['erpcore']: # TODO: add 'mipdb'
-#     fig, ax = plt.subplots(len(experiments), 1, figsize=(15, 5))
-#     for i, experiment in enumerate(experiments):
-#         g = sns.relplot(data=dfs_single[dfs_single.dataset==dataset], 
-#                     x='times', y='balanced accuracy', 
-#                     hue='significance',
-#                     #row='experiment',
-#                     ax=ax[i],
-#                     #kind='line'
-#                     )
-#         # ax[i].axhline(0.5, color='k')
-#         for ax in g.axes.flat:
-#             for line in ax.lines:
-#                 x = line.get_xdata()
-#                 y = line.get_ydata()
-#                 significance = dfs_single.loc[dfs_single['experiment'] == ax.get_title()].loc[(x >= min(x)) & (x <= max(x)), 'significance']
-#                 start = None
-#                 for i in range(len(significance)):
-#                     if significance.iloc[i]:
-#                         if start is None:
-#                             start = i
-#                     elif start is not None:
-#                         ax.fill_between(x[start:i], y[start:i], color='gray', alpha=0.3)
-#                         start = None
+# plot
 
-#     plt.show()
+g = sns.relplot(data=dfs_single, 
+            x='times', y='accuracy', 
+            row='experiment',
+            #ax=ax[i],
+            kind='line',
+            color='black',
+            height=1.5,# of each facet
+            aspect=5, # aspect * height = width
+            #errorbar=('ci', 99), # there is already only the mean in the data, so no CI possible, or TODO extract single sub data
+            #err_kws={"alpha": .4},
+            facet_kws={'sharey': True, 'sharex': False}
+            )
 
-
-# sns.relplot(data=df, x='x', y='y', hue='color_var', col='facet_var', kind='line')
-
-
-
-
-
-
-
-
-
+axes = g.fig.axes
+for ax, experiment in zip(axes, experiments_erpcore):
+    ax.axhline(0.5, color='k', linestyle='-')
+    ax.axvline(0., color='k', linestyle='--')
+    ax.set_title(experiment)
+    ax.title.set_backgroundcolor('lightgrey')
+    ax.title.set_fontsize(14)
+    # significances
+    for line in ax.lines:
+        x = line.get_xdata()
+        y = line.get_ydata()
+        significance = dfs_single.loc[dfs_single['experiment'] == ax.get_title(), 'significance'] #.loc[(x >= min(x)) & (x <= max(x))
+        start = None
+        for i in range(len(significance)):
+            if significance.iloc[i]:
+                if start is None:
+                    start = i
+            elif start is not None:
+                ax.fill_between(x[start:i], y[start:i], 0.45, color='gray', alpha=0.3)
+                start = None
+    
+axes[-1].set_xlabel("Time [s]")
+#g.map.set_titles("{experiment}")
+plt.tight_layout()
+# save plot
+g.savefig(os.path.join(plot_dir, f"timeresolved_luck.png"), dpi=300)
+plt.show()

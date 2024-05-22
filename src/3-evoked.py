@@ -211,7 +211,7 @@ colors = ['#878787', '#878787', 'k'] # ['#a6cee3', '#1f78b4', '#b2df8a']
 linestyles = ['dashed', 'dotted', 'solid']
 n_subfigures = len(experiments)
 
-fig, ax = plt.subplots(nrows=n_subfigures, ncols=1, figsize=(10, 15), sharex=False, sharey=False)
+fig, ax = plt.subplots(nrows=n_subfigures, ncols=1, figsize=(8, 10), sharex=False, sharey=False)
 
 for ax_counter, experiment in enumerate(experiments):
 
@@ -239,6 +239,27 @@ for ax_counter, experiment in enumerate(experiments):
     # turn x axis label description off in all but last axis
     if ax_counter < (n_subfigures - 1):
         ax[ax_counter].set_xlabel("")
+    else:
+        ax[ax_counter].set_xlabel("Time [s]")
+    # set title to experiment name
+    ax[ax_counter].set_title(experiment)
+    # make individual titles larger
+    ax[ax_counter].title.set_fontsize(14)
+    # give titles grey background
+    ax[ax_counter].title.set_backgroundcolor('lightgrey')
+    # make legend white background
+    #leg = ax[ax_counter].legend()
+    #frame = leg.get_frame()
+    #frame.set_facecolor('lightgrey')
+    
+    #ax[ax_counter].legend(facecolor='white', framealpha=1, loc='upper left') # BUG framealpha does never work
+    ax[ax_counter].legend(facecolor='white', framealpha=1, loc='center left', bbox_to_anchor=(1, 0.5)) # BUG framealpha does never work
+    
+    
+    
+    #ax[ax_counter].legend().get_frame().set_alpha(1.0)
+    # put legend on upper left
+    #ax[ax_counter].legend(loc='upper left')
 
 plt.tight_layout()
 

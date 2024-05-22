@@ -97,28 +97,59 @@ from mne.decoding import (
 )
 from mne.stats import permutation_cluster_1samp_test
 
-
+base_dir = os.path.join(os.path.dirname(os.getcwd()))
+sys.path.append(base_dir)
 
 from src.utils import get_forking_paths, cluster_test, get_age
 from src.config import translation_table, luck_forking_paths, subjects as subjects_erpcore, experiments as experiments_erpcore, decoding_windows, subjects_mipdb_dem, age_groups, groups_subjects_mipdb, luck_forking_paths
 
+experiment = "RSVP"
+subjects = ['sub-001', 'sub-002', 'sub-005', 'sub-007', 'sub-008', 'sub-009', 'sub-011', 'sub-013', 'sub-014', 'sub-015', 'sub-017', 'sub-018', 'sub-020', 'sub-021', 'sub-022', 'sub-023', 'sub-024', 'sub-025', 'sub-026', 'sub-027', 'sub-028', 'sub-030', 'sub-035', 'sub-036', 'sub-037', 'sub-039', 'sub-040', 'sub-042', 'sub-043', 'sub-044', 'sub-045', 'sub-046', 'sub-048', 'sub-049']
 
 
 
 
 
 
-    _, files, forking_paths_split = get_forking_paths(
-                                base_dir="/ptmp/kroma/m4d/", 
-                                experiment=experiment,
-                                subject=subject, 
-                                sample=None)
+results = np.empty((len(subjects), 301))
 
-    assert len(files) == 1152, "Number of forking paths is not 1152"
+for s, subject in enumerate(subjects):
+    # DEBUG subje
 
     quek_forking_path = 'None_None_45_0.5_average_200ms_offset_False'
     full_forking_path = 'ica_ica_6_0.5_average_200ms_linear_True'
-    forking_path = full_forking_path
-    file = [i for i in files if forking_path in i][0]
+    forking_path = quek_forking_path
+
+    npy_file = os.path.join(base_dir, 'models', 'sliding', 'RSVP', subject, f"{forking_path}.npy")
     
+    # load np array
+    mat = np.load(npy_file)
+    results[s,:] = mat
     
+
+df = pd.DataFrame(np.transpose(results))
+
+# Add a time column
+df['time'] = np.arange(301) * 4 / 1000 - .4
+
+# Melt the DataFrame to long format
+df_melted = df.melt(id_vars='time', var_name='variable', value_name='value')
+
+# Plot using Seaborn
+plt.figure(figsize=(10, 6))
+sns.lineplot(data=df_melted, x='time', y='value', errorbar=('ci', 95))
+
+# Customize the plot
+plt.title('Time-resolved decoding accuracy (10 classes, RSVP with 5 Hz)')
+plt.xlabel('Time | s')
+plt.ylabel('Accuracy')
+# horizontal line at 0.1
+plt.axhline(0.1, color='red', linestyle='--')
+plt.axvline(0.0, color='black', linestyle='--')
+# legend with confidence interval
+plt.legend(['Accuracy', '95% CI'])
+# legend for horizontal line
+plt.text(.75, 0.1005, 'Chance', color='red')
+plt.show()
+
+# using queck_forking_path

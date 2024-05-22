@@ -46,7 +46,7 @@ from src.config import translation_table, baseline_windows, decoding_windows
 
 # DEBUG
 experiment = "RSVP"
-subject = "sub-015"
+#subject = "sub-015"
 
 # TODO: MAYBE? decoding should only be done after the baseline period ended!
 
@@ -86,7 +86,7 @@ def slider_parallel_subject(subject):
 
     quek_forking_path = 'None_None_45_0.5_average_200ms_offset_False'
     full_forking_path = 'ica_ica_6_0.5_average_200ms_linear_True'
-    forking_path = full_forking_path
+    forking_path = quek_forking_path
     file = [i for i in files if forking_path in i][0]
 
     
