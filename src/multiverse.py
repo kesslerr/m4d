@@ -14,14 +14,14 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
-from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
+from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation, prestim_baseline_correction_ERN
 from src.config import multiverse_params, epoch_windows, baseline_windows, translation_table
 
 """ HEADER END """
 
 # DEBUG
-experiment = "RSVP"
-subject = "sub-026"
+#experiment = "ERN"
+#subject = "sub-001"
 
 
 # define subject and session by arguments to this script
@@ -154,17 +154,20 @@ with tqdm(total=total_iterations) as pbar:
                                 else:
                                     detrend = None
                                 
+                                if experiment != "ERN":
                                 # epoching
-                                epochs = mne.Epochs(_raw3.copy(), 
-                                                    events=events, 
-                                                    event_id=event_dict,
-                                                    tmin=epoch_windows[experiment][0], 
-                                                    tmax=epoch_windows[experiment][1],
-                                                    baseline=baseline,
-                                                    detrend=detrend,
-                                                    proj=False,
-                                                    reject_by_annotation=False, 
-                                                    preload=True)
+                                    epochs = mne.Epochs(_raw3.copy(), 
+                                                        events=events, 
+                                                        event_id=event_dict,
+                                                        tmin=epoch_windows[experiment][0], 
+                                                        tmax=epoch_windows[experiment][1],
+                                                        baseline=baseline,
+                                                        detrend=detrend,
+                                                        proj=False,
+                                                        reject_by_annotation=False, 
+                                                        preload=True)
+                                elif experiment == "ERN":
+                                    epochs = prestim_baseline_correction_ERN(_raw3.copy(), events, event_dict, detrend=detrend, baseline=base)
                                                                 
                                 for ar in multiverse_params['ar']:
                                     # ar
@@ -206,5 +209,4 @@ with tqdm(total=total_iterations) as pbar:
                                     # update iteration
                                     path_id += 1
                                     pbar.update(1)
-                                    
                                     

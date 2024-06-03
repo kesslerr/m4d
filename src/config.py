@@ -31,7 +31,7 @@ for group, ages in age_groups.items():
 
 # define triggers and stuff
 delete_triggers = { # ERPCORE
-                   'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
+                   'ERN': [], # '11', '12', '21', '22' stimulus triggers (only response locked analysis)
                    'LRP': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
                    'MMN': ['180', # first stream of standards
                            '1', '4'], # these triggers were found with no reference in the data (1-2 occurences per participant), TODO: write Luck 
@@ -55,6 +55,7 @@ conditions_triggers = {
     'ERN': {
         'correct': ['111','121','212','222'], # correct responses
         'incorrect' : ['112','122','211','221'], # incorrect responses
+        'stimulus': ['11','12','21','22'], # stimulus triggers (new, for stimulus locked baseline correction)
     },
     'LRP': {
         'response_left': ['111','112','121','122'], # response left
@@ -224,7 +225,7 @@ multiverse_params = {
         'base': ['200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
         # TODO: univariate noise normalization in baseline?: 
         # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
-        'det': ['offset', 'linear'], # "False" is ommitted, makes no sense not to detrend
+        'det': [None, 'linear'], 
         'ar': [False, True], 
         }
 

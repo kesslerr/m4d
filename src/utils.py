@@ -1,4 +1,4 @@
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 import json
@@ -8,6 +8,12 @@ import re
 from mne.preprocessing import ICA
 from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
 import requests
+
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(base_dir)
+sys.path.append(base_dir)
+
+from src.config import epoch_windows
 
 """ ------------------- pre-multiverse ------------------- """
 
@@ -288,6 +294,45 @@ def ica_eog_emg(raw, method='eog'):
 
     return raw_new, len(indices), explained_var_ratio
 
+
+
+def prestim_baseline_correction_ERN(raw, events, event_dict, detrend=None, baseline=200):
+    baselines = []
+    if baseline == 200: 
+        tps = 51 # pre-stimulus timepoints to include
+    elif baseline == 400:
+        tps = 102
+    else:
+        raise ValueError("Baseline not implemented.")
+
+    data = raw.get_data()
+    for i in range(events.shape[0]):
+        stop = events[i, 0]
+        start = stop - tps
+        this_base = data[:,start:stop].mean(axis=1) # 1 mean value per electrode
+        baselines.append(this_base)
+    
+    # epochieren aller events (ohne baseline correction)
+    epochs = mne.Epochs(raw.copy(), 
+                        events=events, 
+                        event_id=event_dict,
+                        tmin=epoch_windows["ERN"][0], 
+                        tmax=epoch_windows["ERN"][1],
+                        baseline=None, # NEW: no basline correction in this step
+                        detrend=detrend, # either None or 1,
+                        proj=False,
+                        reject_by_annotation=False, 
+                        preload=True)
+    
+    # manuelle baseline correction
+    for i in range(1, events.shape[0]):
+        epochs._data[i] = epochs._data[i] - baselines[i-1][:, np.newaxis] # remove the previous baseline (stim) from the current trial (resp)
+    epochs.drop(0) # drop 1st epoch: because not corrected. It should be a stimulus anyway, and if not, it will be a faulty response
+
+    # verwerfe die stimulus epochen
+    epochs = epochs[["correct", "incorrect"]]
+
+    return epochs
 
 # autoreject parser
 def autorej(epochs):
