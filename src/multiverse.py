@@ -20,8 +20,8 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-#experiment = "ERN"
-#subject = "sub-001"
+experiment = "ERN"
+subject = "sub-006"
 
 
 # define subject and session by arguments to this script
@@ -154,7 +154,8 @@ with tqdm(total=total_iterations) as pbar:
                                 else:
                                     detrend = None
                                 
-                                if experiment != "ERN":
+                                
+                                if (experiment != "ERN") or (experiment == "ERN" and not base):
                                 # epoching
                                     epochs = mne.Epochs(_raw3.copy(), 
                                                         events=events, 
@@ -166,19 +167,25 @@ with tqdm(total=total_iterations) as pbar:
                                                         proj=False,
                                                         reject_by_annotation=False, 
                                                         preload=True)
+                                    # delete stimulus epochs in ERN
+                                    if experiment == "ERN":
+                                        epochs = epochs[["correct", "incorrect"]]
+                                    
                                 elif experiment == "ERN":
-                                    epochs = prestim_baseline_correction_ERN(_raw3.copy(), events, event_dict, detrend=detrend, baseline=base)
+                                    # manual baseline correction, drawn from pre-stimulus interval (not pre-response)
+                                    epochs = prestim_baseline_correction_ERN(_raw3.copy(), events, event_dict, detrend=detrend, baseline=int(base[0:3]))
+                                    
                                                                 
                                 for ar in multiverse_params['ar']:
                                     # ar
 
                                     # string that describes the current parameter combination
-                                    param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}_{base}_{det}_{ar}'.translate(translation_table)
+                                    param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}_{det}_{base}_{ar}'.translate(translation_table)
 
                                     # add metadata to epochs
                                     epochs.metadata = pd.DataFrame(
-                                                data=[[path_id, emc, mus, lpf, hpf, ref, base, det, ar]] * len(epochs), 
-                                                columns=['path_id', 'emc', 'mus', 'lpf', 'hpf', 'ref', 'base', 'det', 'ar'], 
+                                                data=[[path_id, emc, mus, lpf, hpf, ref, det, base, ar]] * len(epochs), 
+                                                columns=['path_id', 'emc', 'mus', 'lpf', 'hpf', 'ref', 'det', 'base', 'ar'], 
                                                 index=range(len(epochs)),
                                                 )
 
@@ -193,12 +200,18 @@ with tqdm(total=total_iterations) as pbar:
                                             epochs = epochs.copy().drop_channels(['E129'])
                                         
                                         # estimate autoreject model on all epochs (not only training epochs), 
-                                        # TODO: mention, that this is potential data leakage, but the only feasible way to do it
-                                        epochs_ar, n1 = autorej(epochs.copy())
-                                        interp_frac_channels, interp_frac_trials, total_interp_frac = summarize_artifact_interpolation(n1)
+                                        epochs_ar, n1 = autorej(epochs.copy(), version=ar)
+
+                                        # TODO adjust to new AR methods
+                                        interp_frac_channels, interp_frac_trials, total_interp_frac, rej_frac_channels, rej_frac_trials, total_rej_frac = summarize_artifact_interpolation(n1, version = ar)
                                         manager.update_subsubfield('autoreject', param_str, 'total_interp_frac', total_interp_frac)
                                         manager.update_subsubfield('autoreject', param_str, 'interp_frac_channels', interp_frac_channels)
                                         manager.update_subsubfield('autoreject', param_str, 'interp_frac_trials', interp_frac_trials)
+                                        if ar == "intrej":
+                                            manager.update_subsubfield('autoreject', param_str, 'rej_frac_channels', rej_frac_channels)
+                                            manager.update_subsubfield('autoreject', param_str, 'rej_frac_trials', rej_frac_trials)
+                                            manager.update_subsubfield('autoreject', param_str, 'total_rej_frac', total_rej_frac)
+                                            
                                                                                 
                                     else:
                                         epochs_ar = epochs.copy()
@@ -209,4 +222,4 @@ with tqdm(total=total_iterations) as pbar:
                                     # update iteration
                                     path_id += 1
                                     pbar.update(1)
-                                    
+                         

@@ -165,7 +165,7 @@ epoch_windows = {
 baseline_windows = {
     '200ms': { # correspond to Kappenmann et al.
         'ERN':  (-.4, -.2), 
-        'LRP':  (-.8, -.6),
+        'LRP':  (-.6, -.4), # TODO: also change in targets, now the endpoint is matched between paths, TODO also change in manuscript
         'MMN':  (-.2, 0.),
         'N170': (-.2, 0.),
         'N2pc': (-.2, 0.),
@@ -222,11 +222,11 @@ multiverse_params = {
         'lpf': [None, 6, 20, 45], # 6 Hz for alpha exclusion, Bae and Luck 2018, 2019a, 2019b (Ref in Bae 2021)
         'emc': [None, 'ica'],  # 'peak-to-peak', 'regression'
         'mus': [None, 'ica'], 
-        'base': ['200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
+        'det': [None, 'linear'], 
+        'base': [None, '200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
         # TODO: univariate noise normalization in baseline?: 
         # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
-        'det': [None, 'linear'], 
-        'ar': [False, True], 
+        'ar': [False, 'int', 'intrej'], 
         }
 
 # replace special characters in the multiverse parameter space
@@ -253,36 +253,14 @@ luck_references = {
         }
 
 luck_forking_paths = { # these are not really the same, but some steps are comparable
-        'ERN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'LRP': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'MMN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
-        'N2pc': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'MIPDB': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        } # TODO change this to the new order
-
-luck_forking_paths_clean = { # without special characters
-        'ERN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'LRP': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'MMN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
-        'N2pc': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'N400': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'P3': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'MIPDB': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        }
-
-luck_forking_paths_clean2 = { # without special characters
-        'ERN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'LRP': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'MMN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'N170': "ica_ica_None_0.1_average_200ms_offset_True",
-        'N2pc': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'N400': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'P3': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'MIPDB': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'ERN': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'LRP': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'MMN': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'N170': "ica_ica_None_0.1_average_None_200ms_int",
+        'N2pc': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'N400': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'P3': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'MIPDB': "ica_ica_None_0.1_P9P10_None_200ms_int",
         }
 
 
