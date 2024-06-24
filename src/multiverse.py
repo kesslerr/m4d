@@ -20,8 +20,9 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-experiment = "ERN"
-subject = "sub-006"
+experiment = "MMN"
+subject = "sub-008"
+stragglers = 10 # number of stragglers to be processed in the end
 
 
 # define subject and session by arguments to this script
@@ -32,7 +33,7 @@ else:
     experiment = sys.argv[1]
     subject = sys.argv[2]
     print(f'Processing Experiment {experiment} Subject {subject}!')
-
+    stragglers=None
 
 """ SPECIFICATIONS END """
 
@@ -48,8 +49,10 @@ processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.
 if not os.path.exists(processed_folder):
     os.makedirs(processed_folder)
 # delete all files in processed_folder and interim_folder
-_ = [os.remove(file) for file in glob(os.path.join(interim_folder, "*"))]
-_ = [os.remove(file) for file in glob(os.path.join(processed_folder, "*"))]
+if not stragglers:
+    print("Deleting all files in processed and interim folder.")
+    _ = [os.remove(file) for file in glob(os.path.join(interim_folder, "*"))]
+    _ = [os.remove(file) for file in glob(os.path.join(processed_folder, "*"))]
 
 # read raw data
 raw = mne.io.read_raw_fif(os.path.join(raw_folder, f"{subject}-raw.fif"), preload=True, verbose=None)
