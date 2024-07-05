@@ -222,17 +222,17 @@ list(
   ),
   tar_target(
     name = demographics,
-    command = {read_tsv(demographics_file) %>% mutate_if(is.character, as.factor)}
+    command = {read_tsv(demographics_file) %>% 
+        # convert M to male and F to temal in variable sex
+        mutate(sex = recode(sex, "M" = "Male", "F" = "Female")) %>%
+        mutate_if(is.character, as.factor)
+        }
   ),
   # single participant average accuracy
   tar_target(
     name = data_avgaccs,
     command = {get_preprocess_data(sliding_avgacc_single_file)} # , dataset  %>% filter(dataset == "ERPCORE")  %>% select(-c(forking_path))
   ),
-  
-  # average accuracy for each pipeline acorss participants
-  tar_target(data_avgacc,
-             timeresolved_avg_acc(data_sliding)),
   
   ## Multiverse sankey visualization
   tar_target(
@@ -245,19 +245,19 @@ list(
       ggsave(plot=sankey,
              filename="sankey.png",
              path=figure_output_dir,
-             scale=3,
-             width=12,
-             height=4,
+             scale=1.5,
+             width=15,
+             height=5,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
   ),
   
   ## Example results of Luck forking path
-  tar_target(
-    name = timeresolved_luck,
-    command = timeresolved_plot(data_sliding)
-  ),
+  #tar_target(
+  #  name = timeresolved_luck,
+  #  command = timeresolved_plot(data_sliding)
+  #),
   
   ## Overview of decoding accuracies for each pipeline
   tar_target(
@@ -276,10 +276,7 @@ list(
     name = overview_tsum,
     command = raincloud_acc(data_tsum, title = "Time-resolved")
   ),
-  tar_target(
-    name = overview_avgacc,
-    command = raincloud_acc(data_avgacc, title = "Time-resolved")
-  ),
+  
   tar_target( # average across subjects for each pipeline
     name = overview_avgaccs_avgsub,
     command = raincloud_acc(data_avgaccs %>%
@@ -297,14 +294,7 @@ list(
                 ncol = 1, nrow = 2)
     }
   ), 
-  tar_target(
-    name = overview_horizontal,
-    command = {
-      ggarrange(overview_accuracy_avgsub, overview_avgaccs_avgsub, 
-                #labels = c("", ""),
-                ncol = 2, nrow = 1)
-    }
-  ), 
+
   tar_target(
     name = overview_poster,
     command = {
@@ -325,11 +315,6 @@ list(
     data_tsum, 
     experiment 
   ),    
-  tar_group_by(
-    data_avgacc_exp, 
-    data_avgacc, 
-    experiment 
-  ),  
   tar_group_by(
     data_avgaccs_exp, 
     data_avgaccs, 
@@ -384,7 +369,7 @@ list(
              width=12,
              height=8,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"),  
 
@@ -410,14 +395,6 @@ list(
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),  
-
-  tar_target(
-    name = sliding_LMi2avgacc,
-    command=lm(formula="accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
-               data = data_avgacc_exp),
-    pattern = map(data_avgacc_exp),
-    iteration = "list"
-  ),
   
   ## Estimated marginal means
   
@@ -473,16 +450,6 @@ list(
   tar_target(sliding_LMi2_emm_contrasts, sliding_LMi2_emm[[2]], pattern=map(sliding_LMi2_emm)),
   # TODO F values?
   
-  ### Sliding Avgacc
-  tar_target(
-    name=sliding_LMi2avgacc_emm,
-    command=est_emm(sliding_LMi2avgacc,
-                        data_avgacc_exp),
-    pattern = map(sliding_LMi2avgacc, data_avgacc_exp),
-    iteration = "list"
-  ),
-  tar_target(sliding_LMi2avgacc_emm_means, sliding_LMi2avgacc_emm[[1]], pattern=map(sliding_LMi2avgacc_emm)), #, iteration="list"
-  tar_target(sliding_LMi2avgacc_emm_contrasts, sliding_LMi2avgacc_emm[[2]], pattern=map(sliding_LMi2avgacc_emm)),
   ### Sliding Avgaccs (Single)
   tar_target(
     name=sliding_HLMi2_emm,
@@ -501,8 +468,6 @@ list(
             command=heatmap(eegnet_HLM_emm_means)),
   tar_target(sliding_heatmap,
              heatmap(sliding_LM_emm_means)),
-  tar_target(slidingavgacc_heatmap,
-             heatmap(sliding_LMi2avgacc_emm_means)),
   tar_target(slidingavgaccs_heatmap,
              heatmap(sliding_HLMi2_emm_means)),
   tar_target(
@@ -635,9 +600,9 @@ list(
              iteration = "list"
              ),
   tar_target(rfx_demographics_all,
-             {ggarrange(plotlist = rfx_demographics, ncol=1) %>% 
-               annotate_figure(top = text_grob("Random Intercept and Participant Demographics", 
-                                               color = "black", face = "bold", size = 16))
+             {ggarrange(plotlist = rfx_demographics, ncol=1) #%>% 
+               #annotate_figure(top = text_grob("Random Intercept and Participant Demographics", 
+              #                                 color = "black", face = "bold", size = 16))
                }
   ),
 
@@ -647,13 +612,16 @@ list(
              pattern=map(eegnet_HLMi2, data_eegnet_exp),
              # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
              ),
-  tar_target(rfx_plot,
+  tar_target(rfx_pairsplot,
              {
                wide_data <- rfx %>% 
                  pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
                  select(-c("Subject")) # remove sub for now
                
-               ggpairs(wide_data) + labs(title="Random Intercept Correlation Between Experiments")
+               ggpairs(wide_data,
+                       upper = list(continuous = wrap(cor_with_p_adjust))) + # BH multiple comparison correction across all comparisons
+                 #labs(title="Random Intercept Correlation Between Experiments") +
+                 theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
              }
   ), # TODO: track the 7*40 files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
   
@@ -672,11 +640,11 @@ list(
       ggsave(plot=overview,
              filename="overview.png",
              path=figure_output_dir,
-             scale=1.5,
+             scale=1,
              width=12,
-             height=9,
+             height=16,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"
   ),  
@@ -690,35 +658,21 @@ tar_target(
            width=12,
            height=16,
            units="cm",
-           dpi=500)
+           dpi=300)
   },
   format="file"
-),  
-tar_target(
-  name = overview_horizontal_file,
-  command = {
-    ggsave(plot=overview_horizontal,
-           filename="overview_horizontal.png",
-           path=figure_output_dir,
-           scale=1.5,
-           width=12,
-           height=9,
-           units="cm",
-           dpi=500)
-  },
-  format="file"
-),  
+  ),  
   tar_target(
     name = overview_eegnet_subjects_file,
     command = {
       ggsave(plot=overview_accuracy,
              filename="overview_eegnet_subjects.png",
              path=figure_output_dir,
-             scale=1.5,
+             scale=1,
              width=12,
-             height=5,
+             height=9,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"
   ),  
@@ -728,30 +682,30 @@ tar_target(
       ggsave(plot=overview_avgaccs_avgsub,
              filename="overview_sliding_avgaccs.png",
              path=figure_output_dir,
-             scale=1.5,
+             scale=1,
              width=12,
-             height=5,
+             height=9,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"
   ),  
   
-  tar_target(
-    name = timeresolved_luck_file,
-    command = {
-      ggsave(plot=timeresolved_luck,
-             filename="timeresolved_luck.png",
-             path=figure_output_dir,
-             scale=2,
-             width=12,
-             height=16,
-             units="cm",
-             dpi=500)
-    },
-    format="file"
-  ),  
-  
+  # tar_target(
+  #   name = timeresolved_luck_file,
+  #   command = {
+  #     ggsave(plot=timeresolved_luck,
+  #            filename="timeresolved_luck.png",
+  #            path=figure_output_dir,
+  #            scale=1.5,
+  #            width=12,
+  #            height=16,
+  #            units="cm",
+  #            dpi=300)
+  #   },
+  #   format="file"
+  # ),  
+  # 
   tar_target(
     name =heatmaps_file,
     command = {
@@ -762,39 +716,24 @@ tar_target(
              width=18,
              height=12,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"
   ),  
-tar_target(
-  name =heatmaps_file_poster,
-  command = {
-    ggsave(plot=heatmaps_avgacc,
-           filename="heatmaps_avgacc.png",
-           path=figure_output_dir,
-           scale=1.5,
-           width=18,
-           height=12,
-           units="cm",
-           dpi=500)
-  },
-  format="file"
-),  
-  # heatmap of the alternative performance metric (average accuracy) for sliding window slidingavgacc_heatmap
   tar_target(
-    name =heatmaps_file_avgacc,
+    name =heatmaps_file_poster,
     command = {
-      ggsave(plot=slidingavgacc_heatmap,
-             filename="heatmap_avgacc.png",
+      ggsave(plot=heatmaps_avgacc,
+             filename="heatmaps_avgacc.png",
              path=figure_output_dir,
              scale=1.5,
-             width=16,
-             height=7,
+             width=18,
+             height=12,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"
-  ),  
+  ),
 
   # 1 file per branch
   tar_target(eegnet_interaction_filenames, paste0("interactions_eegnet_", experiments, ".png")),
@@ -807,7 +746,7 @@ tar_target(
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=500)
+                      dpi=300)
              },
              pattern=map(eegnet_interaction, eegnet_interaction_filenames),
              format="file"
@@ -822,7 +761,7 @@ tar_target(
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=500)
+                      dpi=300)
              },
              pattern=map(sliding_interaction, sliding_interaction_filenames),
              format="file"
@@ -840,7 +779,7 @@ tar_target(
   #             width=12,
   #             height=12,
   #             units="cm",
-  #             dpi=500)
+  #             dpi=300)
   #  }
   #),
   
@@ -851,23 +790,23 @@ tar_target(
              filename="RFX.png",
              path=figure_output_dir,
              scale=2,
-             width=18,
-             height=18,
+             width=15,
+             height=15,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"),
   tar_target(
     name = eegnet_RFX_pairs_file,
     command = {
-      ggsave(plot=rfx_plot,
+      ggsave(plot=rfx_pairsplot,
              filename="RFXpairs.png",
              path=figure_output_dir,
-             scale=2,
-             width=12,
-             height=12,
+             scale=1,
+             width=15,
+             height=15,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
   format="file"),
   tar_target(
@@ -876,11 +815,11 @@ tar_target(
       ggsave(plot=rfx_demographics_all,
              filename="RFXdemographics.png",
              path=figure_output_dir,
-             scale=2,
-             width=16,
+             scale=1.5,
+             width=15,
              height=20,
              units="cm",
-             dpi=500)
+             dpi=300)
     },
     format="file"),
 

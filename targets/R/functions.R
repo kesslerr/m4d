@@ -297,8 +297,10 @@ timeresolved_plot <- function(data){
     facet_wrap(experiment~., scales = "free_x", ncol=1) +
     scale_x_continuous(breaks = seq(-8, 8, by = 2)/10, 
                        labels = seq(-8, 8, by = 2)/10) +
-    labs(x="Time [s]", y="Accuracy", title="Time-Resolved Decoding Results - Exemplary Single Forking Path")
-  
+    labs(x="Time [s]", y="Accuracy") +
+         #title="Time-Resolved Decoding Results - Exemplary Single Forking Path")
+    #theme_classic()
+    theme_grey()
   
 }
 
@@ -957,8 +959,13 @@ rfx_vis <- function(model, orig_data){
 
 # RFX and sociodemographics
 plot_rfx_demographics <- function(model, demographics, orig_data){
+  # DEBUG
+  #model <- tar_read(eegnet_HLMi2, branches=1)[[1]]
+  #demographics <- tar_read(demographics)
+  #orig_data <- tar_read(data_eegnet_exp) %>% filter(experiment == "ERN")
+  
   # from rfx_vis function
-  data <- ranef(model)$subject %>%
+  data <- lme4::ranef(model)$subject %>%
     mutate(Subject = rownames(.)) %>%
     mutate(Intercept = `(Intercept)`) %>%
     select(c(Intercept, Subject))
@@ -971,24 +978,53 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
   # plot age
   p1 <- ggplot(data, aes(x=age, y=Intercept, color=sex)) +
     geom_point() +
-    geom_smooth(method="lm", se=TRUE) +
+    #geom_smooth(method="lm", se=TRUE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
-    labs(x="Age", y="Random Intercept") +
+    labs(x="Age", y="Intercept") +
     scale_color_manual(values = colors_dark)
   
   p2 <- ggplot(data, aes(x=sex, y=Intercept, fill=sex)) +
     geom_boxplot(notch=FALSE) +
     geom_hline(aes(yintercept=0), lty="dashed") +
-    labs(x="Sex", y="Random Intercept") +
+    labs(x="Sex", y="Intercept") +
     guides(fill = "none") +# remove legend for "fill"
     scale_fill_manual(values = colors_dark)
   
   p3 <- ggplot(data, aes(x=Intercept, fill=handedness)) +
     geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
-    labs(x="Random Intercept", y="Count") +
+    labs(x="Intercept", y="Participant Count") +
     #scale_fill_viridis_d(begin=0, end=0.8) +
     scale_fill_manual(values = c(colors_light[3], "grey"))
+  
+  #If it is not the first (ERN) plot, then remove all legends
+  if (experiment == "ERN"){
+    
+    #p1 <- p1 + theme(legend.position = c(0.1, 0)) # position within figure bottom left
+    #p3 <- p3 + theme(legend.position = c(0.1, 1)) # postition within figure top left
+  } else {
+    p3 <- p3 + theme(legend.position="none")
+  } 
+  p1 <- p1 + theme(legend.position="none")
+  
+  # Of ot os not the last (P3) plot, remove all X labels
+  if (experiment != "P3"){
+    p1 <- p1 + labs(x="")
+    p2 <- p2 + labs(x="")
+    p3 <- p3 + labs(x="")
+  }
+  
+  # statistics on the results
+  # 1. 2-sample test on male vs female with bonferroni correction (7 experiments)
+  males <- data[data$sex == "Male", ]
+  females <- data[data$sex == "Female", ]
+  t_result <- t.test(males$Intercept, females$Intercept, var.equal = TRUE)
+  adj_p <- p.adjust(t_result$p.value, method="BH", n=7) #bonferroni
+  p2 <- p2 + annotate("text", x=1.5, y=0.15, label=paste("p=", sprintf("%.2f", adj_p)), color="black", size=4)
+  
+  # 2. are lines in p1 stat diff
+  #agemodel <- lm(Intercept ~ age * sex, data = data)
+  #if used, then interpret the interaction term but maybe also the slope
   
   ggarrange(p1,p2,p3, ncol=3) %>%
   annotate_figure(left = text_grob(experiment, 
@@ -1004,6 +1040,32 @@ extract_rfx_exp <- function(model, orig_data){
     select(c(Intercept, Subject, Experiment))
   rownames(data) <- NULL
   data
+}
+
+# Custom function to calculate correlations with adjusted p-values in ggpairs
+cor_with_p_adjust <- function(data, mapping, method = "pearson", ...) {
+  # Extract x and y variables
+  x <- eval_data_col(data, mapping$x)
+  y <- eval_data_col(data, mapping$y)
+  
+  # Perform correlation test
+  test <- cor.test(x, y, method = method)
+  
+  # Extract p-value and adjust using Bonferroni correction
+  p_value <- test$p.value
+  # Bonferroni correction: number of comparisons is choose(n, 2)
+  p_value_adj <- p.adjust(p_value, method = "BH", n = choose(ncol(data), 2))
+  # “holm”, “hochberg”, “hommel”, “bonferroni”, “BH”, “BY”, “fdr”, “none”
+  
+  # Create a label for ggally_text
+  label <- paste("r = ", round(test$estimate, 2), "\n", "p = ", format.pval(p_value_adj, digits = 2))
+  
+  # Create ggally_text object
+  #ggally_text(label = label, color = ifelse(p_value_adj < 0.05, "red", "black"), ...)
+  # also remove grid lines
+  ggally_text(label = label, color = ifelse(p_value_adj < 0.05, "red", "black"), ...) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())  # Remove gridlines
 }
 
 
@@ -1211,8 +1273,11 @@ plot_multiverse_sankey <- function(data){
     #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
     scale_fill_grey() +
     theme_sankey(base_size = 18) +
-    labs(x = "processing step") + #, title = "Multiverse"
+    labs(x = "") + #, title = "Multiverse" processing step
     theme(legend.position = "none",
+          plot.margin=margin(0,0,0,0), #grid::unit(c(0,0,0,0), "mm") # remove white space around plot
           #plot.title = element_text(hjust = .5) # to make it central
-          )
+          ) +
+    scale_x_discrete(position = "top") #+          # Move x-axis to the top
+    #coord_cartesian(clip = "off")      
 }
