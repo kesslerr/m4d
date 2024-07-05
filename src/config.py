@@ -12,20 +12,20 @@ cichy_subjects_infants = [f"sub-{str(i).zfill(2)}" for i in range(1, 49) if i no
 cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
 
 # child mind institute
-subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
+#subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
 
 # mipdb age groups and their corresponding participants
-subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
-age_groups = {"6-9": [6,7,8,9],
-              "10-11": [10,11],
-              "12-13": [12,13],
-              "14-17": [14,15,16,17],
-              "18-25": [18,19,20,21,22,23,24,25],
-              }
+#subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
+#age_groups = {"6-9": [6,7,8,9],
+#              "10-11": [10,11],
+#              "12-13": [12,13],
+#              "14-17": [14,15,16,17],
+#              "18-25": [18,19,20,21,22,23,24,25],
+#              }
 
-groups_subjects_mipdb = {}
-for group, ages in age_groups.items():
-    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
+#groups_subjects_mipdb = {}
+#for group, ages in age_groups.items():
+#    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
     
 
 

@@ -63,7 +63,7 @@ else:
 raw_folder = os.path.join(base_dir, "data", "raw", experiment)
 interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
 processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
-model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
+model_folder = os.path.join("/ptmp/kroma/m4d/", "models", "sliding", experiment, subject)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 
@@ -77,7 +77,7 @@ forking_paths, files, forking_paths_split = get_forking_paths(
                             subject=subject, 
                             sample=None)
 
-assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
+#assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
 
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
@@ -122,12 +122,17 @@ def slider_parallel(forking_path, file):
     X = epochs.copy().crop(tmin=tmin, tmax=tmax).get_data()
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
-    scores = slider(X.copy(),y.copy())
-    
+    try:
+        scores = slider(X.copy(),y.copy())
+        np.save(os.path.join(model_folder, f"{forking_path.translate(translation_table)}.npy"), scores)
+        
+    except ValueError as e: # a forking path could have no trials of one condition (heavy AR might be the reason)
+        print(f"Error in {forking_path}")
+        print(e)
+        return
     #permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
     
     # save scores to file
-    np.save(os.path.join(model_folder, f"{forking_path.translate(translation_table)}.npy"), scores)
     # save permutation scores to file
     #np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
     

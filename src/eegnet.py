@@ -55,7 +55,7 @@ else:
 raw_folder = os.path.join(base_dir, "data", "raw", experiment)
 interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
 processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
-model_folder = os.path.join(base_dir, "models", "eegnet", experiment, subject)
+model_folder = os.path.join("/ptmp/kroma/m4d/", "models", "eegnet", experiment, subject)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 else:
