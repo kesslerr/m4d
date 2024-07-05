@@ -48,7 +48,7 @@ from src.config import translation_table, luck_forking_paths, subjects as subjec
 forking_paths, files, forking_paths_split = get_forking_paths(
                             base_dir="/ptmp/kroma/m4d/", 
                             experiment="P3",
-                            subject="sub-026", # this session has all possible FPs 
+                            subject="sub-026", # this session and experiment has all possible FPs 
                             sample=None)
 
 ## SUMMARIZE RESULTS AND STATS FOR EXPORT
@@ -60,10 +60,6 @@ df_avg_accs_single = []
 
 failed_subs = []
 failed_complete_fps = []
-
-dataset = 'erpcore'
-
-#for dataset in ['erpcore']: # TODO: add 'mipdb', 
 
 experiments = experiments_erpcore
 subjects = subjects_erpcore
@@ -134,19 +130,16 @@ for experiment in experiments: # in MIPDB, experiment is in the subject group
         df_mean[['emc','mac','lpf','hpf','ref','det','base','ar']] = forking_paths_split_i
         df_mean['forking_path'] = forking_path
         df_mean['experiment'] = experiment
-        #df_mean['dataset'] = dataset
         df_results.append(df_mean)      
         
         df[['emc','mac','lpf','hpf','ref','det','base','ar']] = forking_paths_split_i
         df['forking_path'] = forking_path
         df['experiment'] = experiment
-        #df['dataset'] = dataset
         df_results_single.append(df)      
 
         df_tsum = pd.DataFrame({
             'tsum': tsum,
             'experiment': experiment,
-            #'dataset': dataset,
             }, index=[0])
         df_tsum[['emc','mac','lpf','hpf','ref','det','base','ar']] = forking_paths_split_i
         #df_tsum[['ref','hpf','lpf','emc','mac','det','base','ar']] = forking_paths_split_i
