@@ -1,4 +1,4 @@
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 import json
@@ -6,8 +6,14 @@ import mne
 from glob import glob
 import re
 from mne.preprocessing import ICA
-from autoreject import AutoReject, get_rejection_threshold, read_auto_reject
+from autoreject import AutoReject
 import requests
+
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(base_dir)
+sys.path.append(base_dir)
+
+from src.config import epoch_windows
 
 """ ------------------- pre-multiverse ------------------- """
 
@@ -289,8 +295,47 @@ def ica_eog_emg(raw, method='eog'):
     return raw_new, len(indices), explained_var_ratio
 
 
+
+def prestim_baseline_correction_ERN(raw, events, event_dict, detrend=None, baseline=200):
+    baselines = []
+    if baseline == 200: 
+        tps = 51 # pre-stimulus timepoints to include
+    elif baseline == 400:
+        tps = 102
+    else:
+        raise ValueError("Baseline not implemented.")
+
+    data = raw.get_data()
+    for i in range(events.shape[0]):
+        stop = events[i, 0]
+        start = stop - tps
+        this_base = data[:,start:stop].mean(axis=1) # 1 mean value per electrode
+        baselines.append(this_base)
+    
+    # epochieren aller events (ohne baseline correction)
+    epochs = mne.Epochs(raw.copy(), 
+                        events=events, 
+                        event_id=event_dict,
+                        tmin=epoch_windows["ERN"][0], 
+                        tmax=epoch_windows["ERN"][1],
+                        baseline=None, # NEW: no basline correction in this step
+                        detrend=detrend, # either None or 1,
+                        proj=False,
+                        reject_by_annotation=False, 
+                        preload=True)
+    
+    # manuelle baseline correction
+    for i in range(1, epochs.events.shape[0]): # use epochs.events instead of events, in case one is dropped during epoching
+        epochs._data[i] = epochs._data[i] - baselines[i-1][:, np.newaxis] # remove the previous baseline (stim) from the current trial (resp)
+    epochs.drop(0) # drop 1st epoch: because not corrected. It should be a stimulus anyway, and if not, it will be a faulty response
+
+    # verwerfe die stimulus epochen
+    epochs = epochs[["correct", "incorrect"]]
+
+    return epochs
+
 # autoreject parser
-def autorej(epochs):
+def autorej(epochs, version="int"):
     """
     Run Autoreject on trials.
     
@@ -302,38 +347,86 @@ def autorej(epochs):
         drop_log (pandas.DataFrame): drop log  
     
     """
-    n_interpolate = [len(epochs.copy().pick('eeg').ch_names)] # must be list for hyperparam opt; pick 'eeg' in case eog channels are still present
-    consensus = [len(epochs.copy().pick('eeg').ch_names)]
+    if version == "int":
+        n_interpolate = [len(epochs.copy().pick('eeg').ch_names)] # must be list for hyperparam opt; pick 'eeg' in case eog channels are still present
+        consensus = [len(epochs.copy().pick('eeg').ch_names)]
+    elif version == "rej":
+        n_interpolate = [0]
+        consensus = np.linspace(0.2, 0.8, 4)
+    elif version == "intrej":
+        n_interpolate = [4, 8, 16, 32]
+        consensus = np.linspace(0.2, 0.8, 4)
+    
 
     epochs.del_proj()  # remove proj, don't proj while interpolating (https://autoreject.github.io/stable/auto_examples/plot_auto_repair.html)
     
+    # sample 25% of epochs to increase speed TODO describe in paper
+    n_epochs = len(epochs)
+    np.random.seed(12) # for subsampling
+    indices = np.random.choice(n_epochs, int(n_epochs * 0.25), replace=False)
+    epochs_sample = epochs[indices].copy()
+    
     # automated estimation of rejection threshold based on channel and trial per participant
+    seed=11
+    cv=5
     ar = AutoReject(n_interpolate=n_interpolate, 
                     consensus=consensus,
-                    random_state=11,
+                    random_state=seed,
                     n_jobs=-1, 
+                    cv=cv, # TODO, i changed this from default=10 to save time,describe in paper
                     verbose=False)
-    ar.fit(epochs)  # fit only a few epochs if you want to save time
+    ar.fit(epochs_sample)
+    
     epochs_ar, reject_log = ar.transform(epochs, return_log=True)
+    
+    # double check: if the threshold is too high, reduce the values iteratively until at least 25% of epochs are not rejected
+    # check how many get rejected
+    perc_kept = len(epochs_ar) / len(epochs)
+    while perc_kept < 0.2: 
+        #print(f"Threshold too conservative, only {perc_kept*100} percent kept. Increase threshold by x percent.")
+        #ar.threshes_ = {key: value * 10 for key, value in ar.threshes_.items()} # The sensor-level thresholds with channel names as keys and the peak-to-peak thresholds as the values.
+        #epochs_ar, reject_log = ar.transform(epochs.copy(), return_log=True)
+        #perc_kept = len(epochs_ar) / len(epochs)
+        print(f"Threshold too conservative, only {perc_kept*100} percent kept. Changing random seed.")
+        seed += 1
+        ar = AutoReject(n_interpolate=n_interpolate, 
+                consensus=consensus,
+                random_state=seed,
+                n_jobs=-1, 
+                cv=cv, # TODO, i changed this from default=10 to save time,describe in paper
+                verbose=False)
+        ar.fit(epochs_sample)
+        epochs_ar, reject_log = ar.transform(epochs, return_log=True)
+        perc_kept = len(epochs_ar) / len(epochs)
+
+    
+    # plot # DEBUG  TODO remove or save to file
+    #rej_plot = reject_log.plot('horizontal', show=True)
+    #rej_plot.savefig(plot_path, dpi=300)
 
     return epochs_ar, reject_log
 
 # function to count bads / interpolated from AR reject log matrix
-def summarize_artifact_interpolation(reject_log):
+def summarize_artifact_interpolation(reject_log, version="int"):
     """if epochs are ONLY interpolated (not rejected),
     this function returns some summaries about which trials and channels
     or how many percent of them are interpolated.
 
     Args:
         reject_log (reject_log object): ar reject_log object
+        version (str): "int" for only interpolated, "intrej" for interpolated and rejected
 
     Returns:
         dict: interp_frac_channels (key value pair of channel and percentage rejected)
         dict: interp_frac_trials (key value pair of trial and percentage rejected)
         float: total_interp_frac
-    """
+        dict: rej_frac_channels (key value pair of channel and percentage rejected)
+        dict: rej_frac_trials (key value pair of trial and percentage rejected)
+        float: total_rej_frac    """
     ch_names = reject_log.ch_names
     armat = reject_log.labels
+    
+    # for both versions
     armat_binary = np.where(armat == 2.0, 1.0, armat) 
     # 2 means interpolated, 1 would be bad(?), but we then interpolate anyway therfore not in the data, 0 means ok
     mean_per_channel = np.mean(armat_binary, axis=0)
@@ -341,7 +434,21 @@ def summarize_artifact_interpolation(reject_log):
     interp_frac_channels = {channel: value for channel, value in zip(ch_names, mean_per_channel)}
     interp_frac_trials = {channel: value for channel, value in enumerate(mean_per_trial)}
     total_interp_frac = np.mean(mean_per_trial)
-    return interp_frac_channels, interp_frac_trials, total_interp_frac
+    
+    # only for intrej
+    if version == "intrej":
+        armat_binary2 = np.where(armat == 2.0, 0.0, armat) 
+        mean_per_channel = np.mean(armat_binary2, axis=0)
+        mean_per_trial = np.mean(armat_binary2, axis=1)
+        rej_frac_channels = {channel: value for channel, value in zip(ch_names, mean_per_channel)}
+        rej_frac_trials = {channel: value for channel, value in enumerate(mean_per_trial)}
+        total_rej_frac = np.mean(mean_per_trial)
+    else:
+        rej_frac_channels = 0
+        rej_frac_trials = 0
+        total_rej_frac = 0
+    
+    return interp_frac_channels, interp_frac_trials, total_interp_frac, rej_frac_channels, rej_frac_trials, total_rej_frac
 
 
 """ ------------------- evoked ------------------- """

@@ -12,26 +12,26 @@ cichy_subjects_infants = [f"sub-{str(i).zfill(2)}" for i in range(1, 49) if i no
 cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
 
 # child mind institute
-subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
+#subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
 
 # mipdb age groups and their corresponding participants
-subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
-age_groups = {"6-9": [6,7,8,9],
-              "10-11": [10,11],
-              "12-13": [12,13],
-              "14-17": [14,15,16,17],
-              "18-25": [18,19,20,21,22,23,24,25],
-              }
+#subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
+#age_groups = {"6-9": [6,7,8,9],
+#              "10-11": [10,11],
+#              "12-13": [12,13],
+#              "14-17": [14,15,16,17],
+#              "18-25": [18,19,20,21,22,23,24,25],
+#              }
 
-groups_subjects_mipdb = {}
-for group, ages in age_groups.items():
-    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
+#groups_subjects_mipdb = {}
+#for group, ages in age_groups.items():
+#    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
     
 
 
 # define triggers and stuff
 delete_triggers = { # ERPCORE
-                   'ERN': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
+                   'ERN': [], # '11', '12', '21', '22' stimulus triggers (only response locked analysis)
                    'LRP': ['11', '12', '21', '22'], # stimulus triggers (only response locked analysis)
                    'MMN': ['180', # first stream of standards
                            '1', '4'], # these triggers were found with no reference in the data (1-2 occurences per participant), TODO: write Luck 
@@ -55,6 +55,7 @@ conditions_triggers = {
     'ERN': {
         'correct': ['111','121','212','222'], # correct responses
         'incorrect' : ['112','122','211','221'], # incorrect responses
+        'stimulus': ['11','12','21','22'], # stimulus triggers (new, for stimulus locked baseline correction)
     },
     'LRP': {
         'response_left': ['111','112','121','122'], # response left
@@ -164,7 +165,7 @@ epoch_windows = {
 baseline_windows = {
     '200ms': { # correspond to Kappenmann et al.
         'ERN':  (-.4, -.2), 
-        'LRP':  (-.8, -.6),
+        'LRP':  (-.6, -.4), # TODO: also change in targets, now the endpoint is matched between paths, TODO also change in manuscript
         'MMN':  (-.2, 0.),
         'N170': (-.2, 0.),
         'N2pc': (-.2, 0.),
@@ -185,6 +186,18 @@ baseline_windows = {
         'RSVP': [-.4, 0.],
         },
     }    
+
+# for average accuracy estimataion
+baseline_end = {
+    "ERN": -0.2, 
+    "LRP": -0.4, # caution, this is after the 200ms version of the baseline to be fair with the 400ms version
+    "MMN": 0, 
+    "N170": 0, 
+    "N2pc": 0, 
+    "N400": 0, 
+    "P3": 0
+    }
+
 
 decoding_windows = epoch_windows.copy()
 
@@ -209,11 +222,11 @@ multiverse_params = {
         'lpf': [None, 6, 20, 45], # 6 Hz for alpha exclusion, Bae and Luck 2018, 2019a, 2019b (Ref in Bae 2021)
         'emc': [None, 'ica'],  # 'peak-to-peak', 'regression'
         'mus': [None, 'ica'], 
-        'base': ['200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
+        'det': [None, 'linear'], 
+        'base': [None, '200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
         # TODO: univariate noise normalization in baseline?: 
         # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
-        'det': ['offset', 'linear'], # "False" is ommitted, makes no sense not to detrend
-        'ar': [False, True], 
+        'ar': [False, 'int', 'intrej'], 
         }
 
 # replace special characters in the multiverse parameter space
@@ -240,36 +253,14 @@ luck_references = {
         }
 
 luck_forking_paths = { # these are not really the same, but some steps are comparable
-        'ERN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'LRP': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'MMN': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
-        'N2pc': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'N400': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'P3': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        'MIPDB': "['P9', 'P10']_0.1_None_ica_ica_200ms_offset_True",
-        } # TODO change this to the new order
-
-luck_forking_paths_clean = { # without special characters
-        'ERN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'LRP': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'MMN': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'N170': "average_0.1_None_ica_ica_200ms_offset_True",
-        'N2pc': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'N400': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'P3': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        'MIPDB': "P9P10_0.1_None_ica_ica_200ms_offset_True",
-        }
-
-luck_forking_paths_clean2 = { # without special characters
-        'ERN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'LRP': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'MMN': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'N170': "ica_ica_None_0.1_average_200ms_offset_True",
-        'N2pc': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'N400': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'P3': "ica_ica_None_0.1_P9P10_200ms_offset_True",
-        'MIPDB': "ica_ica_None_0.1_P9P10_200ms_offset_True",
+        'ERN': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'LRP': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'MMN': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'N170': "ica_ica_None_0.1_average_None_200ms_int",
+        'N2pc': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'N400': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'P3': "ica_ica_None_0.1_P9P10_None_200ms_int",
+        'MIPDB': "ica_ica_None_0.1_P9P10_None_200ms_int",
         }
 
 

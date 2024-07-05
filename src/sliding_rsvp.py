@@ -46,7 +46,7 @@ from src.config import translation_table, baseline_windows, decoding_windows
 
 # DEBUG
 experiment = "RSVP"
-subject = "sub-015"
+#subject = "sub-015"
 
 # TODO: MAYBE? decoding should only be done after the baseline period ended!
 
@@ -63,29 +63,73 @@ subjects = ['sub-001', 'sub-002', 'sub-005', 'sub-007', 'sub-008', 'sub-009', 's
 
     
 
-raw_folder = os.path.join(base_dir, "data", "raw", experiment)
-interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
-processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
-model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
-if not os.path.exists(model_folder):
-    os.makedirs(model_folder)
+def slider_parallel_subject(subject):  
+    
+    raw_folder = os.path.join(base_dir, "data", "raw", experiment)
+    interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
+    processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
+    model_folder = os.path.join(base_dir, "models", "sliding", experiment, subject)
+    if not os.path.exists(model_folder):
+        os.makedirs(model_folder)
 
-# delete previous files if existent
-for file in glob(os.path.join(model_folder, "*.npy")):
-    os.remove(file)
+    # delete previous files if existent
+    for file in glob(os.path.join(model_folder, "*.npy")):
+        os.remove(file)
 
-forking_paths, files, forking_paths_split = get_forking_paths(
-                            base_dir="/ptmp/kroma/m4d/", 
-                            experiment=experiment,
-                            subject=subject, 
-                            sample=None)
+    forking_paths, files, forking_paths_split = get_forking_paths(
+                                base_dir="/ptmp/kroma/m4d/", 
+                                experiment=experiment,
+                                subject=subject, 
+                                sample=None)
 
-assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
+    assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
+
+    quek_forking_path = 'None_None_45_0.5_average_200ms_offset_False'
+    full_forking_path = 'ica_ica_6_0.5_average_200ms_linear_True'
+    forking_path = quek_forking_path
+    file = [i for i in files if forking_path in i][0]
+
+    
+    # load epochs
+    epochs = mne.read_epochs(file, preload=True, verbose=None)
+    if experiment == "RSVP":
+        # recode conditions
+        epochs = recode_conditions(epochs.copy(), version="categories") 
+
+    # TODO maybe: crop epochs as in EEGNet, but maybe here it is nice to see the basline period
+
+    #n_tp = len(epochs.times)
+    tmin = decoding_windows[experiment][0]
+    tmax = decoding_windows[experiment][1]
+    
+    
+    
+    
+    # extract data from epochs
+    X = epochs.copy().crop(tmin=tmin, tmax=tmax).get_data()
+    y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
+    
+    scores = slider(X.copy(),y.copy())
+    
+    #permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
+    
+    # save scores to file
+    np.save(os.path.join(model_folder, f"{forking_path.translate(translation_table)}.npy"), scores)
+    # save permutation scores to file
+    #np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
+    
+    
+    #return scores, permut_scores    
+    
+
+
+
+
 
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
     clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear", class_weight='balanced'))
-    time_decod = SlidingEstimator(clf, n_jobs=1, scoring="balanced_accuracy", verbose=True) # "roc_auc" balanced_accuracy  # new, n_jobs=1 to prevent overload
+    time_decod = SlidingEstimator(clf, n_jobs=1, scoring="accuracy", verbose=True) # "roc_auc" is only available for 2 class case, was balanced_accuracy  # new, n_jobs=1 to prevent overload
     # here we use cv=3 just for speed
     scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=1) # new, n_jobs=1 to prevent overload
     # Mean scores across cross-validation splits
@@ -138,8 +182,9 @@ def slider_parallel(forking_path, file):
     #return scores, permut_scores
 
 
-Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_path, file in zip(forking_paths, files))
-# TODO: all fps
+#Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_path, file in zip(forking_paths, files))
+Parallel(n_jobs=-1)(delayed(slider_parallel_subject)(subject) for subject in subjects)
+
 
 # DEBUG
 # file = files[0]

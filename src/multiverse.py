@@ -14,14 +14,15 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(base_dir)
 sys.path.append(base_dir)
 
-from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
+from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation, prestim_baseline_correction_ERN
 from src.config import multiverse_params, epoch_windows, baseline_windows, translation_table
 
 """ HEADER END """
 
 # DEBUG
-experiment = "RSVP"
-subject = "sub-026"
+experiment = "MMN"
+subject = "sub-008"
+stragglers = 10 # number of stragglers to be processed in the end
 
 
 # define subject and session by arguments to this script
@@ -32,7 +33,7 @@ else:
     experiment = sys.argv[1]
     subject = sys.argv[2]
     print(f'Processing Experiment {experiment} Subject {subject}!')
-
+    stragglers=None
 
 """ SPECIFICATIONS END """
 
@@ -48,8 +49,10 @@ processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.
 if not os.path.exists(processed_folder):
     os.makedirs(processed_folder)
 # delete all files in processed_folder and interim_folder
-_ = [os.remove(file) for file in glob(os.path.join(interim_folder, "*"))]
-_ = [os.remove(file) for file in glob(os.path.join(processed_folder, "*"))]
+if not stragglers:
+    print("Deleting all files in processed and interim folder.")
+    _ = [os.remove(file) for file in glob(os.path.join(interim_folder, "*"))]
+    _ = [os.remove(file) for file in glob(os.path.join(processed_folder, "*"))]
 
 # read raw data
 raw = mne.io.read_raw_fif(os.path.join(raw_folder, f"{subject}-raw.fif"), preload=True, verbose=None)
@@ -154,28 +157,38 @@ with tqdm(total=total_iterations) as pbar:
                                 else:
                                     detrend = None
                                 
+                                
+                                if (experiment != "ERN") or (experiment == "ERN" and not base):
                                 # epoching
-                                epochs = mne.Epochs(_raw3.copy(), 
-                                                    events=events, 
-                                                    event_id=event_dict,
-                                                    tmin=epoch_windows[experiment][0], 
-                                                    tmax=epoch_windows[experiment][1],
-                                                    baseline=baseline,
-                                                    detrend=detrend,
-                                                    proj=False,
-                                                    reject_by_annotation=False, 
-                                                    preload=True)
+                                    epochs = mne.Epochs(_raw3.copy(), 
+                                                        events=events, 
+                                                        event_id=event_dict,
+                                                        tmin=epoch_windows[experiment][0], 
+                                                        tmax=epoch_windows[experiment][1],
+                                                        baseline=baseline,
+                                                        detrend=detrend,
+                                                        proj=False,
+                                                        reject_by_annotation=False, 
+                                                        preload=True)
+                                    # delete stimulus epochs in ERN
+                                    if experiment == "ERN":
+                                        epochs = epochs[["correct", "incorrect"]]
+                                    
+                                elif experiment == "ERN":
+                                    # manual baseline correction, drawn from pre-stimulus interval (not pre-response)
+                                    epochs = prestim_baseline_correction_ERN(_raw3.copy(), events, event_dict, detrend=detrend, baseline=int(base[0:3]))
+                                    
                                                                 
                                 for ar in multiverse_params['ar']:
                                     # ar
 
                                     # string that describes the current parameter combination
-                                    param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}_{base}_{det}_{ar}'.translate(translation_table)
+                                    param_str = f'{emc}_{mus}_{lpf}_{hpf}_{ref}_{det}_{base}_{ar}'.translate(translation_table)
 
                                     # add metadata to epochs
                                     epochs.metadata = pd.DataFrame(
-                                                data=[[path_id, emc, mus, lpf, hpf, ref, base, det, ar]] * len(epochs), 
-                                                columns=['path_id', 'emc', 'mus', 'lpf', 'hpf', 'ref', 'base', 'det', 'ar'], 
+                                                data=[[path_id, emc, mus, lpf, hpf, ref, det, base, ar]] * len(epochs), 
+                                                columns=['path_id', 'emc', 'mus', 'lpf', 'hpf', 'ref', 'det', 'base', 'ar'], 
                                                 index=range(len(epochs)),
                                                 )
 
@@ -190,12 +203,18 @@ with tqdm(total=total_iterations) as pbar:
                                             epochs = epochs.copy().drop_channels(['E129'])
                                         
                                         # estimate autoreject model on all epochs (not only training epochs), 
-                                        # TODO: mention, that this is potential data leakage, but the only feasible way to do it
-                                        epochs_ar, n1 = autorej(epochs.copy())
-                                        interp_frac_channels, interp_frac_trials, total_interp_frac = summarize_artifact_interpolation(n1)
+                                        epochs_ar, n1 = autorej(epochs.copy(), version=ar)
+
+                                        # TODO adjust to new AR methods
+                                        interp_frac_channels, interp_frac_trials, total_interp_frac, rej_frac_channels, rej_frac_trials, total_rej_frac = summarize_artifact_interpolation(n1, version = ar)
                                         manager.update_subsubfield('autoreject', param_str, 'total_interp_frac', total_interp_frac)
                                         manager.update_subsubfield('autoreject', param_str, 'interp_frac_channels', interp_frac_channels)
                                         manager.update_subsubfield('autoreject', param_str, 'interp_frac_trials', interp_frac_trials)
+                                        if ar == "intrej":
+                                            manager.update_subsubfield('autoreject', param_str, 'rej_frac_channels', rej_frac_channels)
+                                            manager.update_subsubfield('autoreject', param_str, 'rej_frac_trials', rej_frac_trials)
+                                            manager.update_subsubfield('autoreject', param_str, 'total_rej_frac', total_rej_frac)
+                                            
                                                                                 
                                     else:
                                         epochs_ar = epochs.copy()
@@ -206,5 +225,4 @@ with tqdm(total=total_iterations) as pbar:
                                     # update iteration
                                     path_id += 1
                                     pbar.update(1)
-                                    
-                                    
+                         

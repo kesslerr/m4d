@@ -13,7 +13,7 @@ sys.path.append(base_dir)
 alt_dir = "/ptmp/kroma/m4d/"
 
 #from src.utils import CharacteristicsManager, ica_eog_emg, autorej, summarize_artifact_interpolation
-from src.config import subjects, experiments, channels_of_interest, luck_forking_paths_clean2, contrasts, contrasts_combined
+from src.config import subjects, experiments, channels_of_interest, luck_forking_paths, contrasts, contrasts_combined
 
 plot_dir = os.path.join(base_dir, "plots")
 model_dir = os.path.join(base_dir, "models")
@@ -33,7 +33,7 @@ group_results = {}
 for experiment in experiments:
     group_results[experiment] = {}
 
-    forking_path = luck_forking_paths_clean2[experiment] 
+    forking_path = luck_forking_paths[experiment] 
     contrast = contrasts[experiment]
     channels = channels_of_interest[experiment]
     assert len(contrast) == len(channels), "Number of contrasts and channels must be the same!"
@@ -93,8 +93,7 @@ for experiment in experiments:
         grand_average_both[this_contrast] = grand_average_evoked_diff[this_contrast]
         
         group_results[experiment][channel] = grand_average_both
-        
-        
+
 
 
 
@@ -211,7 +210,7 @@ colors = ['#878787', '#878787', 'k'] # ['#a6cee3', '#1f78b4', '#b2df8a']
 linestyles = ['dashed', 'dotted', 'solid']
 n_subfigures = len(experiments)
 
-fig, ax = plt.subplots(nrows=n_subfigures, ncols=1, figsize=(10, 15), sharex=False, sharey=False)
+fig, ax = plt.subplots(nrows=n_subfigures, ncols=1, figsize=(8, 10), sharex=False, sharey=False)
 
 for ax_counter, experiment in enumerate(experiments):
 
@@ -239,6 +238,27 @@ for ax_counter, experiment in enumerate(experiments):
     # turn x axis label description off in all but last axis
     if ax_counter < (n_subfigures - 1):
         ax[ax_counter].set_xlabel("")
+    else:
+        ax[ax_counter].set_xlabel("Time [s]")
+    # set title to experiment name
+    ax[ax_counter].set_title(experiment)
+    # make individual titles larger
+    ax[ax_counter].title.set_fontsize(14)
+    # give titles grey background
+    ax[ax_counter].title.set_backgroundcolor('lightgrey')
+    # make legend white background
+    #leg = ax[ax_counter].legend()
+    #frame = leg.get_frame()
+    #frame.set_facecolor('lightgrey')
+    
+    #ax[ax_counter].legend(facecolor='white', framealpha=1, loc='upper left') # BUG framealpha does never work
+    ax[ax_counter].legend(facecolor='white', framealpha=1, loc='center left', bbox_to_anchor=(1, 0.5)) # BUG framealpha does never work
+    
+    
+    
+    #ax[ax_counter].legend().get_frame().set_alpha(1.0)
+    # put legend on upper left
+    #ax[ax_counter].legend(loc='upper left')
 
 plt.tight_layout()
 
