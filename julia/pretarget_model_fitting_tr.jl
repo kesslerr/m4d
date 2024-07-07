@@ -37,7 +37,7 @@ column_types = Dict(
 
 # import dataframe
 #data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
-data_raw = CSV.read(string("../targets/sliding_avgacc_single_reordered.csv"), DataFrame, types=column_types);
+data_raw = CSV.read(string("../models/sliding_avgacc_single_extended.csv"), DataFrame, types=column_types);
 #data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
 #select!(data_raw, Not(:dataset));
 #data = CSV.read("data_eegnet.csv", DataFrame) 
@@ -57,9 +57,9 @@ for exp in unique_experiments
     levels_ref = ["average", "Cz", "P9P10"];
     levels_emc = ["None", "ica"];
     levels_mac = ["None", "ica"];
-    levels_base = ["200ms", "400ms"];
-    levels_det = ["offset", "linear"];
-    levels_ar = [false, true];
+    levels_base = ["None", "200ms", "400ms"];
+    levels_det = ["None", "linear"];
+    levels_ar = ["False", "int", "intrej"];
     levels_experiment = ["ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3"];
 
 
@@ -75,10 +75,9 @@ for exp in unique_experiments
     #    data[!, :experiment] = categorical(data[!, :experiment], levels=levels_experiment);
     #end
 
-    formula = @formula(accuracy ~ ( emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr((emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));
+    formula = @formula(accuracy ~ ( emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 + zerocorr((emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 | subject));
     #formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject))
     #model = fit(LinearMixedModel, formula, data, fast = true) # suppress output into R
-
 
 
     # fit it
