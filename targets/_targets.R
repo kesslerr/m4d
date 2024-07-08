@@ -90,22 +90,22 @@ list(
   ## define raw data files
   tar_target(
     name = eegnet_file,
-    command = "eegnet_reordered.csv", # TODO: put this into a different folder
+    command = "../models/eegnet_extended.csv", # TODO: put this into a different folder
     format = "file"
   ),
   tar_target(
     name = sliding_file,
-    command = "sliding_reordered.csv",
+    command = "../models/sliding_extended.csv",
     format = "file"
   ),
   tar_target(
     name = tsum_file,
-    command = "sliding_tsums_reordered.csv",
+    command = "../models/sliding_tsums_extended.csv",
     format = "file"
   ),
   tar_target(
     name = sliding_avgacc_single_file,
-    command = "sliding_avgacc_single_reordered.csv",
+    command = "../models/sliding_avgacc_single_extended.csv",
     format = "file"
   ),
   tar_target(
@@ -119,74 +119,74 @@ list(
   ## EEGNET
   tar_target(
     name = jLMM_file_ERN,
-    command = '../julia/model_ERN.rds',
-    format = "file"
+    command = '../julia/model_ERN_eegnet.rds',
+    format = "file_fast" # file_fast checks if the file is up to date!!
   ),
   tar_target(
     name = jLMM_file_LRP,
-    command = '../julia/model_LRP.rds',
-    format = "file"
+    command = '../julia/model_LRP_eegnet.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_MMN,
-    command = '../julia/model_MMN.rds',
-    format = "file"
+    command = '../julia/model_MMN_eegnet.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N170,
-    command = '../julia/model_N170.rds',
-    format = "file"
+    command = '../julia/model_N170_eegnet.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N2pc,
-    command = '../julia/model_N2pc.rds',
-    format = "file"
+    command = '../julia/model_N2pc_eegnet.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N400,
-    command = '../julia/model_N400.rds',
-    format = "file"
+    command = '../julia/model_N400_eegnet.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_P3,
-    command = '../julia/model_P3.rds',
-    format = "file"
+    command = '../julia/model_P3_eegnet.rds',
+    format = "file_fast"
   ),
   ## SLIDING
   tar_target(
     name = jLMM_file_ERN_tr,
-    command = '../julia/model_ERN_tr.rds',
-    format = "file"
+    command = '../julia/model_ERN_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_LRP_tr,
-    command = '../julia/model_LRP_tr.rds',
-    format = "file"
+    command = '../julia/model_LRP_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_MMN_tr,
-    command = '../julia/model_MMN_tr.rds',
-    format = "file"
+    command = '../julia/model_MMN_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N170_tr,
-    command = '../julia/model_N170_tr.rds',
-    format = "file"
+    command = '../julia/model_N170_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N2pc_tr,
-    command = '../julia/model_N2pc_tr.rds',
-    format = "file"
+    command = '../julia/model_N2pc_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_N400_tr,
-    command = '../julia/model_N400_tr.rds',
-    format = "file"
+    command = '../julia/model_N400_time-resolved.rds',
+    format = "file_fast"
   ),
   tar_target(
     name = jLMM_file_P3_tr,
-    command = '../julia/model_P3_tr.rds',
-    format = "file"
+    command = '../julia/model_P3_time-resolved.rds',
+    format = "file_fast"
   ),
   
   tar_target(
@@ -267,7 +267,7 @@ list(
   tar_target( # average across subjects for each pipeline
     name = overview_accuracy_avgsub,
     command = raincloud_acc(data_eegnet %>%
-                              group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
+                              group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
                             title = "EEGNet")
@@ -383,14 +383,14 @@ list(
   ## LM for sliding
   tar_target(
     name = sliding_LMi2,
-    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2", # ^2 includes only 2-way interactions
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 2", # ^2 includes only 2-way interactions
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
   tar_target(
     name = sliding_LMi3,
-    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 3", 
+    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 3", 
                data = data_tsum_exp),
     pattern = map(data_tsum_exp),
     iteration = "list"
@@ -460,7 +460,7 @@ list(
   ),
   tar_target(sliding_HLMi2_emm_means, sliding_HLMi2_emm[[1]], pattern=map(sliding_HLMi2_emm)), #, iteration="list"
   tar_target(sliding_HLMi2_emm_contrasts, sliding_HLMi2_emm[[2]], pattern=map(sliding_HLMi2_emm)),
-  
+
   
   ## heatmaps of EMMs
   # TODO: use the omni test significances to highlight the facets
@@ -481,8 +481,8 @@ list(
   tar_target(
     name = heatmaps_avgacc,
     command = {
-      ggarrange(eegnet_heatmap + labs(title="EEGNet"), 
-                slidingavgaccs_heatmap + labs(title="Time-resolved"), 
+      ggarrange(eegnet_heatmap + labs(title="EEGNet"),
+                slidingavgaccs_heatmap + labs(title="Time-resolved"),
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
@@ -713,7 +713,7 @@ tar_target(
              filename="heatmaps.png",
              path=figure_output_dir,
              scale=1.5,
-             width=18,
+             width=22,
              height=12,
              units="cm",
              dpi=300)
@@ -727,7 +727,7 @@ tar_target(
              filename="heatmaps_avgacc.png",
              path=figure_output_dir,
              scale=1.5,
-             width=18,
+             width=22,
              height=12,
              units="cm",
              dpi=300)
@@ -867,7 +867,7 @@ tar_target(
   
 #  tar_target(
 #    name=eegnet_HLM_simulations,
-#    command=lmer(formula="accuracy ~ hpf + lpf + emc + mac + base + det + ar + experiment + (1 | subject)",
+#    command=lmer(formula="accuracy ~ hpf + lpf + emc + mac + det + base + ar + experiment + (1 | subject)",
 #                 control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
 #                 data = data_eegnet)
 #  ),

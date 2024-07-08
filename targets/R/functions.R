@@ -8,6 +8,62 @@ colors_dark <- c("#851e3e", "#4f7871", "#3c1d85") # red, green, purple "#537d7d"
 colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
 
 
+# rename variables
+replacements <- list(
+  "hpf" = "high pass", # [Hz]
+  "lpf" = "low pass", # [Hz]
+  "ref" = "reference",
+  "ar" = "autoreject",
+  "mac" = "muscle",
+  "emc" = "ocular",
+  "base" = "baseline",
+  "det" = "detrending",
+  "0.1" = "0.1 Hz",
+  "0.5" = "0.5 Hz",
+  "6" = "6 Hz",
+  "20" = "20 Hz",
+  "45" = "45 Hz",
+  #"FALSE" = "False",
+  #"false" = "False",
+  "FALSE" = "None",
+  "false" = "None",
+  "TRUE" = "True",
+  "true" = "True",
+  "int" = "interpolate",
+  "intrej" = "reject",
+  "ica" = "ICA",
+  "200ms" = "200 ms",
+  "400ms" = "400 ms",
+  "ica" = "ICA",
+  "P9P10" = "P9/P10"
+)
+replacements_sparse <- list(
+  "hpf" = "high pass", # [Hz]
+  "lpf" = "low pass", # [Hz]
+  "ref" = "reference",
+  "ar" = "autoreject",
+  "mac" = "muscle",
+  "emc" = "ocular",
+  "base" = "baseline",
+  "det" = "detrending",
+  #"0.1" = "0.1 Hz",
+  #"0.5" = "0.5 Hz",
+  #"6" = "6 Hz",
+  #"20" = "20 Hz",
+  #"45" = "45 Hz",
+  "FALSE" = "None",
+  "false" = "None",
+  "TRUE" = "True",
+  "true" = "True",
+  "int" = "interp",
+  "intrej" = "reject",
+  "ica" = "ICA",
+  "200ms" = "200",
+  "400ms" = "400",
+  "ica" = "ICA",
+  "P9P10" = "P9/P10"
+)
+
 
 
 get_preprocess_data <- function(file) {
@@ -26,9 +82,9 @@ get_preprocess_data <- function(file) {
   data$ref <- factor(data$ref, levels = c("average", "Cz", "P9P10"))
   data$emc <- factor(data$emc, levels = c("None", "ica"))
   data$mac <- factor(data$mac, levels = c("None", "ica"))
-  data$base <- factor(data$base, levels = c("200ms", "400ms"))
-  data$det <- factor(data$det, levels = c("offset", "linear"))
-  data$ar <- factor(tolower(data$ar), levels = c("false", "true"))
+  data$base <- factor(data$base, levels = c("None", "200ms", "400ms"))
+  data$det <- factor(data$det, levels = c("None", "linear"))
+  data$ar <- factor(tolower(data$ar), levels = c("false", "int", "intrej"))
   #data$ar <- factor(data$ar, levels = c("FALSE", "TRUE"))
   data$experiment <- factor(data$experiment, levels = c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")) #, "LRP_6-9", "LRP_10-11", "LRP_12-13", "LRP_14-17", "LRP_18+", "6-9", "10-11", "12-13", "14-17", "18+"
   #data$dataset <- factor(data$dataset)
@@ -58,7 +114,7 @@ timeresolved_avg_acc <- function(data, subject_wise = FALSE){
       filter(experiment == exp) %>%
       filter(times >= baseline_end[exp])
     avg_accuracy <- data_tmp %>%
-      group_by(emc, mac, lpf, hpf, ref, base, det, ar) %>%
+      group_by(emc, mac, lpf, hpf, ref, det, base, ar) %>%
       summarize(accuracy = mean(`balanced accuracy`)) %>%
       # reorder columns with accuracy on first place
       select(accuracy, everything()) %>%
@@ -82,7 +138,7 @@ rjulia_mlm_with_random_slopes <- function(data, interactions = FALSE){
   
   julia_assign("data", data) # bring data into julia
   if (interactions == FALSE){
-    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + det + base + ar + (ref + hpf + lpf + emc + mac + det + base + ar | subject));")
   } else {
     julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf) ^ 2 + zerocorr( (ref + hpf + lpf) ^ 2 | subject));") ## TODO all variables
   }
@@ -98,10 +154,10 @@ rjulia_mlm <- function(data, interactions = FALSE){
   julia_library("RCall, JellyMe4")
   julia_assign("data", data) # bring data into julia
   if (interactions == FALSE){
-    #julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (1 | subject));")
-    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + base + det + ar + (ref + hpf + lpf + emc + mac + base + det + ar | subject));")
+    #julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + det + base + ar + (1 | subject));")
+    julia_command("formula = @formula(accuracy ~ ref + hpf + lpf + emc + mac + det + base + ar + (ref + hpf + lpf + emc + mac + det + base + ar | subject));")
   } else {
-    julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + (1 | subject));") ## TODO all variables
+    julia_command("formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + det + base + ar) ^ 2 + (1 | subject));") ## TODO all variables
   }
   julia_command("model = fit(LinearMixedModel, formula, data);") 
   julia_command("rmodel = (model, data);") # make it a tuple for conversion (Julia model doesn't have the data saved, but R analogue lmer model does); https://github.com/palday/JellyMe4.jl/issues/51, 
@@ -129,9 +185,9 @@ rjulia_r2 <- function(data){
         if (modeltype == "EEGNet"){
           julia_assign("data", data_tmp) # bring data into julia
           if (interaction == "true"){
-            julia_command("formula = @formula(accuracy ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 + zerocorr( (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2 | subject));")
+            julia_command("formula = @formula(accuracy ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 + zerocorr( (emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 | subject));")
           } else if (interaction == "false") {
-            julia_command("formula = @formula(accuracy ~ emc + mac + lpf + hpf + ref + base + det + ar + ( emc + mac + lpf + hpf + ref + base + det + ar | subject));")
+            julia_command("formula = @formula(accuracy ~ emc + mac + lpf + hpf + ref + det + base + ar + ( emc + mac + lpf + hpf + ref + det + base + ar | subject));")
           }
           julia_command("model = fit(LinearMixedModel, formula, data);")
           julia_command("predictions = predict(model, data);")
@@ -141,10 +197,10 @@ rjulia_r2 <- function(data){
           
         } else if (modeltype == "Time-resolved"){
             if (interaction=="true"){
-              mod <- lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + base + det + ar) ^ 2",
+              mod <- lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 2",
                  data = data_tmp)
             } else if (interaction=="false"){
-              mod <- lm(formula="tsum ~ emc + mac + lpf + hpf + ref + base + det + ar",
+              mod <- lm(formula="tsum ~ emc + mac + lpf + hpf + ref + det + base + ar",
                  data = data_tmp)
             }
           ir2 <- summary(mod)$r.squared
@@ -174,7 +230,7 @@ rjulia_r2 <- function(data){
 }
 
 chord_plot <- function(plot_filepath){
-  varnames <- c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref","hpf","lpf","emc","mac","base","det","ar")
+  varnames <- c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref","hpf","lpf","emc","mac","det","base","ar")
   varnames <- recode(varnames, !!!replacements)
   numbers <- c(0,1,1,0,0,0,0,1,
                1,0,1,1,1,1,1,1,
@@ -228,7 +284,7 @@ estimate_marginal_means_sliding <- function(data, per_exp = FALSE){
   }
   all_results <- data.frame()
   for (experiment_value in experiments){
-    for (variable in c("emc","mac","lpf","hpf","ref","base","det","ar",)) { #"ref","hpf","lpf","base","det","ar","emc","mac"
+    for (variable in c("emc","mac","lpf","hpf","ref","det","base","ar",)) { #"ref","hpf","lpf","det","base","ar","emc","mac"
       
       result <- data %>%
         {if(per_exp==TRUE) filter(., experiment == experiment_value) else . } %>%
@@ -275,14 +331,14 @@ luckfps <- data.frame(
   hpf = c('0.1', '0.1', '0.1', '0.1', '0.1', '0.1', '0.1'),
   ref = c('P9P10', 'P9P10', 'P9P10', 'average', 'P9P10', 'P9P10', 'P9P10'),
   base = c('200ms', '200ms', '200ms', '200ms', '200ms', '200ms', '200ms'),
-  det = c('offset', 'offset', 'offset', 'offset', 'offset', 'offset', 'offset'),
+  det = c('None', 'None', 'None', 'None', 'None', 'None', 'None'),
   #ar = c('TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE')
-  ar = c('true', 'true', 'true', 'true', 'true', 'true', 'true')
+  ar = c('int', 'int', 'int', 'int', 'int', 'int', 'int')
 )
 
 timeresolved_plot <- function(data){
   data_fp <- semi_join(data, luckfps, 
-                       by = c("experiment", "emc", "mac", "lpf", "hpf", "ref", "base", "det", "ar")) #c("experiment", "ref", "hpf", "lpf", "emc", "mac", "base", "det", "ar")
+                       by = c("experiment", "emc", "mac", "lpf", "hpf", "ref", "det", "base", "ar")) #c("experiment", "ref", "hpf", "lpf", "emc", "mac", "det", "base", "ar")
   # TR-Decoding with points as significance markers
   ggplot(data_fp, aes(x = times, y = `balanced accuracy`)) +
     geom_line() +
@@ -310,7 +366,7 @@ ecdf <- function(data){
   best_data = data.frame()
   for (experiment_val in c("ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3")){
     newdata <- data %>%
-      #group_by(ref, hpf, lpf, emc, mac, base, det, ar) %>%
+      #group_by(ref, hpf, lpf, emc, mac, det, base, ar) %>%
       #summarize(tsum = mean(tsum)) %>%
       filter(experiment==experiment_val) %>%
       mutate(performance = # TODO: adjust to the one or many values which are best according to the statistics you chose
@@ -355,84 +411,14 @@ ecdf <- function(data){
 
 
 paired_tests <- function(data, study="ERPCORE"){
-  # if we are in the MIPDB data, then for the experiment variable can not be grouped for tests,
-  # therefore, delete the experiment variable, and make an unpaired test for it
-  # 1. only try by removing experiment in MIPDB
-  
-  #if (study=="MIPDB"){
-  #  data_exp <- data %>% filter(variable == "experiment") # NEW
-  #  data <- data %>% filter(variable != "experiment")
-  #}
-  
   results <- data %>%
     group_by(variable) %>%
     pairwise_t_test(accuracy ~ factor, paired = TRUE, p.adjust.method = "BY",
                     pool.sd = FALSE, detailed = TRUE)
-
-  #if (study=="MIPDB"){
-  #  results_exp <- data_exp %>%
-  #    group_by(variable) %>%
-  #    pairwise_t_test(accuracy ~ factor, paired = FALSE, p.adjust.method = "BY",
-  #                    pool.sd = FALSE, detailed = TRUE) %>%
-  #    select(-estimate1, -estimate2)
-  #  results <- rbind(results, results_exp)
-  #}
   
   results
 }
 
-
-
-
-# rename variables
-replacements <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
-  "ref" = "reference",
-  "ar" = "autoreject",
-  "mac" = "muscle",
-  "emc" = "ocular",
-  "base" = "baseline",
-  "det" = "detrending",
-  "0.1" = "0.1 Hz",
-  "0.5" = "0.5 Hz",
-  "6" = "6 Hz",
-  "20" = "20 Hz",
-  "45" = "45 Hz",
-  "FALSE" = "False",
-  "false" = "False",
-  "TRUE" = "True",
-  "true" = "True",
-  "ica" = "ICA",
-  "200ms" = "200 ms",
-  "400ms" = "400 ms",
-  "ica" = "ICA",
-  "P9P10" = "P9/P10"
-)
-replacements_sparse <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
-  "ref" = "reference",
-  "ar" = "autoreject",
-  "mac" = "muscle",
-  "emc" = "ocular",
-  "base" = "baseline",
-  "det" = "detrending",
-  #"0.1" = "0.1 Hz",
-  #"0.5" = "0.5 Hz",
-  #"6" = "6 Hz",
-  #"20" = "20 Hz",
-  #"45" = "45 Hz",
-  "FALSE" = "False",
-  "false" = "False",
-  "TRUE" = "True",
-  "true" = "True",
-  "ica" = "ICA",
-  "200ms" = "200 ms",
-  "400ms" = "400 ms",
-  "ica" = "ICA",
-  "P9P10" = "P9/P10"
-)
 
 raincloud_mm <- function(data, title = ""){
   # Apply replacements batchwise across all columns
@@ -546,11 +532,6 @@ filter_experiment <- function(data){
 
 ## HLM and EMM
 
-
-#hlm <- function(data, formula) {
-#  lmer(formula, data = data)
-#}
-
 est_emm <- function(model, orig_data){
   # DEBUG
   #model = return_model
@@ -560,7 +541,7 @@ est_emm <- function(model, orig_data){
   #model <- model[[1]]
   
   
-  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "hpf","lpf","emc","mac","det","base","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
@@ -616,7 +597,7 @@ est_emm <- function(model, orig_data){
 
 est_emm_int <- function(model, data){
   experiment <- experiment <- unique(data$experiment)
-  variables = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "hpf","lpf","emc","mac","base","det","ar")
+  variables = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "hpf","lpf","emc","mac","det","base","ar")
   means = data.frame()
   contra = data.frame()
   for (variable.1 in variables) {
@@ -748,20 +729,24 @@ heatmap <- function(data){
 
 reorder_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
-  #new_order = c("ref", "hpf","lpf","emc","mac","base","det","ar") # original
-  new_order = c("emc","mac","lpf","hpf","ref","base","det","ar") #c("ref", "lpf","hpf","emc","mac","base","det","ar") # I CHANGED HPF AND LPF
+  #new_order = c("ref", "hpf","lpf","emc","mac","det","base","ar") # original
+  new_order = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "lpf","hpf","emc","mac","det","base","ar") # I CHANGED HPF AND LPF
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
 
 relevel_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
-  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "offset", "linear", "false", "true") # I CHANGED HPF AND LPF
+  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "linear", "false", "int", "intrej") # TODO double check if it is correct with the new MV3
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
 
 interaction_plot <- function(means, title_prefix=""){
+  # DEBUG
+  #means = tar_read(eegnet_HLMi2_emm_means, branches=1)
+  #means <- means %>% filter(experiment=="ERN")
+  
   experiment <- unique(means$experiment)
   means %<>% 
     reorder_variables("variable.1") %>%
@@ -770,44 +755,30 @@ interaction_plot <- function(means, title_prefix=""){
     relevel_variables("level.2") 
   #means <- 
   meansr <- means %>% 
-    mutate(variable.1 = recode(variable.1, !!!replacements)) %>%
-    mutate(variable.2 = recode(variable.2, !!!replacements))
+    mutate(variable.1 = recode(variable.1, !!!replacements_sparse)) %>%
+    mutate(variable.2 = recode(variable.2, !!!replacements_sparse)) %>%
+    mutate(level.1 = recode(level.1, !!!replacements_sparse)) %>%
+    mutate(level.2 = recode(level.2, !!!replacements_sparse))  
   
   # own colorscale # TODO: outsource from this script?
-  # cols_stepped <- stepped(20)
-  # cols <- c("None" = "black",
-  #           "0.1" = cols_stepped[1],    
-  #           "0.5" = cols_stepped[9],     
-  #           "6" = cols_stepped[1],       
-  #           "20" = cols_stepped[9],      
-  #           "45" = cols_stepped[17],      
-  #           "ica" = cols_stepped[1],     
-  #           "200ms" = "black",   
-  #           "400ms" = cols_stepped[1],   
-  #           "offset" = "black",  
-  #           "linear" = cols_stepped[1], 
-  #           "false" = "black",
-  #           "true" = cols_stepped[1],
-  #           "average" = "black",
-  #           "Cz" = cols_stepped[1],
-  #           "P9P10" = cols_stepped[9]
-  # )
   cols <- c("None" = "black",
             "0.1" = colors_dark[1],    
             "0.5" = colors_dark[2],     
             "6" = colors_dark[1],       
             "20" = colors_dark[2],     
             "45" = colors_dark[3],      
-            "ica" = colors_dark[1],     
-            "200ms" = "black",   
-            "400ms" = colors_dark[1],   
-            "offset" = "black",  
+            "ICA" = colors_dark[1],     
+            #"200ms" = "black",   
+            "200" = colors_dark[1],   
+            "400" = colors_dark[2],   
+            #"offset" = "black",  
             "linear" = colors_dark[1], 
-            "false" = "black",
-            "true" = colors_dark[1],
+            #"false" = "black",
+            "interp" = colors_dark[1],
+            "reject" = colors_dark[2],
             "average" = "black",
             "Cz" = colors_dark[1],
-            "P9P10" = colors_dark[2]
+            "P9/P10" = colors_dark[2]
   )  
   p1 <- ggplot(meansr, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
@@ -1155,7 +1126,7 @@ output.table.con <- function(data, filename="", thisLabel="", thisCaption=""){
 #   data = tar_read(data_eegnet) %>% filter(experiment=="N170")
 #   # TODO shuffle labels per sub
 #   for (i in 1:iterations){
-#     mod_i <- lmer(formula="accuracy ~ hpf + lpf + emc + mac + base + det + ar + (hpf + lpf + emc + mac + base + det + ar | subject)", #experiment + RFX SlOPES
+#     mod_i <- lmer(formula="accuracy ~ hpf + lpf + emc + mac + det + base + ar + (hpf + lpf + emc + mac + det + base + ar | subject)", #experiment + RFX SlOPES
 #          control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
 #          data = data)
 #     # TODO: extract ps or write it into large df
@@ -1262,8 +1233,8 @@ plot_multiverse_sankey <- function(data){
   
   # reorder factors in node and next_node
   data_long <- data_long %>%
-    mutate(node = factor(node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
-           next_node = factor(next_node, levels = rev(c("None", "ICA", "offset", "linear", "False", "True", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
+    mutate(node = factor(node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
+           next_node = factor(next_node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
   
   ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
     geom_sankey(flow.alpha = .6,
