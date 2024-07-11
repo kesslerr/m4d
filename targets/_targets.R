@@ -63,6 +63,7 @@ renv::snapshot()
 # Run the R scripts in the R/ folder with your custom functions:
 tar_source()
 source("R/functions.R")
+source("R/ampel.R")
 
 table_output_dir = "../manuscript/tables/"
 figure_output_dir = "../manuscript/plots/"
@@ -303,6 +304,26 @@ list(
                 ncol = 1, nrow = 2)
     }
   ), 
+  
+  # Ampel heatmaps, to visualize ranked forking paths
+  tar_target(
+    name = ampel_merge,
+    command = {rankampel_merge(data_eegnet, data_tsum, "EEGNet", "Time-resolved")}
+  ), 
+  tar_target(
+    name = ampel_file,
+    command = {
+      ggsave(plot=ampel_merge,
+             filename="ampel.png",
+             path=figure_output_dir,
+             scale=1,
+             width=20,
+             height=25,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
   
   ## GROUPINGS
   tar_group_by(
@@ -721,6 +742,22 @@ tar_target(
     format="file"
   ),  
   tar_target(
+    name = heatmap_avgacc_file,
+    command = {
+      thisPlot <- slidingavgaccs_heatmap + labs(title="Time-resolved")
+      ggsave(plot=thisPlot,
+             filename="heatmap_avgacc.png",
+             path=figure_output_dir,
+             scale=1.5,
+             width=22,
+             height=7,
+             units="cm",
+             dpi=300)
+    },
+    format="file"
+  ),  
+
+  tar_target(
     name =heatmaps_file_poster,
     command = {
       ggsave(plot=heatmaps_avgacc,
@@ -766,6 +803,8 @@ tar_target(
              pattern=map(sliding_interaction, sliding_interaction_filenames),
              format="file"
   ),
+
+# TODO delete the avgacc LM (only keep the MLM) 
 
   #tar_target(
   #  interaction_file_eegnet,

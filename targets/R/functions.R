@@ -64,7 +64,26 @@ replacements_sparse <- list(
   "P9P10" = "P9/P10"
 )
 
-
+# own colorscale for factor levels
+cols <- c("None" = "black",
+          "0.1" = colors_dark[1],    
+          "0.5" = colors_dark[2],     
+          "6" = colors_dark[1],       
+          "20" = colors_dark[2],     
+          "45" = colors_dark[3],      
+          "ICA" = colors_dark[1],     
+          #"200ms" = "black",   
+          "200" = colors_dark[1],   
+          "400" = colors_dark[2],   
+          #"offset" = "black",  
+          "linear" = colors_dark[1], 
+          #"false" = "black",
+          "interp" = colors_dark[1],
+          "reject" = colors_dark[2],
+          "average" = "black",
+          "Cz" = colors_dark[1],
+          "P9/P10" = colors_dark[2]
+)  
 
 get_preprocess_data <- function(file) {
   data <- read_csv(file, col_types = cols())
@@ -582,7 +601,7 @@ est_emm <- function(model, orig_data){
   
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
-  fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
+  fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>%
     mutate(sign.unc = stars.pval(.$p.value)) %>%
     mutate(sign.fdr = stars.pval(.$p.fdr))
   
@@ -597,7 +616,7 @@ est_emm <- function(model, orig_data){
 
 est_emm_int <- function(model, data){
   experiment <- experiment <- unique(data$experiment)
-  variables = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "hpf","lpf","emc","mac","det","base","ar")
+  variables = c("emc","mac","lpf","hpf","ref","det","base","ar") 
   means = data.frame()
   contra = data.frame()
   for (variable.1 in variables) {
@@ -759,27 +778,7 @@ interaction_plot <- function(means, title_prefix=""){
     mutate(variable.2 = recode(variable.2, !!!replacements_sparse)) %>%
     mutate(level.1 = recode(level.1, !!!replacements_sparse)) %>%
     mutate(level.2 = recode(level.2, !!!replacements_sparse))  
-  
-  # own colorscale # TODO: outsource from this script?
-  cols <- c("None" = "black",
-            "0.1" = colors_dark[1],    
-            "0.5" = colors_dark[2],     
-            "6" = colors_dark[1],       
-            "20" = colors_dark[2],     
-            "45" = colors_dark[3],      
-            "ICA" = colors_dark[1],     
-            #"200ms" = "black",   
-            "200" = colors_dark[1],   
-            "400" = colors_dark[2],   
-            #"offset" = "black",  
-            "linear" = colors_dark[1], 
-            #"false" = "black",
-            "interp" = colors_dark[1],
-            "reject" = colors_dark[2],
-            "average" = "black",
-            "Cz" = colors_dark[1],
-            "P9/P10" = colors_dark[2]
-  )  
+
   p1 <- ggplot(meansr, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(size = 1.2) + 
