@@ -165,7 +165,7 @@ epoch_windows = {
 baseline_windows = {
     '200ms': { # correspond to Kappenmann et al.
         'ERN':  (-.4, -.2), 
-        'LRP':  (-.6, -.4), # TODO: also change in targets, now the endpoint is matched between paths, TODO also change in manuscript
+        'LRP':  (-.6, -.4), # TODO: now the endpoint is matched between paths
         'MMN':  (-.2, 0.),
         'N170': (-.2, 0.),
         'N2pc': (-.2, 0.),
