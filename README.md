@@ -1,4 +1,4 @@
-# m4d -- Is EEG better left alone for decoding?
+# m4d - Is EEG better left alone for decoding?
 Multiverse for Decoding (m4d).
 
 
@@ -6,6 +6,60 @@ The aim of this study was to investigate the effect of preprocessing decisions o
 
 - See [PREPRINT](https://sea-eye.org/en/) (TODO replace link).
 - See [OSF repository](https://osf.io/gzfjh/) for data (DOI 10.17605/OSF.IO/GZFJH). (TODO upload data)
+
+
+# current ongoings
+
+<!-- issueTable -->
+
+<!-- issueTable -->
+
+- [ ] Environment file (Python)
+- [ ] Environment file (R)
+- [ ] Environment file (julia)
+
+
+
+# Structure of this repository
+
+Subfolders will contain READMEs which are more specific.
+
+General structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science) during WIP, will be updated:
+```
+
+├── README.md          <- The top-level README for developers using this project.
+├── data
+│   ├── external       <- Data from third party sources.
+│   ├── interim        <- Intermediate data that has been transformed.
+│   ├── processed      <- The final, canonical data sets for modeling.
+│   └── raw            <- The original, immutable data dump.
+│
+├── env                <- The requirements file for reproducing the analysis environment, e.g.
+│                         generated with `conda export >> env.json`
+│
+├── julia              <- Julia scripts.
+│
+├── manuscript         <- Manuscript
+│
+├── models             <- Trained models, model predictions, or model summaries
+│
+├── notebooks          <- Jupyter notebooks and similar. Naming convention is a number (for ordering),
+│                         the creator's initials, and a short `-` delimited description, e.g.
+│                         `1.0-jqp-initial-data-exploration`.
+│
+├── plots              <- Plots
+│
+├── posters            <- Conference posters
+│
+├── posters            <- Project presentations
+│
+├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
+│
+├── src                <- Python source code for use in this project.
+│
+├── targets            <- R (targets) Pipeline.
+
+
 
 
 
