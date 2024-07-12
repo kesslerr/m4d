@@ -117,6 +117,10 @@ list(
   
   ## NEW: single LMM files
   ## first, test if multiple files can be tracked at the same time
+  ## 
+  # TODO: track the files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
+  # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
+  
   ## EEGNET
   tar_target(
     name = jLMM_file_ERN,
@@ -250,16 +254,11 @@ list(
              width=15,
              height=5,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
   ),
   
-  ## Example results of Luck forking path
-  #tar_target(
-  #  name = timeresolved_luck,
-  #  command = timeresolved_plot(data_sliding)
-  #),
-  
+
   ## Overview of decoding accuracies for each pipeline
   tar_target(
     name = overview_accuracy,
@@ -318,7 +317,7 @@ list(
              path=figure_output_dir,
              scale=1,
              width=20,
-             height=25,
+             height=20,
              units="cm",
              dpi=150)
     },
@@ -359,11 +358,10 @@ list(
     format = "file"
   ),
   
-  ## LMM: is it better to include interactions? # TODO: outsource this in julia
-  #tar_target()
+  ## LMM: is it better to include interactions?
   tar_target(
     r2aic_table,
-    rjulia_r2(bind_rows(data_eegnet, data_tsum)) # bind_rows does completes with NA in case of mismatching col names
+    rjulia_r2(bind_rows(data_eegnet, data_tsum)) 
   ),
   tar_target(
     r2aic_plot,
@@ -374,10 +372,6 @@ list(
         facet_wrap(metric ~ model, scales = "free_y",
                    labeller = labeller(metric = label_both)) +
         labs(y="")
-      
-      #facet_wrap(metric ~ model, scales = "free_y", 
-      #           labeller = labeller(metric = label_both)) +
-      #  labs(y = "Value", x = "Experiment", fill = "Interactions")
     }
   ),
   tar_target(
@@ -390,11 +384,12 @@ list(
              width=12,
              height=8,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"),  
 
-  ## HLM: visualize interactions TODO, do it instead with significant interactions per exp
+  ## HLM: visualize theoretical interactions 
+  # TODO, do it instead with significant interactions per exp
   tar_target(
     interaction_chordplot_prior,
     chord_plot(paste0(figure_output_dir,"chord_interactions.png")),
@@ -409,17 +404,9 @@ list(
     pattern = map(data_tsum_exp),
     iteration = "list"
   ),
-  tar_target(
-    name = sliding_LMi3,
-    command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 3", 
-               data = data_tsum_exp),
-    pattern = map(data_tsum_exp),
-    iteration = "list"
-  ),  
   
   ## Estimated marginal means
   
-  # TODO: var explained of random slopes and random subject intercepts?
   tar_target(
     name=eegnet_HLM_emm,
     command=est_emm(eegnet_HLMi2,
@@ -432,7 +419,6 @@ list(
   tar_target(eegnet_HLM_emm_contrasts, eegnet_HLM_emm[[2]], pattern=map(eegnet_HLM_emm)), 
   tar_target(eegnet_HLM_emm_omni, eegnet_HLM_emm[[3]], pattern=map(eegnet_HLM_emm)),
 
-  # TODO EMM interactions
   ### EEGNET interaction
   tar_target(
     name=eegnet_HLMi2_emm,
@@ -457,8 +443,6 @@ list(
   tar_target(sliding_LM_emm_contrasts, sliding_LM_emm[[2]], pattern=map(sliding_LM_emm)),
   tar_target(sliding_LM_emm_omni, sliding_LM_emm[[3]], pattern=map(sliding_LM_emm)),
 
-  # TODO Omni, also other models, and maybe combine it with the targets using dyn branching?
-  
   ### Sliding interaction
   tar_target(
     name=sliding_LMi2_emm,
@@ -507,8 +491,7 @@ list(
                 labels = c("A", "B"),
                 ncol = 1, nrow = 2)
     }),
-  # TODO: main effects with only means?
-  
+
   ## interaction plots of EMMs
   tar_target(eegnet_interaction,
             command=interaction_plot(eegnet_HLMi2_emm_means, "EEGNet - "),
@@ -519,13 +502,13 @@ list(
              pattern = map(sliding_LMi2_emm_means),
              iteration="list"),
   
-  ## concatenate all models and datas in one target
+  ## concatenate all models and data in one target
   tar_target( 
     name=models_combined,
     command=c(eegnet_HLMi2, sliding_LMi2) # TODO add new interaction models
   ), 
   
-  ## diagnostics for all models (HLM, LM, ALL and experiment wise)
+  ## diagnostics for all models (HLM, LM and experiment wise)
   ### convergence check
   tar_target( 
     name=convergence_checks,
@@ -644,13 +627,7 @@ list(
                  #labs(title="Random Intercept Correlation Between Experiments") +
                  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
              }
-  ), # TODO: track the 7*40 files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
-  
-  ## Characteristics of processing steps
-  ## Muscle Artifact ICA Components, only necessary for old order of preprocessing steps
-  #tar_target(muscle_lpf_plot,
-  #           muscle_lpf(ICA="EMG")),
-
+  ),   
   ## Exports for Paper
 
   ### Figures
@@ -665,7 +642,7 @@ list(
              width=12,
              height=16,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),  
@@ -679,7 +656,7 @@ tar_target(
            width=12,
            height=16,
            units="cm",
-           dpi=300)
+           dpi=150)
   },
   format="file"
   ),  
@@ -693,7 +670,7 @@ tar_target(
              width=12,
              height=9,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),  
@@ -707,26 +684,11 @@ tar_target(
              width=12,
              height=9,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),  
-  
-  # tar_target(
-  #   name = timeresolved_luck_file,
-  #   command = {
-  #     ggsave(plot=timeresolved_luck,
-  #            filename="timeresolved_luck.png",
-  #            path=figure_output_dir,
-  #            scale=1.5,
-  #            width=12,
-  #            height=16,
-  #            units="cm",
-  #            dpi=300)
-  #   },
-  #   format="file"
-  # ),  
-  # 
+
   tar_target(
     name =heatmaps_file,
     command = {
@@ -737,7 +699,7 @@ tar_target(
              width=22,
              height=12,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),  
@@ -752,7 +714,7 @@ tar_target(
              width=22,
              height=7,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),  
@@ -767,7 +729,7 @@ tar_target(
              width=22,
              height=12,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"
   ),
@@ -783,7 +745,7 @@ tar_target(
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=300)
+                      dpi=150)
              },
              pattern=map(eegnet_interaction, eegnet_interaction_filenames),
              format="file"
@@ -798,29 +760,12 @@ tar_target(
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=300)
+                      dpi=150)
              },
              pattern=map(sliding_interaction, sliding_interaction_filenames),
              format="file"
   ),
 
-# TODO delete the avgacc LM (only keep the MLM) 
-
-  #tar_target(
-  #  interaction_file_eegnet,
-  #  command = {
-  #    ggarrange(plotlist = interaction_eegnet, ncol=2) %>% 
-  #      annotate_figure(top = text_grob("Interaction Effects - EEGNet", 
-  #                                      color = "black", face = "bold", size = 16)) %>% 
-  #      ggsave(filename="interaction_eegnet.png",
-  #             path=figure_output_dir,
-  #             scale=2,
-  #             width=12,
-  #             height=12,
-  #             units="cm",
-  #             dpi=300)
-  #  }
-  #),
   
   tar_target(
     name = eegnet_RFX_plot_file,
@@ -832,7 +777,7 @@ tar_target(
              width=15,
              height=15,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"),
   tar_target(
@@ -845,7 +790,7 @@ tar_target(
              width=15,
              height=15,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
   format="file"),
   tar_target(
@@ -858,7 +803,7 @@ tar_target(
              width=15,
              height=20,
              units="cm",
-             dpi=300)
+             dpi=150)
     },
     format="file"),
 
@@ -871,7 +816,7 @@ tar_target(
     command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. ALL corresponds to the combined model including all experiments. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli. Correction was applied across all models and processing steps."
+                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiment. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli procedure."
                              ),
     format = "file"
   ),
@@ -880,7 +825,7 @@ tar_target(
     command = output.table.f(sliding_LM_emm_omni,
                              filename=paste0(table_output_dir, "sliding_omni.tex"),
                              thisLabel = "sliding_omni",
-                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -890,7 +835,7 @@ tar_target(
     command = output.table.con(eegnet_HLM_emm_contrasts,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
-                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -899,22 +844,11 @@ tar_target(
     command = output.table.con(sliding_LM_emm_contrasts,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
-                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiments model. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   )
   
-#  tar_target(
-#    name=eegnet_HLM_simulations,
-#    command=lmer(formula="accuracy ~ hpf + lpf + emc + mac + det + base + ar + experiment + (1 | subject)",
-#                 control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)),
-#                 data = data_eegnet)
-#  ),
-  
-  # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
-
-# TODO: add another dataset (infants)
-
 
 )
 

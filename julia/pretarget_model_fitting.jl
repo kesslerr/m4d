@@ -1,8 +1,3 @@
-
-# complete model fitting in julia for now
-
-
-# navigate to dir
 cd("/Users/roman/GitHub/m4d/julia/")
 
 # import libraries
@@ -20,15 +15,6 @@ using JellyMe4
 using RData
 using CategoricalArrays # for categorical 
 
-#randint = ARGS[1]
-#interact = ARGS[2]
-
-# DEBUG
-interact = "true"
-# Convert the value of randint to a string, so the R function below can use it
-interact = parse(Bool, interact)
-
-
 # define column type so that the strings (in experiment) is long enough
 column_types = Dict(
     "experiment" => String31,  # Assuming you have a column named "experiment" in your CSV file
@@ -36,17 +22,9 @@ column_types = Dict(
 )
 
 # import dataframe
-#data = CSV.read(string("data_", randint, ".csv"), DataFrame, types=column_types) 
 data_raw = CSV.read(string("../targets/eegnet_extended.csv"), DataFrame, types=column_types);
-#data_raw = filter(row -> row.dataset == "ERPCORE", data_raw);
-#select!(data_raw, Not(:dataset));
-#data = CSV.read("data_eegnet.csv", DataFrame) 
 
 unique_experiments = unique(data_raw.experiment)
-
-# DEBUG
-#exp="ERN"
-unique_experiments = ["N400", "P3"]
 
 for exp in unique_experiments
     println("Processing Experiment ", exp)
@@ -66,7 +44,6 @@ for exp in unique_experiments
     levels_ar = ["False", "int", "intrej"];
     levels_experiment = ["ERN", "LRP", "MMN", "N170", "N2pc", "N400", "P3"];
 
-
     data[!, :emc] = categorical(data[!, :emc], levels=levels_emc);
     data[!, :mac] = categorical(data[!, :mac], levels=levels_mac);
     data[!, :lpf] = categorical(data[!, :lpf], levels=levels_lpf);
@@ -75,15 +52,11 @@ for exp in unique_experiments
     data[!, :det] = categorical(data[!, :det], levels=levels_det);
     data[!, :base] = categorical(data[!, :base], levels=levels_base);
     data[!, :ar] = categorical(data[!, :ar], levels=levels_ar);
-    #if "experiment" in names(data)
-    #    data[!, :experiment] = categorical(data[!, :experiment], levels=levels_experiment);
-    #end
-
+    
+    # formula
     formula = @formula(accuracy ~ ( emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 + zerocorr((emc + mac + lpf + hpf + ref + det + base + ar) ^ 2 | subject));
-    #formula = @formula(accuracy ~ (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 + ( (ref + hpf + lpf + emc + mac + base + det + ar) ^ 2 | subject))
-    #model = fit(LinearMixedModel, formula, data, fast = true) # suppress output into R
-
-    # fit it
+    
+    # fit
     model = fit(LinearMixedModel, formula, data); # suppress output into R
 
 
@@ -101,6 +74,5 @@ for exp in unique_experiments
 
     # export as file for import in R
     R"saveRDS(rmodel, file = paste0('model_',$exp,'.rds'))" # the $ brings the julia variable into R
-    #R"saveRDS(rmodel, file = paste0('model_',$randint_str,'.rds'))" # the $ brings the julia variable into R
 
 end
