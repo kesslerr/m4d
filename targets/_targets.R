@@ -291,7 +291,7 @@ list(
     command = {
       ggarrange(overview_accuracy_avgsub, overview_tsum, 
                 labels = c("A", "B"),
-                ncol = 1, nrow = 2)
+                ncol = 2, nrow = 1)
     }
   ), 
 
@@ -598,36 +598,69 @@ list(
              }),
 
   ## RFX Intercepts and Participant Demographics
-  tar_target(rfx_demographics,
+  tar_target(eegnet_rfx_demographics,
              plot_rfx_demographics(eegnet_HLMi2, demographics, data_eegnet_exp),
              pattern = map(eegnet_HLMi2, data_eegnet_exp), #, demographics
              iteration = "list"
              ),
-  tar_target(rfx_demographics_all,
-             {ggarrange(plotlist = rfx_demographics, ncol=1) #%>% 
-               #annotate_figure(top = text_grob("Random Intercept and Participant Demographics", 
-              #                                 color = "black", face = "bold", size = 16))
+  tar_target(eegnet_rfx_demographics_all,
+             {ggarrange(plotlist = eegnet_rfx_demographics, ncol=1) %>% 
+                annotate_figure(top = text_grob("EEGNet", 
+                                                color = "black", face = "bold", size = 16))
                }
+  ),
+  tar_target(tr_rfx_demographics,
+             plot_rfx_demographics(sliding_HLMi2, demographics, data_avgaccs_exp),
+             pattern = map(sliding_HLMi2, data_avgaccs_exp), #, demographics
+             iteration = "list"
+  ),
+  tar_target(tr_rfx_demographics_all,
+             {ggarrange(plotlist = tr_rfx_demographics, ncol=1) %>% 
+               annotate_figure(top = text_grob("Time-resolved", 
+                                                color = "black", face = "bold", size = 16))
+             }
   ),
 
   ## RFX Intercepts per Experiment
-  tar_target(rfx,
+  tar_target(rfx_eegnet,
              extract_rfx_exp(eegnet_HLMi2, data_eegnet_exp),
              pattern=map(eegnet_HLMi2, data_eegnet_exp),
              # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
              ),
-  tar_target(rfx_pairsplot,
+  tar_target(rfx_eegnet_pairsplot,
              {
-               wide_data <- rfx %>% 
+               wide_data <- rfx_eegnet %>% 
                  pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
                  select(-c("Subject")) # remove sub for now
                
                ggpairs(wide_data,
                        upper = list(continuous = wrap(cor_with_p_adjust))) + # BH multiple comparison correction across all comparisons
                  #labs(title="Random Intercept Correlation Between Experiments") +
-                 theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+                 theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+                 labs(title="EEGNet")
+               
              }
   ),   
+  tar_target(rfx_tr,
+             extract_rfx_exp(sliding_HLMi2, data_avgaccs_exp),
+             pattern=map(sliding_HLMi2, data_avgaccs_exp),
+             # THIS AUTOMATICALLY rbinds, if we don't use iteration="list"
+  ),
+  tar_target(rfx_tr_pairsplot,
+             {
+               wide_data <- rfx_tr %>% 
+                 pivot_wider(names_from = Experiment, values_from = "Intercept") %>% 
+                 select(-c("Subject")) # remove sub for now
+               
+               ggpairs(wide_data,
+                       upper = list(continuous = wrap(cor_with_p_adjust))) + # BH multiple comparison correction across all comparisons
+                 #labs(title="Random Intercept Correlation Between Experiments") +
+                 theme(axis.text.x = element_text(angle = 90, hjust = 1))  +
+                 labs(title="Time-resolved")
+             }
+  ),   
+
+
   ## Exports for Paper
 
   ### Figures
@@ -639,26 +672,26 @@ list(
              filename="overview.png",
              path=figure_output_dir,
              scale=1,
+             width=20,
+             height=8,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
+  tar_target(
+    name = overview_poster_file,
+    command = {
+      ggsave(plot=overview_poster,
+             filename="overview_poster.png",
+             path=figure_output_dir,
+             scale=1,
              width=12,
              height=16,
              units="cm",
              dpi=150)
     },
     format="file"
-  ),  
-tar_target(
-  name = overview_poster_file,
-  command = {
-    ggsave(plot=overview_poster,
-           filename="overview_poster.png",
-           path=figure_output_dir,
-           scale=1,
-           width=12,
-           height=16,
-           units="cm",
-           dpi=150)
-  },
-  format="file"
   ),  
   tar_target(
     name = overview_eegnet_subjects_file,
@@ -780,24 +813,52 @@ tar_target(
              dpi=150)
     },
     format="file"),
+
   tar_target(
-    name = eegnet_RFX_pairs_file,
+    name = rfx_eegnet_pairs_file,
     command = {
-      ggsave(plot=rfx_pairsplot,
-             filename="RFXpairs.png",
+      ggsave(plot=rfx_eegnet_pairsplot,
+             filename="rfx_eegnet_pairs.png",
              path=figure_output_dir,
              scale=1,
              width=15,
              height=15,
              units="cm",
              dpi=150)
-    },
+    }),
+    
+    tar_target(
+      name = rfx_tr_pairs_file,
+      command = {
+        ggsave(plot=rfx_tr_pairsplot,
+               filename="rfx_tr_pairs.png",
+               path=figure_output_dir,
+               scale=1,
+               width=15,
+               height=15,
+               units="cm",
+               dpi=150)
+      },
   format="file"),
+  
   tar_target(
-    name = eegnet_RFX_demographics_file,
+    name = eegnet_rfx_demographics_file,
     command = {
-      ggsave(plot=rfx_demographics_all,
-             filename="RFXdemographics.png",
+      ggsave(plot=eegnet_rfx_demographics_all,
+             filename="eegnet_rfx_demographics.png",
+             path=figure_output_dir,
+             scale=1.5,
+             width=15,
+             height=20,
+             units="cm",
+             dpi=150)
+    },
+    format="file"),
+  tar_target(
+    name = tr_rfx_demographics_file,
+    command = {
+      ggsave(plot=tr_rfx_demographics_all,
+             filename="tr_rfx_demographics.png",
              path=figure_output_dir,
              scale=1.5,
              width=15,
@@ -809,14 +870,13 @@ tar_target(
 
 
 
-
   ### Tables
   tar_target(
     name = table_f_eegnet,
     command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiment. F-tests were conducted for each processing step. Stars indicate level of signicifance ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR corrected using Benjamini–Yekutieli procedure."
+                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR-corrected using the Benjamini–Yekutieli procedure."
                              ),
     format = "file"
   ),
@@ -825,7 +885,7 @@ tar_target(
     command = output.table.f(sliding_LM_emm_omni,
                              filename=paste0(table_output_dir, "sliding_omni.tex"),
                              thisLabel = "sliding_omni",
-                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Significant effects of preprocessing on Time-resolved decoding performance, separately for each experiment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -835,7 +895,7 @@ tar_target(
     command = output.table.con(eegnet_HLM_emm_contrasts,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
-                             thisCaption = "Significant differences in EEGNet decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step, separately for each experiment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -844,13 +904,10 @@ tar_target(
     command = output.table.con(sliding_LM_emm_contrasts,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
-                             thisCaption = "Significant differences in time-resolved decoding performances within each processing step, separate for each experiment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Pairwise post-hoc comparisons in Time-resolved decoding performance within each preprocessing step, separately for each experiment.  See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   )
-  
 
 )
-
-
 

@@ -97,7 +97,16 @@ rankampel <- function(data, title=""){
   unique_steps <- unique(leg_data$Column)
   legends = list()
   for (step in unique_steps){
+    
     this_leg_data <- leg_data %>% filter(Column == step)
+    
+    # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+    if (step=="low pass"){
+      # reorder the factor levels of the variables in the following order
+      new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+      this_leg_data[[Column]] <- factor(this_leg_data[[Column]], levels = new_order)  
+    }
+    
     ptmp <- ggplot(this_leg_data, aes(x = Column, y = Row, fill = Value)) + 
       geom_tile() + 
       scale_fill_manual(values = cols_seq) + 
@@ -127,10 +136,10 @@ rankampel <- function(data, title=""){
 
 
 # DEBUG
-#data1 = tar_read(data_eegnet)
-#data2 = tar_read(data_tsum)
-#title1="EEGNet"
-#title2="Time-resolved"
+# data1 = tar_read(data_eegnet)
+# data2 = tar_read(data_tsum)
+# title1="EEGNet"
+# title2="Time-resolved"
 
 rankampel_merge <- function(data1, data2, title1="", title2=""){
   # rename tsum to accuracy
@@ -139,6 +148,9 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
   plots = list()
   data <- list(data1, data2)
   title <- list(title1, title2)
+  
+  # DEBUG
+  # it=1
   for (it in c(1,2)){
     thisData = data[[it]]
     thisTitle = title[[it]]
@@ -199,14 +211,31 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
         filter(experiment=="ERN")
       unique_steps <- unique(leg_data$Column)
       legends = list()
+      
+      legend_size= 0.2 # cm
+      legend_title_size = 10
+      legend_text_size = 8
+      
       for (step in unique_steps){
         this_leg_data <- leg_data %>% filter(Column == step)
+        
+        #print(this_leg_data)
+        # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+        if (step=="low pass"){
+          # reorder the factor levels of the variables in the following order
+          new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+          this_leg_data$Value <- factor(this_leg_data$Value, levels = new_order)  
+        }
+        
         ptmp <- ggplot(this_leg_data, aes(x = Column, y = Row, fill = Value)) + 
           geom_tile() + 
           scale_fill_manual(values = cols_seq) + 
           theme_minimal() +
           labs(fill=step) +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1))
+          theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                legend.key.size = unit(legend_size, "cm"),  # Adjust legend key size
+                legend.title = element_text(size = legend_title_size),
+                legend.text = element_text(size = legend_text_size))  # Adjust legend text size
         legend <- ggpubr::as_ggplot(ggpubr::get_legend(ptmp))
         legends <- c(legends, list(legend))
       }
@@ -216,16 +245,17 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
   
   # put legends on plot
   cow <- cowplot::ggdraw() + 
-    cowplot::draw_plot(plots[[1]], x = 0, y = 0.6, width = 1.0, height = 0.4) +
-    cowplot::draw_plot(plots[[2]], x = 0, y = 0.2, width = 1.0, height = 0.4)
+    cowplot::draw_plot(plots[[1]], x = 0, y = 0.56, width = 1.0, height = 0.44) +
+    cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44)
   
   d <- 1/8
   for (i in 0:7){
     # single legends
     cow <- cow + cowplot::draw_plot(legends[[i+1]], 
                                     x = d*i+0.05, #+0.05, 
-                                    y = 0.09, ##0.9-d*i, 
-                                    width = 0.03, height = 0.03)
+                                    y = 0.04, ##0.9-d*i, 
+                                    width = 0.01, # TODO: these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
+                                    height = 0.01)
   }
   cow
 }
