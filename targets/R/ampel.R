@@ -187,11 +187,13 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
       mutate(Column = recode(Column, !!!replacements_sparse)) %>%
       mutate(Value = recode(Value, !!!replacements_sparse))
     
+    max_rank <- max(data_long_rec$Row, na.rm = TRUE)
     
     # Create the tile plot
     p1 <- ggplot(data_long_rec, aes(x = Column, y = Row, fill = Value)) + # y = as.factor(Row)
       geom_tile() + # color = "white"
-      scale_y_reverse() + # reverse y, so that best pipeline is top, worst is bottom
+      #scale_y_reverse() + # reverse y, so that best pipeline is top, worst is bottom
+      scale_y_reverse(breaks = c(1, 500, 1000, 1500, 2000, max_rank)) +  # Custom y-axis breaks
       scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
       theme_minimal() +
       labs(title = thisTitle,#"Ordered Forking Paths", 

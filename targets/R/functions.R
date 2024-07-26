@@ -563,6 +563,12 @@ relevel_variables <- function(data, column_name){
   return(data)
 }
 
+# Function to replace lower diagonal values with NA, needed for interaction_plot
+upper_diagonal_only <- function(df) {
+  df %>%
+    mutate(emmean = ifelse(as.numeric(variable.2) > as.numeric(variable.1), NA, emmean))
+}
+
 interaction_plot <- function(means, title_prefix=""){
   # DEBUG
   #means = tar_read(eegnet_HLMi2_emm_means, branches=1)
@@ -580,20 +586,45 @@ interaction_plot <- function(means, title_prefix=""){
     mutate(variable.2 = recode(variable.2, !!!replacements_sparse)) %>%
     mutate(level.1 = recode(level.1, !!!replacements_sparse)) %>%
     mutate(level.2 = recode(level.2, !!!replacements_sparse))  
-
-  p1 <- ggplot(meansr, 
+  
+  # Function to filter out lower diagonal facets
+  filter_upper_diagonal <- function(df) {
+    df %>%
+      filter(as.numeric(variable.2) <= as.numeric(variable.1))
+  }
+  # Apply the filter
+  meansr_filtered <- filter_upper_diagonal(meansr)
+  
+  # old plot, without excluding diagonal
+  # p1 <- ggplot(meansr, 
+  #              aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
+  #   geom_line(size = 1.2) + 
+  #   facet_grid(variable.2~variable.1, scales = "free") +
+  #   labs(title = paste0(title_prefix,experiment),
+  #        y = "Marginal Mean", 
+  #        x = "processing step", 
+  #        color = "Group: ") + # legend removed anway
+  #   scale_color_manual(values=cols) +
+  #   theme_classic() +
+  #   scale_x_discrete(expand = c(0.2, 0.0)) + # strech a bit in x direction
+  #   theme(legend.position = "none")  # Remove legend
+  
+  # filter diagonal
+  meansr_filtered <- upper_diagonal_only(meansr)
+  
+  # only upper diag plot
+  p1 <- ggplot(meansr_filtered, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(size = 1.2) + 
-    facet_grid(variable.2~variable.1, scales = "free") +
-    labs(title = paste0(title_prefix,experiment),
+    facet_grid(variable.2 ~ variable.1, scales = "free") +
+    labs(title = paste0(title_prefix, experiment),
          y = "Marginal Mean", 
          x = "processing step", 
-         color = "Group: ") + # legend removed anway
-    scale_color_manual(values=cols) +
+         color = "Group: ") + 
+    scale_color_manual(values = cols) +
     theme_classic() +
-    scale_x_discrete(expand = c(0.2, 0.0)) + # strech a bit in x direction
+    scale_x_discrete(expand = c(0.2, 0.0)) + 
     theme(legend.position = "none")  # Remove legend
-  
   
   # make pseudo plots for each row, and extract only the legend
   variable.2s <- sort(unique(meansr$variable.2))
@@ -611,6 +642,8 @@ interaction_plot <- function(means, title_prefix=""){
     legend <- as_ggplot(ggpubr::get_legend(ptmp))
     legends <- c(legends, list(legend))
   }
+  
+  # TODO, maybe significances in the lower diag, or in the plot itself
   
   # possibility 1: legend at the right side
   # p1_and_legends <- c(list(p1), legends)

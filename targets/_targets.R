@@ -64,6 +64,7 @@ renv::snapshot()
 tar_source()
 source("R/functions.R")
 source("R/ampel.R")
+source("R/timeresolved_baseline_artifact.R")
 
 table_output_dir = "../manuscript/tables/"
 figure_output_dir = "../manuscript/plots/"
@@ -660,6 +661,46 @@ list(
              }
   ),   
 
+
+  # TODO: all plot file tarets to the respective creation target, no need to separate
+  
+  # time resolved all forking paths visualization
+  tar_target(tr_accuracy_plot,
+             cluster_heatmap(data_sliding, data_tsum)
+  ),
+  tar_target(
+    name = tr_accuracy_plot_file,
+    command = {
+      ggsave(plot=tr_accuracy_plot,
+             filename="tr_accuracy_plot.png",
+             path=figure_output_dir,
+             scale=1,
+             width=20,
+             height=20,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
+
+  # baseline artifact investigation
+  tar_target(tr_baseline_artifact_plot,
+             plot_baseline_artifacts(data_sliding, data_tsum)
+  ),
+  tar_target(
+    name = tr_baseline_artifact_plot_file,
+    command = {
+      ggsave(plot=tr_baseline_artifact_plot,
+             filename="tr_baseline_artifact_plot.png",
+             path=figure_output_dir,
+             scale=1.5,
+             width=20,
+             height=20,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
 
   ## Exports for Paper
 
