@@ -178,7 +178,7 @@ df_avg_accs_single.to_csv(f"{base_dir}/models/sliding/sliding_avgacc_single_exte
 
 df_results = pd.read_csv(f"{base_dir}/models/sliding/sliding_extended.csv")
 # rename dfs_single balanced accuracy column to accuracy
-df_results = df_results.rename(columns={'balanced accuracy': 'accuracy'})
+df_results = df_results.rename(columns={'balanced accuracy': 'Accuracy'})
 df_results.head()
 
 # select the forking path of Luck et al.
@@ -197,7 +197,7 @@ dfs_single
 # plot
 
 g = sns.relplot(data=dfs_single, 
-            x='times', y='accuracy', 
+            x='times', y='Accuracy', 
             row='experiment',
             #ax=ax[i],
             kind='line',
