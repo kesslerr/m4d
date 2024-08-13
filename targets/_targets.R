@@ -45,7 +45,8 @@ tar_option_set( # packages that your targets use
                "tidyr", # e.g. wide to long transform
                "performance",
                "circlize", # chord diagram
-               "xtable" # export R tables to latex files
+               "xtable", # export R tables to latex files
+               "stringr" # string manipulation
                ) 
   # format = "qs", # Optionally set the default storage format. qs is fast.
 )
@@ -65,6 +66,11 @@ tar_source()
 source("R/functions.R")
 source("R/ampel.R")
 source("R/timeresolved_baseline_artifact.R")
+source("R/latex.R")
+source("R/interactions.R")
+source("R/rfx.R")
+source("R/diagnostics.R")
+source("R/ALT_pipeline.R")
 
 table_output_dir = "../manuscript/tables/"
 figure_output_dir = "../manuscript/plots/"
@@ -211,7 +217,6 @@ list(
              readRDS(jLMM_files_tr),
              pattern=jLMM_files_tr,
              iteration="list"),
-  
 
   ## import and recode datasets
   tar_target(
@@ -367,12 +372,15 @@ list(
   tar_target(
     r2aic_plot,
     { r2aic_table %>% filter(metric %in% c("R2", "AIC")) %>%
+        # capitalize interactions
+        mutate(interactions = ifelse(interactions == "false", "Absent", interactions)) %>%
+        mutate(interactions = ifelse(interactions == "true", "Present", interactions)) %>%
         ggplot(aes(y=value, x=experiment, fill=interactions)) +
         geom_bar(stat = "identity", position="dodge") +
         scale_fill_grey(start=0.2, end=0.6) +
         facet_wrap(metric ~ model, scales = "free_y",
                    labeller = labeller(metric = label_both)) +
-        labs(y="")
+        labs(y="", x="Experiment", fill="Interactions")
     }
   ),
   tar_target(
@@ -693,7 +701,7 @@ list(
       ggsave(plot=tr_baseline_artifact_plot,
              filename="tr_baseline_artifact_plot.png",
              path=figure_output_dir,
-             scale=1.5,
+             scale=2.,
              width=20,
              height=20,
              units="cm",
@@ -917,7 +925,7 @@ list(
     command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$; '/'~N/A). Significances were FDR-corrected using the Benjamini–Yekutieli procedure."
+                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), FDR-corrected using the Benjamini–Yekutieli procedure."
                              ),
     format = "file"
   ),
@@ -936,7 +944,7 @@ list(
     command = output.table.con(eegnet_HLM_emm_contrasts,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
-                             thisCaption = "Pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step, separately for each experiment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "For each experiment, pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step using Tukey adjustment. See \\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -945,10 +953,207 @@ list(
     command = output.table.con(sliding_LM_emm_contrasts,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
-                             thisCaption = "Pairwise post-hoc comparisons in Time-resolved decoding performance within each preprocessing step, separately for each experiment.  See \\ref{eegnet_omni} for details."
+                             thisCaption = "For each experiment, pairwise post-hoc comparisons in Time-resolved decoding performance within each preprocessing step using Tukey adjustment.  See \\ref{eegnet_omni} for details."
     ),
     format = "file"
-  )
+  ),
+
+  #######################################################################
+  ########### ALTERNATIVE PIPELINE ######################################
+  #######################################################################
+
+
+# alternative order of the pipeline (appendix)
+tar_target(
+  name = eegnet_file_ALT,
+  command = "../models/eegnet_original_order.csv", # TODO: put this into a different folder
+  format = "file"
+),
+tar_target(
+  name = sliding_file_ALT,
+  command = "../models/sliding_original_order.csv",
+  format = "file"
+),
+tar_target(
+  name = tsum_file_ALT,
+  command = "../models/sliding_tsums_original_order.csv",
+  format = "file"
+),
+# load models
+tar_target(
+  name = jLMM_file_ERN_ALT,
+  command = '../julia/alternative_order/model_ERN_eegnet.rds',
+  format = "file_fast" # file_fast checks if the file is up to date!!
+),
+tar_target(
+  name = jLMM_file_LRP_ALT,
+  command = '../julia/alternative_order/model_LRP_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_file_MMN_ALT,
+  command = '../julia/alternative_order/model_MMN_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_file_N170_ALT,
+  command = '../julia/alternative_order/model_N170_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_file_N2pc_ALT,
+  command = '../julia/alternative_order/model_N2pc_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_file_N400_ALT,
+  command = '../julia/alternative_order/model_N400_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_file_P3_ALT,
+  command = '../julia/alternative_order/model_P3_eegnet.rds',
+  format = "file_fast"
+),
+tar_target(
+  name = jLMM_files_ALT,
+  command = c(jLMM_file_ERN_ALT, jLMM_file_LRP_ALT, jLMM_file_MMN_ALT, jLMM_file_N170_ALT, jLMM_file_N2pc_ALT, jLMM_file_N400_ALT, jLMM_file_P3_ALT),
+),
+tar_target(name = eegnet_HLMi2_ALT, 
+           readRDS(jLMM_files_ALT),
+           pattern=jLMM_files_ALT,
+           iteration="list"),
+
+# TODO: recoding is probably adjusted to new pipeline, check if functions should be copied and adjusted or only adjusted
+## import and recode datasets
+tar_target(
+  name = data_eegnet_ALT,
+  command = {get_preprocess_data_ALT(eegnet_file_ALT)} #  %>% filter(dataset == "ERPCORE") %>% select(-c(dataset))
+),
+tar_target(
+  name = data_sliding_ALT,
+  command = {get_preprocess_data_ALT(sliding_file_ALT) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
+),
+tar_target(
+  name = data_tsum_ALT,
+  command = {get_preprocess_data_ALT(tsum_file_ALT) %>% select(-c(forking_path))} # , dataset  %>% filter(dataset == "ERPCORE") 
+),
+
+## Overview of decoding accuracies for each pipeline
+tar_target(
+  name = overview_accuracy_ALT,
+  command = raincloud_acc(data_eegnet_ALT, title = "EEGNet")
+),
+tar_target( # average across subjects for each pipeline
+  name = overview_accuracy_avgsub_ALT,
+  command = raincloud_acc(data_eegnet_ALT %>%
+                            group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
+                            summarize(accuracy = mean(accuracy)) %>% 
+                            select(accuracy, everything()), # put the accuracy in the first column
+                          title = "EEGNet")
+),
+tar_target(
+  name = overview_tsum_ALT,
+  command = raincloud_acc(data_tsum_ALT, title = "Time-resolved")
+),
+tar_target(
+  name = overview_ALT,
+  command = {
+    ggarrange(overview_accuracy_avgsub_ALT, overview_tsum_ALT, 
+              labels = c("A", "B"),
+              ncol = 2, nrow = 1)
+  }
+), 
+
+## GROUPINGS
+tar_group_by(
+  data_eegnet_exp_ALT, 
+  data_eegnet_ALT, 
+  experiment,
+),    
+tar_group_by(
+  data_tsum_exp_ALT, 
+  data_tsum_ALT, 
+  experiment 
+),    
+
+## LM for sliding
+tar_target(
+  name = sliding_LMi2_ALT,
+  command=lm(formula="tsum ~ (emc + mac + lpf + hpf + ref + det + base + ar) ^ 2", # ^2 includes only 2-way interactions
+             data = data_tsum_exp_ALT),
+  pattern = map(data_tsum_exp_ALT),
+  iteration = "list"
+),
+
+## Estimated marginal means
+
+tar_target(
+  name=eegnet_HLM_emm_ALT,
+  command=est_emm(eegnet_HLMi2_ALT,
+                  data_eegnet_exp_ALT),
+  pattern = map(eegnet_HLMi2_ALT, data_eegnet_exp_ALT),
+  iteration = "list"
+),
+# split means and contrasts
+tar_target(eegnet_HLM_emm_means_ALT, eegnet_HLM_emm_ALT[[1]], pattern=map(eegnet_HLM_emm_ALT)), 
+tar_target(eegnet_HLM_emm_contrasts_ALT, eegnet_HLM_emm_ALT[[2]], pattern=map(eegnet_HLM_emm_ALT)), 
+tar_target(eegnet_HLM_emm_omni_ALT, eegnet_HLM_emm_ALT[[3]], pattern=map(eegnet_HLM_emm_ALT)),
+
+### SLIDING
+tar_target(
+  name=sliding_LM_emm_ALT,
+  command=est_emm(sliding_LMi2_ALT, 
+                  data_tsum_exp_ALT),
+  pattern = map(sliding_LMi2_ALT, data_tsum_exp_ALT),
+  iteration = "list"
+),
+tar_target(sliding_LM_emm_means_ALT, sliding_LM_emm_ALT[[1]], pattern=map(sliding_LM_emm_ALT)), #, iteration="list"
+tar_target(sliding_LM_emm_contrasts_ALT, sliding_LM_emm_ALT[[2]], pattern=map(sliding_LM_emm_ALT)),
+tar_target(sliding_LM_emm_omni_ALT, sliding_LM_emm_ALT[[3]], pattern=map(sliding_LM_emm_ALT)),
+
+# HEATMAP
+tar_target(eegnet_heatmap_ALT,
+           command=heatmap_ALT(eegnet_HLM_emm_means_ALT)),
+tar_target(sliding_heatmap_ALT,
+           heatmap_ALT(sliding_LM_emm_means_ALT)),
+tar_target(
+  name = heatmaps_ALT,
+  command = {
+    ggarrange(eegnet_heatmap_ALT + labs(title="EEGNet"), 
+              sliding_heatmap_ALT + labs(title="Time-resolved"), 
+              labels = c("A", "B"),
+              ncol = 1, nrow = 2)
+  }),
+
+tar_target(
+  name = overview_file_ALT,
+  command = {
+    ggsave(plot=overview_ALT,
+           filename="overview_ALT.png",
+           path=figure_output_dir,
+           scale=1,
+           width=20,
+           height=8,
+           units="cm",
+           dpi=150)
+  },
+  format="file"
+),  
+tar_target(
+  name =heatmaps_file_ALT,
+  command = {
+    ggsave(plot=heatmaps_ALT,
+           filename="heatmaps_ALT.png",
+           path=figure_output_dir,
+           scale=1.5,
+           width=22,
+           height=12,
+           units="cm",
+           dpi=150)
+  },
+  format="file"
+)  
 
 )
 

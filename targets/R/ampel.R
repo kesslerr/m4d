@@ -248,7 +248,10 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
   # put legends on plot
   cow <- cowplot::ggdraw() + 
     cowplot::draw_plot(plots[[1]], x = 0, y = 0.56, width = 1.0, height = 0.44) +
-    cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44)
+    cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44) +
+    draw_label("A", x = 0.05, y = 0.56 + 0.44 - 0.015, size = 16, fontface = "bold") +  # Label for the first plot
+    draw_label("B", x = 0.05, y = 0.12 + 0.44 - 0.015, size = 16, fontface = "bold")    # Label for the second plot
+  
   
   d <- 1/8
   for (i in 0:7){
