@@ -237,6 +237,11 @@ sliding_plot_experiment <- function(data){
 raincloud_acc <- function(data, title = ""){
   names(data)[1] <- str_to_title(names(data)[1])
   DV <- names(data)[1]
+  if (DV == "Tsum"){
+    DV_label <- "T-sum"
+  } else {
+    DV_label <- DV
+  }
   
   # https://rpubs.com/rana2hin/raincloud
   p <- ggplot(data, aes(x = experiment, y = !!sym(DV) )) +
@@ -260,7 +265,7 @@ raincloud_acc <- function(data, title = ""){
     ) +
     labs(title = title,
          x="Experiment",
-         y=DV)
+         y=DV_label)
   if (DV=="Accuracy"){
     p <- p + geom_hline(yintercept=0.5, lty="dashed")
     p <- p + lims(y=c(0.46,NA))

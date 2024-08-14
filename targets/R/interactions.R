@@ -42,8 +42,9 @@ interaction_plot <- function(means, title_prefix=""){
     facet_grid(variable.2 ~ variable.1, scales = "free") +
     labs(title = paste0(title_prefix, experiment),
          y = "Marginal Mean", 
-         x = "processing step", 
-         color = "Group: ") + 
+         x = "Preprocessing Step", 
+         #color = "Group: ") + 
+         color = "") + 
     scale_color_manual(values = cols) +
     theme_classic() +
     scale_x_discrete(expand = c(0.2, 0.0)) + 
@@ -58,7 +59,8 @@ interaction_plot <- function(means, title_prefix=""){
                    aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
       geom_line(size = 1.2) + 
       facet_grid(.~variable.1, scales = "free") +
-      labs(color = paste0("Group: ",v2)) +
+      #labs(color = paste0("Group: ",v2)) +
+      labs(color = paste0("",v2)) +
       scale_color_manual(values=cols) +
       theme_classic()
     # get legend

@@ -330,6 +330,44 @@ list(
     format="file"
   ),  
   
+  # Ampel separately
+  tar_target(
+    name = ampel_eegnet,
+    command = {rankampel_single(data_eegnet, "EEGNet")}
+  ), 
+  tar_target(
+    name = ampel_eegnet_file,
+    command = {
+      ggsave(plot=ampel_eegnet,
+             filename="ampel_eegnet.png",
+             path=figure_output_dir,
+             scale=1.1,
+             width=15,
+             height=30,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
+  tar_target(
+    name = ampel_tr,
+    command = {rankampel_single(data_tsum, "Time-resolved")}
+  ), 
+  tar_target(
+    name = ampel_tr_file,
+    command = {
+      ggsave(plot=ampel_tr,
+             filename="ampel_tr.png",
+             path=figure_output_dir,
+             scale=1.1,
+             width=15,
+             height=30,
+             units="cm",
+             dpi=150)
+    },
+    format="file"
+  ),  
+  
   ## GROUPINGS
   tar_group_by(
     data_eegnet_exp, 
