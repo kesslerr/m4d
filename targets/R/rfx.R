@@ -143,8 +143,19 @@ cor_with_p_adjust <- function(data, mapping, method = "pearson", ...) {
   p_value_adj <- p.adjust(p_value, method = "BH", n = choose(ncol(data), 2))
   # “holm”, “hochberg”, “hommel”, “bonferroni”, “BH”, “BY”, “fdr”, “none”
   
+  # replace = 1 with ≈ 1
+  # Determine the p-value label
+  if (p_value_adj >= 0.995) {
+    p_label <- "≈1"
+  } else {
+    p_label <- format.pval(p_value_adj, digits = 2)
+    p_label <- paste0("=", p_label)
+  }
+  
   # Create a label for ggally_text
-  label <- paste("r = ", round(test$estimate, 2), "\n", "p = ", format.pval(p_value_adj, digits = 2))
+  #label <- paste("r = ", round(test$estimate, 2), "\n", "p = ", format.pval(p_value_adj, digits = 2))
+  label <- paste0("r=", round(test$estimate, 2), "\n", "p", p_label)
+  
   
   # Create ggally_text object
   #ggally_text(label = label, color = ifelse(p_value_adj < 0.05, "red", "black"), ...)
