@@ -23,7 +23,7 @@ rfx_vis <- function(model, orig_data){
 }
 
 # RFX and sociodemographics
-plot_rfx_demographics <- function(model, demographics, orig_data){
+plot_rfx_demographics <- function(model, demographics, orig_data, framework){
   # DEBUG
   #model <- tar_read(eegnet_HLMi2, branches=1)[[1]]
   #demographics <- tar_read(demographics)
@@ -70,6 +70,12 @@ plot_rfx_demographics <- function(model, demographics, orig_data){
   
   #If it is not the first (ERN) plot, then remove all legends
   if (experiment == "ERN"){
+    
+    
+    # workaround, to make the squashed xticklabels better visible
+    if (framework == "Time-resolved"){
+      p3 <- p3 + scale_x_continuous(breaks = c(-0.1, 0, 0.1))  # Set custom x-ticks
+    }
     
     #p1 <- p1 + theme(legend.position = c(0.1, 0)) # position within figure bottom left
     #p3 <- p3 + theme(legend.position = c(0.1, 1)) # postition within figure top left

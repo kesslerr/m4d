@@ -646,7 +646,7 @@ list(
 
   ## RFX Intercepts and Participant Demographics
   tar_target(eegnet_rfx_demographics,
-             plot_rfx_demographics(eegnet_HLMi2, demographics, data_eegnet_exp),
+             plot_rfx_demographics(eegnet_HLMi2, demographics, data_eegnet_exp, "EEGNet"),
              pattern = map(eegnet_HLMi2, data_eegnet_exp), #, demographics
              iteration = "list"
              ),
@@ -657,7 +657,7 @@ list(
                }
   ),
   tar_target(tr_rfx_demographics,
-             plot_rfx_demographics(sliding_HLMi2, demographics, data_avgaccs_exp),
+             plot_rfx_demographics(sliding_HLMi2, demographics, data_avgaccs_exp, "Time-resolved"),
              pattern = map(sliding_HLMi2, data_avgaccs_exp), #, demographics
              iteration = "list"
   ),
@@ -739,7 +739,7 @@ list(
       ggsave(plot=tr_baseline_artifact_plot,
              filename="tr_baseline_artifact_plot.png",
              path=figure_output_dir,
-             scale=2.,
+             scale=1.5,
              width=20,
              height=20,
              units="cm",

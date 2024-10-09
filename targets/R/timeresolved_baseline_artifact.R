@@ -121,7 +121,11 @@ plot_baseline_artifacts <- function(data, tsums){
     #facet_wrap(experiment ~ variable, scales = "free_x") +  # Use facet_wrap for free x-axis scales
     #theme_minimal() +
     labs(x = "Preprocessing Step", y = "Count", fill = "Baseline\nArtifact") +
-    scale_fill_manual(values = c("#4f7871","#851e3e"))
+    scale_fill_manual(values = c("#4f7871","#851e3e")) +
+    # rotate xticklabels to be able to upscale the graph a bit without overlap
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)  # Rotate x-axis labels
+    )
   
   print(p)  
   
