@@ -1606,6 +1606,17 @@
       ],
       "Hash": "16a4974681fc751a09a1250431361896"
     },
+    "ggview": {
+      "Package": "ggview",
+      "Version": "0.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "ggplot2",
+        "rstudioapi"
+      ],
+      "Hash": "320a6ce9f081b9f6f08174dbb133ef7d"
+    },
     "globals": {
       "Package": "globals",
       "Version": "0.16.3",

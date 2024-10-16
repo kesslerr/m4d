@@ -499,7 +499,7 @@ plot_multiverse_sankey <- function(data){
   ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
     geom_sankey(flow.alpha = .6,
                 node.color = "gray20") +
-    geom_sankey_label(size = 4, color = "white", fill = "gray40") +
+    geom_sankey_label(size = 4, color = "white", fill = "gray40", fontface = "bold") +
     #scale_fill_viridis_d(drop = FALSE) +
     #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
     scale_fill_grey() +
