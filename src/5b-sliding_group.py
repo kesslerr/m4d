@@ -194,6 +194,10 @@ for experiment in experiments_erpcore:
 dfs_single = pd.concat(dfs_single)
 dfs_single
 
+
+# Calculate the y-axis limit
+max_y = max(0.7, dfs_single['Accuracy'].max()) # new, to make the axis nicer, include 0.7
+
 # plot
 
 g = sns.relplot(data=dfs_single, 
@@ -211,8 +215,15 @@ g = sns.relplot(data=dfs_single,
 
 axes = g.fig.axes
 for ax, experiment in zip(axes, experiments_erpcore):
+    # new, include 0.7
+    ax.set_ylim(.45, max_y)
+    
     ax.axhline(0.5, color='k', linestyle='-')
-    ax.axvline(0., color='k', linestyle='--')
+    if experiment in ["LRP", "ERN"]:
+        ax.axvline(0., color='k', linestyle=':') # response onset
+    else:      
+        ax.axvline(0., color='k', linestyle='--') # stimulus onset
+    
     ax.set_title(experiment)
     ax.title.set_backgroundcolor('lightgrey')
     ax.title.set_fontsize(14)

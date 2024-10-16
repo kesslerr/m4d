@@ -206,6 +206,39 @@ with open(f'{model_dir}/evoked.pck', 'rb') as handle:
 
 """ plotting """
 
+# get min and max values
+# min_val, max_val = 0, 0
+# for experiment in experiments:
+#     for key in list(group_results_combined[experiment].keys()):
+#         for condition in group_results_combined[experiment][key].keys():
+#             min_val = min(min_val, np.min(group_results_combined[experiment][key][condition].data))
+#             max_val = max(max_val, np.max(group_results_combined[experiment][key][condition].data))
+#             print()
+# TODO if used then x 1 mio
+# TODO, if done, the max value is a weird number, why that?
+
+# new, re-label the conditions according to feedback from MS
+# also everything in plural, and replace ALL categories, so they are ordered correctly with the linetypes in the plot
+group_results_combined["ERN"]["FCz"]["incorrect responses"] = group_results_combined["ERN"]["FCz"].pop("incorrect")
+group_results_combined["ERN"]["FCz"]["correct responses"] = group_results_combined["ERN"]["FCz"].pop("correct")
+group_results_combined["ERN"]["FCz"]["incorrect - correct"] = group_results_combined["ERN"]["FCz"].pop("incorrect - correct")
+group_results_combined["LRP"]["C3/C4"]["contralateral responses"] = group_results_combined["LRP"]["C3/C4"].pop("contralateral")
+group_results_combined["LRP"]["C3/C4"]["ipsilateral responses"] = group_results_combined["LRP"]["C3/C4"].pop("ipsilateral")
+group_results_combined["LRP"]["C3/C4"]["contralateral - ipsilateral"] = group_results_combined["LRP"]["C3/C4"].pop("contralateral - ipsilateral")
+group_results_combined["MMN"]["FCz"]["deviant sounds"] = group_results_combined["MMN"]["FCz"].pop("deviants")
+group_results_combined["MMN"]["FCz"]["standard sounds"] = group_results_combined["MMN"]["FCz"].pop("standards")
+group_results_combined["MMN"]["FCz"]["deviant - standard"] = group_results_combined["MMN"]["FCz"].pop("deviants - standards")
+# N170 no renaming
+group_results_combined["N2pc"]["PO7/PO8"]["contralateral targets"] = group_results_combined["N2pc"]["PO7/PO8"].pop("contralateral")
+group_results_combined["N2pc"]["PO7/PO8"]["ipsilateral targets"] = group_results_combined["N2pc"]["PO7/PO8"].pop("ipsilateral")
+group_results_combined["N2pc"]["PO7/PO8"]["contralateral - ipsilateral"] = group_results_combined["N2pc"]["PO7/PO8"].pop("contralateral - ipsilateral")
+group_results_combined["N400"]["CPz"]["unrelated words"] = group_results_combined["N400"]["CPz"].pop("unrelated")
+group_results_combined["N400"]["CPz"]["related words"] = group_results_combined["N400"]["CPz"].pop("related")
+group_results_combined["N400"]["CPz"]["unrelated - related"] = group_results_combined["N400"]["CPz"].pop("unrelated - related")
+group_results_combined["P3"]["Pz"]["deviant category"] = group_results_combined["P3"]["Pz"].pop("deviants")
+group_results_combined["P3"]["Pz"]["standard category"] = group_results_combined["P3"]["Pz"].pop("standards")
+group_results_combined["P3"]["Pz"]["deviant - standard"] = group_results_combined["P3"]["Pz"].pop("deviants - standards")
+
 colors = ['#878787', '#878787', 'k'] # ['#a6cee3', '#1f78b4', '#b2df8a']
 linestyles = ['dashed', 'dotted', 'solid']
 n_subfigures = len(experiments)
@@ -234,6 +267,7 @@ for ax_counter, experiment in enumerate(experiments):
                                 #ci=0.95, # this doesnt work with dashed?
                                 truncate_xaxis=False,
                                 truncate_yaxis=False,
+                                vlines = [], #list of x values or 'auto'=DEFAULT, will draw one at x=0
                                 show=False)[0]
     # turn x axis label description off in all but last axis
     if ax_counter < (n_subfigures - 1):
@@ -253,6 +287,12 @@ for ax_counter, experiment in enumerate(experiments):
     
     #ax[ax_counter].legend(facecolor='white', framealpha=1, loc='upper left') # BUG framealpha does never work
     ax[ax_counter].legend(facecolor='white', framealpha=1, loc='center left', bbox_to_anchor=(1, 0.5)) # BUG framealpha does never work
+    
+    # new: manual vlines
+    if experiment in ["LRP", "ERN"]:
+        ax[ax_counter].axvline(0., color='k', linestyle=':') # response onset
+    else:      
+        ax[ax_counter].axvline(0., color='k', linestyle='--') # stimulus onset
     
     
     
