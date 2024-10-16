@@ -259,7 +259,11 @@ raincloud_acc <- function(data, title = ""){
       # remove the slub interval
       .width = 0,
       point_colour = NA,
-      scale = 0.8 ##  <(**new parameter**)
+      scale = 0.8, ##  <(**new parameter**),<
+      
+      # new
+      fill = "#565656",  # Set fill color to black (or another color of your choice)
+      alpha = 0.8      # Set alpha for opacity (lower values for more transparency)
     ) +
     geom_boxplot(
       width = 0.12,
@@ -427,12 +431,17 @@ heatmap <- function(data){
     mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
 
   ggplot(data, aes(y = 0, x = level, fill = emmean)) +
-    geom_tile() +
+    geom_tile(width = 1) + # 
+    #theme_void() +
     #geom_text(aes(label = sprintf("%.1f", emmean)), size = 3) + # Add text labels with one decimal place
     geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          
           strip.text.y = element_text(angle=0)) + # rotate the experiment labels
     #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
     #                                l1 = 45, # luminance at endpoints
@@ -446,10 +455,10 @@ heatmap <- function(data){
     #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
     #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
     scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
-    labs(x="Preprocessing Step",
+    labs(x="Preprocessing step",
          y="",
          #fill="% change\naccuracy")  
-         fill="% Deviation from\nMarginal Mean")  
+         fill="% Deviation from\nmarginal mean")  
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
