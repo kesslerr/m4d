@@ -197,9 +197,9 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
       scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
       theme_minimal() +
       labs(title = thisTitle,#"Ordered Forking Paths", 
-           x = "Processing Step", 
+           x = "Preprocessing Step", 
            y = "Ranked Forking Path", 
-           fill = "Processing\nChoice") +
+           fill = "Preprocessing\nChoice") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
       theme(legend.position="none") +
       facet_grid(.~experiment) #, scales = "free_x"
@@ -248,7 +248,10 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
   # put legends on plot
   cow <- cowplot::ggdraw() + 
     cowplot::draw_plot(plots[[1]], x = 0, y = 0.56, width = 1.0, height = 0.44) +
-    cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44)
+    cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44) +
+    draw_label("A", x = 0.05, y = 0.56 + 0.44 - 0.015, size = 16, fontface = "bold") +  # Label for the first plot
+    draw_label("B", x = 0.05, y = 0.12 + 0.44 - 0.015, size = 16, fontface = "bold")    # Label for the second plot
+  
   
   d <- 1/8
   for (i in 0:7){
@@ -261,3 +264,128 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
   }
   cow
 }
+
+
+rankampel_single <- function(data, title=""){
+  # rename tsum to accuracy
+  if (title=="Time-resolved"){
+    data <- data %>% rename(accuracy = tsum)
+  }
+  legends = list()
+  plots = list()
+  #data <- list(data1, data2)
+  #title <- list(title1, title2)
+  
+  #thisData = data[[it]]
+  #thisTitle = title[[it]]
+  # average off accuracy across subs
+  result <- data %>%
+    group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>%
+    summarize(avg_accuracy = mean(accuracy), .groups = 'drop')
+  
+  # order the data by avg_accuracy descending (per experiment)
+  result <- result %>%
+    group_by(experiment) %>%
+    arrange(desc(avg_accuracy)) %>%
+    mutate(rank = row_number()) #%>%
+  #ungroup()
+  
+  
+  #result_ERN <- result %>% filter(experiment == "ERN") %>% select(-c(avg_accuracy, rank, experiment))
+  result <- result %>% select(-c(avg_accuracy, rank)) #, rank
+  
+  # Transform the data into a long format
+  data_long <- result %>%
+    group_by(experiment) %>%
+    mutate(Row = row_number()) %>% #row_number()
+    pivot_longer(cols = -c(experiment,Row), names_to = "Column", values_to = "Value") %>%
+    ungroup()
+  #mutate(experiment=result$experiment)
+  #head(200)
+  
+  # order the steps according to their temporal MV order
+  data_long$Column = factor(data_long$Column, level=c("emc", "mac", "lpf", "hpf", "ref", "det", "base", "ar"))
+  
+  
+  data_long_rec <- data_long %>% 
+    mutate(Column = recode(Column, !!!replacements_sparse)) %>%
+    mutate(Value = recode(Value, !!!replacements_sparse))
+  
+  max_rank <- max(data_long_rec$Row, na.rm = TRUE)
+  
+  # Create the tile plot
+  p1 <- ggplot(data_long_rec, aes(x = Column, y = Row, fill = Value)) + # y = as.factor(Row)
+    geom_tile() + # color = "white"
+    #scale_y_reverse() + # reverse y, so that best pipeline is top, worst is bottom
+    scale_y_reverse(breaks = c(1, 500, 1000, 1500, 2000, max_rank)) +  # Custom y-axis breaks
+    scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
+    theme_minimal() +
+    labs(title = title,#"Ordered Forking Paths", 
+         x = "Preprocessing Step", 
+         y = "Ranked Forking Path", 
+         fill = "Preprocessing\nChoice") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(legend.position="none") +
+    facet_grid(.~experiment) #, scales = "free_x"
+  
+  plots = c(plots, list(p1))
+  #p1
+  
+  if (length(legends) == 0){
+    # get legends for each processing step
+    leg_data <- data_long_rec %>%
+      filter(experiment=="ERN")
+    unique_steps <- unique(leg_data$Column)
+    legends = list()
+    
+    legend_size= 0.2 # cm
+    legend_title_size = 10
+    legend_text_size = 8
+    
+    for (step in unique_steps){
+      this_leg_data <- leg_data %>% filter(Column == step)
+      
+      #print(this_leg_data)
+      # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+      if (step=="low pass"){
+        # reorder the factor levels of the variables in the following order
+        new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+        this_leg_data$Value <- factor(this_leg_data$Value, levels = new_order)  
+      }
+      
+      ptmp <- ggplot(this_leg_data, aes(x = Column, y = Row, fill = Value)) + 
+        geom_tile() + 
+        scale_fill_manual(values = cols_seq) + 
+        theme_minimal() +
+        labs(fill=step) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+              legend.key.size = unit(legend_size, "cm"),  # Adjust legend key size
+              legend.title = element_text(size = legend_title_size),
+              legend.text = element_text(size = legend_text_size))  # Adjust legend text size
+      legend <- ggpubr::as_ggplot(ggpubr::get_legend(ptmp))
+      legends <- c(legends, list(legend))
+    }
+    #legends
+  }
+
+  # put legends on plot
+  cow <- cowplot::ggdraw() + 
+    cowplot::draw_plot(plots[[1]], x = 0, y = 0.12, width = 1.0, height = 0.88)
+    #cowplot::draw_plot(plots[[2]], x = 0, y = 0.12, width = 1.0, height = 0.44) +
+    #draw_label("A", x = 0.05, y = 0.56 + 0.44 - 0.015, size = 16, fontface = "bold") +  # Label for the first plot
+    #draw_label("B", x = 0.05, y = 0.12 + 0.44 - 0.015, size = 16, fontface = "bold")    # Label for the second plot
+  
+  
+  d <- 1/8
+  for (i in 0:7){
+    # single legends
+    cow <- cow + cowplot::draw_plot(legends[[i+1]], 
+                                    x = d*i+0.05, #+0.05, 
+                                    y = 0.04, ##0.9-d*i, 
+                                    width = 0.01, # TODO: these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
+                                    height = 0.01)
+  }
+  cow
+}
+
+

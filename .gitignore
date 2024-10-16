@@ -50,10 +50,11 @@ data/ds005106-download/*
 **/*.ods
 
 # R stuff
-**.*.RData
-**.*.Rhistory
-**.*.Rprofile
-**.*.Rproj
+**/*.RData
+**/*.RDataTmp*
+**/*.Rhistory
+**/*.Rprofile
+#**/*.Rproj
 
 # errors and logs from slurm
 **/*.err

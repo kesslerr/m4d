@@ -42,7 +42,7 @@ cluster_heatmap <- function(data, tsums){
   # Create a data frame for the vertical lines with legend information
   line_data <- tibble(
     times = c(0),
-    event = c("Stimulus or\nResponse Onset")
+    Event = c("Stimulus or\nResponse Onset")
   )
   max_rank <- max(proc_data$rank, na.rm = TRUE)
   
@@ -52,13 +52,14 @@ cluster_heatmap <- function(data, tsums){
     scale_fill_viridis_c(option = "magma",
                          na.value = "white") +
     facet_grid(~experiment, scales="free") +
-    labs(x="Time [s]", y="Ranked Forking Path") +
+    labs(x="Time [s]", y="Ranked Forking Path", fill="Accuracy") +
     scale_y_reverse(breaks = c(1, 500, 1000, 1500, 2000, max_rank)) +  # Custom y-axis breaks
     scale_x_continuous(breaks = c(-0.5, 0, 0.5)) +  # Custom y-axis breaks
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())  +# remove axes grids
-    geom_vline(data = line_data, aes(xintercept = times, color = event), 
-               linetype = "solid", size = 1) +
-    scale_color_manual(values = c("Stimulus or\nResponse Onset" = "green")) # Adjust the color scale for the legend
+    geom_vline(data = line_data, aes(xintercept = times, color = Event), 
+               linetype = "solid", size = 0.5) +
+    scale_color_manual(values = c("Stimulus or\nResponse Onset" = "aquamarine3")) # Adjust the color scale for the legend
+    #ylim(max_rank, 1)
 }
 
 ## paired barplot
@@ -108,8 +109,9 @@ plot_baseline_artifacts <- function(data, tsums){
     # Recode the variable names
     mutate(variable = recode(variable, !!!replacements)) %>%
     relevel_variables(column_name = "value") %>%
+    mutate(value = recode(value, !!!replacements)) %>%
     # mark: FALSE to absent, TRUE to present
-    mutate(mark = ifelse(mark, "present", "absent"))
+    mutate(mark = ifelse(mark, "Present", "Absent"))
   
   p <- ggplot(data_marked_all) +
     geom_bar(aes(x = value, fill = mark), 
@@ -118,8 +120,12 @@ plot_baseline_artifacts <- function(data, tsums){
     facet_grid(experiment ~ variable, scales = "free") +
     #facet_wrap(experiment ~ variable, scales = "free_x") +  # Use facet_wrap for free x-axis scales
     #theme_minimal() +
-    labs(x = "preprocessing step", y = "Count", fill = "baseline\nartifact") +
-    scale_fill_manual(values = c("#4f7871","#851e3e"))
+    labs(x = "Preprocessing Step", y = "Count", fill = "Baseline\nArtifact") +
+    scale_fill_manual(values = c("#4f7871","#851e3e")) +
+    # rotate xticklabels to be able to upscale the graph a bit without overlap
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)  # Rotate x-axis labels
+    )
   
   print(p)  
   
