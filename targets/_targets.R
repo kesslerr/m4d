@@ -26,6 +26,7 @@ tar_option_set( # packages that your targets use
                "ggdist", 
                "ggthemes", 
                "ggsankey", # sankey plots
+               "ggview", # scale plots correctly for publication
                "cowplot", # to overlay plots
                "pals", # some colorscales
                "readr", 
@@ -260,7 +261,7 @@ list(
              width=15,
              height=5,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
   ),
   
@@ -325,7 +326,7 @@ list(
              width=20,
              height=20,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -345,7 +346,7 @@ list(
              width=15,
              height=30,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -363,7 +364,7 @@ list(
              width=15,
              height=30,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -431,7 +432,7 @@ list(
              width=12,
              height=8,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"),  
 
@@ -572,7 +573,7 @@ list(
     iteration ="list"),
   tar_target(eegnet_HLM_qq_comb,
     {plt <- ggarrange(plotlist = eegnet_HLM_qq)
-     annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - EEGNet", 
+     annotate_figure(plt, top = text_grob("Quantile-quantile plots - EEGNet", 
                      color = "black", face = "bold", size = 16))}),
 #  tar_target(eegnet_HLM_qq_comb,
 #             {plt <- ggarrange(plotlist = eegnet_HLM_qq_agg)
@@ -586,7 +587,7 @@ list(
     iteration ="list"),
   tar_target(sliding_LM_qq_comb,
     {plt <- ggarrange(plotlist = sliding_LM_qq)
-    annotate_figure(plt, top = text_grob("Quantile-Quantile Plots - Time-resolved", 
+    annotate_figure(plt, top = text_grob("Quantile-quantile plots - time-resolved", 
                     color = "black", face = "bold", size = 16))}),
   
   ### res_vs_fitted plots
@@ -597,7 +598,7 @@ list(
              iteration ="list"),
   tar_target(eegnet_HLM_rvf_comb,
              {plt <- ggarrange(plotlist = eegnet_HLM_rvf)
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - EEGNet", 
+             annotate_figure(plt, top = text_grob("Residual vs. fitted plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -607,7 +608,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_rvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_rvf)
-             annotate_figure(plt, top = text_grob("Residual vs. Fitted Plots - Time-resolved", 
+             annotate_figure(plt, top = text_grob("Residual vs. fitted plots - time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   ### sqrt abs std res_vs_fitted plots
@@ -618,7 +619,7 @@ list(
              iteration ="list"),
   tar_target(eegnet_HLM_sasrvf_comb,
              {plt <- ggarrange(plotlist = eegnet_HLM_sasrvf)
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - EEGNet", 
+             annotate_figure(plt, top = text_grob("Scale-location-plots - EEGNet", 
                              color = "black", face = "bold", size = 16))}),
   
   #### SLIDING
@@ -628,7 +629,7 @@ list(
              iteration ="list"),
   tar_target(sliding_LM_sasrvf_comb,
              {plt <- ggarrange(plotlist = sliding_LM_sasrvf)
-             annotate_figure(plt, top = text_grob("Scale-Location-Plots - Time-resolved", 
+             annotate_figure(plt, top = text_grob("Scale-location-plots - time-resolved", 
                              color = "black", face = "bold", size = 16))}),
   
   
@@ -640,7 +641,7 @@ list(
   tar_target(eegnet_RFX_plot,
              {
                plt <- ggarrange(plotlist = eegnet_RFX) #
-               annotate_figure(plt, top = text_grob("Random Effects - EEGNet", 
+               annotate_figure(plt, top = text_grob("Random effects - EEGNet", 
                                color = "black", face = "bold", size = 16))
              }),
 
@@ -724,7 +725,7 @@ list(
              width=20,
              height=20,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -740,10 +741,10 @@ list(
              filename="tr_baseline_artifact_plot.png",
              path=figure_output_dir,
              scale=1.5,
-             width=20,
-             height=20,
+             width=15,
+             height=15,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -762,7 +763,7 @@ list(
              width=20,
              height=8,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -776,7 +777,7 @@ list(
              width=12,
              height=16,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -790,7 +791,7 @@ list(
              width=12,
              height=9,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -804,7 +805,7 @@ list(
              width=12,
              height=9,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -819,7 +820,7 @@ list(
              width=22,
              height=12,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -834,7 +835,7 @@ list(
              width=22,
              height=7,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),  
@@ -849,7 +850,7 @@ list(
              width=22,
              height=12,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"
   ),
@@ -861,11 +862,11 @@ list(
                ggsave(plot=eegnet_interaction,
                       filename=eegnet_interaction_filenames,
                       path=figure_output_dir,
-                      scale=2,
+                      scale=1.5,
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=150)
+                      dpi=300)
              },
              pattern=map(eegnet_interaction, eegnet_interaction_filenames),
              format="file"
@@ -876,11 +877,11 @@ list(
                ggsave(plot=sliding_interaction,
                       filename=sliding_interaction_filenames,
                       path=figure_output_dir,
-                      scale=2,
+                      scale=1.5,
                       width=17,
                       height=17,
                       units="cm",
-                      dpi=150)
+                      dpi=300)
              },
              pattern=map(sliding_interaction, sliding_interaction_filenames),
              format="file"
@@ -897,7 +898,7 @@ list(
              width=15,
              height=15,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"),
 
@@ -911,7 +912,7 @@ list(
              width=15,
              height=15,
              units="cm",
-             dpi=150)
+             dpi=300)
     }),
     
     tar_target(
@@ -924,7 +925,7 @@ list(
                width=15,
                height=15,
                units="cm",
-               dpi=150)
+               dpi=300)
       },
   format="file"),
   
@@ -938,7 +939,7 @@ list(
              width=15,
              height=20,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"),
   tar_target(
@@ -951,7 +952,7 @@ list(
              width=15,
              height=20,
              units="cm",
-             dpi=150)
+             dpi=300)
     },
     format="file"),
 
@@ -963,7 +964,7 @@ list(
     command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), FDR-corrected using the Benjamini–Yekutieli procedure."
+                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), false discovery rate-corrected using the Benjamini–Yekutieli procedure. \\textit{Ocular}: ocular artifact correction; \\textit{muscle}: muscle artifact correction; \\textit{ICA}: independent component analysis, \\textit{low pass}: low pass filter in Hertz; \\textit{high pass}: high pass filter in Hertz; baseline: baseline interval in milliseconds; \\textit{autoreject} version either interpolate (\\textit{interp}) or reject artifact-contaminated trials (\\textit{reject})."
                              ),
     format = "file"
   ),
@@ -972,7 +973,7 @@ list(
     command = output.table.f(sliding_LM_emm_omni,
                              filename=paste0(table_output_dir, "sliding_omni.tex"),
                              thisLabel = "sliding_omni",
-                             thisCaption = "Significant effects of preprocessing on Time-resolved decoding performance, separately for each experiment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "Significant effects of preprocessing on time-resolved decoding performance, separately for each experiment. See Table~\\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -982,7 +983,7 @@ list(
     command = output.table.con(eegnet_HLM_emm_contrasts,
                              filename=paste0(table_output_dir, "eegnet_contrasts.tex"),
                              thisLabel = "eegnet_contrasts",
-                             thisCaption = "For each experiment, pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step using Tukey adjustment. See \\ref{eegnet_omni} for details."
+                             thisCaption = "For each experiment, pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step using Tukey adjustment. See Table~\\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -991,7 +992,7 @@ list(
     command = output.table.con(sliding_LM_emm_contrasts,
                              filename=paste0(table_output_dir, "sliding_contrasts.tex"),
                              thisLabel = "sliding_contrasts",
-                             thisCaption = "For each experiment, pairwise post-hoc comparisons in Time-resolved decoding performance within each preprocessing step using Tukey adjustment.  See \\ref{eegnet_omni} for details."
+                             thisCaption = "For each experiment, pairwise post-hoc comparisons in time-resolved decoding performance within each preprocessing step using Tukey adjustment. See Table~\\ref{eegnet_omni} for details."
     ),
     format = "file"
   ),
@@ -1174,7 +1175,7 @@ tar_target(
            width=20,
            height=8,
            units="cm",
-           dpi=150)
+           dpi=300)
   },
   format="file"
 ),  
@@ -1188,7 +1189,7 @@ tar_target(
            width=22,
            height=12,
            units="cm",
-           dpi=150)
+           dpi=300)
   },
   format="file"
 )  

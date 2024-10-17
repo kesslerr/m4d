@@ -259,7 +259,11 @@ raincloud_acc <- function(data, title = ""){
       # remove the slub interval
       .width = 0,
       point_colour = NA,
-      scale = 0.8 ##  <(**new parameter**)
+      scale = 0.8, ##  <(**new parameter**),<
+      
+      # new
+      fill = "#565656",  # Set fill color to black (or another color of your choice)
+      alpha = 0.8      # Set alpha for opacity (lower values for more transparency)
     ) +
     geom_boxplot(
       width = 0.12,
@@ -427,12 +431,17 @@ heatmap <- function(data){
     mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
 
   ggplot(data, aes(y = 0, x = level, fill = emmean)) +
-    geom_tile() +
+    geom_tile(width = 1) + # 
+    #theme_void() +
     #geom_text(aes(label = sprintf("%.1f", emmean)), size = 3) + # Add text labels with one decimal place
     geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          
           strip.text.y = element_text(angle=0)) + # rotate the experiment labels
     #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
     #                                l1 = 45, # luminance at endpoints
@@ -446,10 +455,10 @@ heatmap <- function(data){
     #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
     #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
     scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
-    labs(x="Preprocessing Step",
+    labs(x="Preprocessing step",
          y="",
          #fill="% change\naccuracy")  
-         fill="% Deviation from\nMarginal Mean")  
+         fill="% Deviation from\nmarginal mean")  
         # Percentage marginal mean discrepancy
         # Distance from average (in %)
         # Percent above/below average
@@ -477,6 +486,9 @@ relevel_variables <- function(data, column_name){
 
 
 plot_multiverse_sankey <- function(data){
+  # DEBUG
+  #data <- tar_read(data_eegnet)
+  
   data %<>% 
     filter(subject == "sub-001") %>%
     filter(experiment == "N170") %>%
@@ -484,22 +496,61 @@ plot_multiverse_sankey <- function(data){
   
   # now change the names of all columns with the replacements
   names(data) <- recode(names(data), !!!replacements)
+
+  data <- data %>%
+    mutate(ocular = recode(ocular, !!!replacements)) %>%
+    mutate(muscle = recode(muscle, !!!replacements)) %>%
+    mutate(`low pass` = recode(`low pass`, !!!replacements)) %>%
+    mutate(`high pass` = recode(`high pass`, !!!replacements)) %>%
+    mutate(reference = recode(reference, !!!replacements)) %>%
+    mutate(detrending = recode(detrending, !!!replacements)) %>%
+    mutate(baseline = recode(baseline, !!!replacements)) %>%
+    mutate(autoreject = recode(autoreject, !!!replacements))
+    
+  ## new: define example forking paths by adding * or ** (N170) to the steps
+  # in column ocular, change ica to ica*
+   data <- data %>%
+     mutate(ocular = recode(ocular, "ICA" = "ICA*")) %>%
+     mutate(muscle = recode(muscle, "ICA" = "ICA*")) %>%
+     mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
+     mutate(`high pass` = recode(`high pass`, "0.1 Hz" = "0.1 Hz*")) %>%
+     mutate(reference = recode(reference, "average" = "average*")) %>%
+     mutate(reference = recode(reference, "P9/P10" = "P9/P10*")) %>%
+     mutate(detrending = recode(detrending, "None" = "None*")) %>%
+     mutate(baseline = recode(baseline, "200 ms" = "200 ms*")) %>%
+     mutate(autoreject = recode(autoreject, "interpolate" = "interpolate*"))
+     
   
   # make long
   data_long <- data %>%
-    make_long(names(data)) %>%
-    mutate(node = recode(node, !!!replacements)) %>% # also replace with better names
-    mutate(next_node = recode(next_node, !!!replacements))
+    make_long(names(data)) #%>%
+    #mutate(node = recode(node, !!!replacements)) %>% # also replace with better names
+    #mutate(next_node = recode(next_node, !!!replacements))
   
   # reorder factors in node and next_node
   data_long <- data_long %>%
-    mutate(node = factor(node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
-           next_node = factor(next_node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
+    mutate(node = factor(node,           levels = rev(c("None", "None*", "ICA*", "linear", "False", "interpolate*", "reject", "average*", "Cz", "P9/P10*", "200 ms*", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz*", "0.5 Hz"))),
+           next_node = factor(next_node, levels = rev(c("None", "None*", "ICA*", "linear", "False", "interpolate*", "reject", "average*", "Cz", "P9/P10*", "200 ms*", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz*", "0.5 Hz"))))  
+    # mutate(node = factor(node,           levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
+    #        next_node = factor(next_node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
   
-  ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
-    geom_sankey(flow.alpha = .6,
-                node.color = "gray20") +
-    geom_sankey_label(size = 4, color = "white", fill = "gray40", fontface = "bold") +
+  
+  
+  # test column title zeilenumbruch
+  data_long <- data_long %>%
+    mutate(x = recode(x, "ocular" = "ocular\nartifact\ncorrection")) %>%
+    mutate(x = recode(x, "muscle" = "muscle\nartifact\ncorrection")) %>%
+    mutate(x = recode(x, "low pass" = "low\npass\nfilter")) %>%
+    mutate(x = recode(x, "high pass" = "high\npass\nfilter")) %>%
+    mutate(x = recode(x, "baseline" = "baseline\ncorrection")) %>%
+    mutate(x = recode(x, "autoreject" = "autoreject\nversion"))
+  
+  p1 <- ggplot(data_long, 
+               aes(x = x, next_x = next_x, node = node, next_node = next_node, label = node)) + # fill = factor(node), 
+    geom_sankey(flow.alpha = .4,
+                node.color = "gray30",
+                fill = "grey30") +
+    geom_sankey_label(size = 4, color = "white", fill = "gray20", fontface = "bold") +
     #scale_fill_viridis_d(drop = FALSE) +
     #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
     scale_fill_grey() +
@@ -511,4 +562,9 @@ plot_multiverse_sankey <- function(data){
           ) +
     scale_x_discrete(position = "top") #+          # Move x-axis to the top
     #coord_cartesian(clip = "off")      
+  
+  # new: try manipulate colors manually to indicate reference level
+  #p1 + scale_fill_manual(values = c('None'    = "black",
+  #                                  'average' = "black"))
+  p1
 }

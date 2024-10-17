@@ -149,10 +149,10 @@ heatmap_ALT <- function(data){
     #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
     #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
   scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
-    labs(x="Preprocessing Step",
+    labs(x="Preprocessing step",
          y="",
          #fill="% change\naccuracy")  
-         fill="% Deviation from\nMarginal Mean")  
+         fill="% Deviation from\nmarginal mean")  
   # Percentage marginal mean discrepancy
   # Distance from average (in %)
   # Percent above/below average

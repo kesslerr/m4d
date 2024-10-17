@@ -39,10 +39,10 @@ interaction_plot <- function(means, title_prefix=""){
   p1 <- ggplot(meansr_filtered, 
                aes(x = level.1, y = emmean, col = level.2, group = level.2)) + 
     geom_line(linewidth = 1.2) + 
-    facet_grid(variable.2 ~ variable.1, scales = "free") +
+    facet_grid(variable.2 ~ variable.1, scales = "free_x") +
     labs(title = paste0(title_prefix, experiment),
-         y = "Marginal Mean", 
-         x = "Preprocessing Step", 
+         y = "Marginal mean", 
+         x = "Preprocessing step", 
          #color = "Group: ") + 
          color = "") + 
     scale_color_manual(values = cols) +
@@ -62,7 +62,10 @@ interaction_plot <- function(means, title_prefix=""){
       #labs(color = paste0("Group: ",v2)) +
       labs(color = paste0("",v2)) +
       scale_color_manual(values=cols) +
-      theme_classic()
+      theme_classic() +
+      # new, make legend transparent to not overlay lines later in cowplot?
+      theme(legend.background = element_rect(fill = NA),  # Transparent background
+            legend.key = element_rect(fill = NA))         # Transparent key boxes
     # get legend
     legend <- as_ggplot(ggpubr::get_legend(ptmp))
     legends <- c(legends, list(legend))
@@ -78,35 +81,36 @@ interaction_plot <- function(means, title_prefix=""){
     d <- 1/8.5
     e <- 1/9
     for (i in 0:7){
-      # single legends
+      # horizontal lines between facets
+      if (i<7){
+        cow <- cow + cowplot::draw_line(x = c(0.07, 0.95),  # horizontal extend
+                                        y = c(0.85-d*i, 0.85-d*i), # 
+                                        color = "darkgrey", size = 1.)
+      }
+      # single legends: new: draw after line, so line not gets hidden
       cow <- cow + cowplot::draw_plot(legends[[i+1]], 
                                       x = d*i+0.05, 
                                       y = 0.9-d*i, 
                                       width = 0.1, height = 0.03)
-      # horizontal lines between facets
-      if (i<7){
-        cow <- cow + cowplot::draw_line(x = c(0.05, 0.97), 
-                                        y = c(0.85-d*i, 0.85-d*i), 
-                                        color = "grey", size = 0.5)
-      }
     }
   } else {
     c <- 1/8.5 # x 
-    d1 <- 1/7.6 # y leg
-    d2 <- 1/7.5 # y line
+    d1 <- 1/7.8 # y leg
+    d2 <- 1/7.75 # y line, davor 7.5
     e <- 1/8
     for (i in 0:6){
-      # single legends
-      cow <- cow + cowplot::draw_plot(legends[[i+1]], 
-                                      x = c*i+0.05, 
-                                      y = 0.88-d1*i, 
-                                      width = 0.1, height = 0.03)
       # horizontal lines between facets
       if (i<6){
-        cow <- cow + cowplot::draw_line(x = c(0.05, 0.97), 
-                                        y = c(0.83-d2*i, 0.83-d2*i), 
-                                        color = "grey", size = 0.5)
+        cow <- cow + cowplot::draw_line(x = c(0.07, 0.95),  # horizontal extend
+                                        y = c(0.82-d2*i, 0.82-d2*i), 
+                                        color = "darkgrey", size = 1.)
       }
+      # single legends: new: draw after line, so line not gets hidden
+      cow <- cow + cowplot::draw_plot(legends[[i+1]], 
+                                      x = c*i+0.05, 
+                                      y = 0.865-d1*i, 
+                                      width = 0.1, height = 0.03)
+    
     }
   }
 
