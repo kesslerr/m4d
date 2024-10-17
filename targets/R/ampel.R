@@ -83,9 +83,9 @@ rankampel <- function(data, title=""){
     scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
     theme_minimal() +
     labs(title = title,#"Ordered Forking Paths", 
-         x = "Processing Step", 
-         y = "Ranked Forking Path", 
-         fill = "Processing\nChoice") +
+         x = "Processing step", 
+         y = "Ranked forking path", 
+         fill = "Processing\nchoice") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     theme(legend.position="none") +
     facet_grid(.~experiment) #, scales = "free_x"

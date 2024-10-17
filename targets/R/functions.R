@@ -486,6 +486,9 @@ relevel_variables <- function(data, column_name){
 
 
 plot_multiverse_sankey <- function(data){
+  # DEBUG
+  data <- tar_read(data_eegnet)
+  
   data %<>% 
     filter(subject == "sub-001") %>%
     filter(experiment == "N170") %>%
@@ -493,6 +496,18 @@ plot_multiverse_sankey <- function(data){
   
   # now change the names of all columns with the replacements
   names(data) <- recode(names(data), !!!replacements)
+  
+  ## new: define example forking paths by adding * or ** (N170) to the steps
+  # in column ocular, change ica to ica*
+  # data <- data %>%
+  #   mutate(ocular = recode(ocular, "ica" = "ica*")) %>%
+  #   mutate(muscle = recode(muscle, "ica" = "ica*")) %>%
+  #   mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
+  #   mutate(`high pass` = recode(`high pass`, "None" = "None*")) %>%
+  #   mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
+  #   mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
+  #   mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
+  #   
   
   # make long
   data_long <- data %>%
@@ -502,12 +517,25 @@ plot_multiverse_sankey <- function(data){
   
   # reorder factors in node and next_node
   data_long <- data_long %>%
-    mutate(node = factor(node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
+    mutate(node = factor(node,           levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))),
            next_node = factor(next_node, levels = rev(c("None", "ICA", "linear", "False", "interpolate", "reject", "average", "Cz", "P9/P10", "200 ms", "400 ms", "6 Hz", "20 Hz", "45 Hz", "0.1 Hz", "0.5 Hz"))))  
   
-  ggplot(data_long, aes(x = x, next_x = next_x, node = node, next_node = next_node, fill = factor(node), label = node)) +
+  
+  
+  # test column title zeilenumbruch
+  data_long <- data_long %>%
+    mutate(x = recode(x, "ocular" = "ocular\nartifact\ncorrection")) %>%
+    mutate(x = recode(x, "muscle" = "muscle\nartifact\ncorrection")) %>%
+    mutate(x = recode(x, "low pass" = "low\npass\nfilter")) %>%
+    mutate(x = recode(x, "high pass" = "high\npass\nfilter")) %>%
+    mutate(x = recode(x, "baseline" = "baseline\ncorrection")) %>%
+    mutate(x = recode(x, "autoreject" = "autoreject\nversion"))
+  
+  p1 <- ggplot(data_long, 
+               aes(x = x, next_x = next_x, node = node, next_node = next_node, label = node)) + # fill = factor(node), 
     geom_sankey(flow.alpha = .6,
-                node.color = "gray20") +
+                node.color = "gray50",
+                fill = "grey50") +
     geom_sankey_label(size = 4, color = "white", fill = "gray40", fontface = "bold") +
     #scale_fill_viridis_d(drop = FALSE) +
     #paletteer::scale_fill_paletteer_d("colorBlindness::paletteMartin") +
@@ -520,4 +548,9 @@ plot_multiverse_sankey <- function(data){
           ) +
     scale_x_discrete(position = "top") #+          # Move x-axis to the top
     #coord_cartesian(clip = "off")      
+  
+  # new: try manipulate colors manually to indicate reference level
+  #p1 + scale_fill_manual(values = c('None'    = "black",
+  #                                  'average' = "black"))
+  p1
 }
