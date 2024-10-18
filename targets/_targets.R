@@ -964,7 +964,7 @@ list(
     command = output.table.f(eegnet_HLM_emm_omni,
                              filename=paste0(table_output_dir, "eegnet_omni.tex"),
                              thisLabel = "eegnet_omni",
-                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), false discovery rate-corrected using the Benjamini–Yekutieli procedure. \\textit{Ocular}: ocular artifact correction; \\textit{muscle}: muscle artifact correction; \\textit{ICA}: independent component analysis, \\textit{low pass}: low pass filter in Hertz; \\textit{high pass}: high pass filter in Hertz; baseline: baseline interval in milliseconds; \\textit{autoreject} version either interpolate (\\textit{interp}) or reject artifact-contaminated trials (\\textit{reject})."
+                             thisCaption = "Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. F-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), false discovery rate-corrected using the Benjamini–Yekutieli procedure. \\textit{Ocular}: ocular artifact correction; \\textit{muscle}: muscle artifact correction; \\textit{ICA}: independent component analysis, \\textit{low pass}: low pass filter; \\textit{high pass}: high pass filter."
                              ),
     format = "file"
   ),
