@@ -60,8 +60,8 @@ relevel_variables_ALT <- function(data, column_name){
 
 # rename variables
 replacements_ALT <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",
@@ -88,8 +88,8 @@ replacements_ALT <- list(
   "P9P10" = "P9/P10"
 )
 replacements_sparse_ALT <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",

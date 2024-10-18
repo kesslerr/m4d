@@ -14,8 +14,8 @@ colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
 
 # rename variables
 replacements <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",
@@ -42,8 +42,8 @@ replacements <- list(
   "P9P10" = "P9/P10"
 )
 replacements_sparse <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",
@@ -500,8 +500,8 @@ plot_multiverse_sankey <- function(data){
   data <- data %>%
     mutate(ocular = recode(ocular, !!!replacements)) %>%
     mutate(muscle = recode(muscle, !!!replacements)) %>%
-    mutate(`low pass` = recode(`low pass`, !!!replacements)) %>%
-    mutate(`high pass` = recode(`high pass`, !!!replacements)) %>%
+    mutate(`low-pass` = recode(`low-pass`, !!!replacements)) %>%
+    mutate(`high-pass` = recode(`high-pass`, !!!replacements)) %>%
     mutate(reference = recode(reference, !!!replacements)) %>%
     mutate(detrending = recode(detrending, !!!replacements)) %>%
     mutate(baseline = recode(baseline, !!!replacements)) %>%
@@ -512,8 +512,8 @@ plot_multiverse_sankey <- function(data){
    data <- data %>%
      mutate(ocular = recode(ocular, "ICA" = "ICA*")) %>%
      mutate(muscle = recode(muscle, "ICA" = "ICA*")) %>%
-     mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
-     mutate(`high pass` = recode(`high pass`, "0.1 Hz" = "0.1 Hz*")) %>%
+     mutate(`low-pass` = recode(`low-pass`, "None" = "None*")) %>%
+     mutate(`high-pass` = recode(`high-pass`, "0.1 Hz" = "0.1 Hz*")) %>%
      mutate(reference = recode(reference, "average" = "average*")) %>%
      mutate(reference = recode(reference, "P9/P10" = "P9/P10*")) %>%
      mutate(detrending = recode(detrending, "None" = "None*")) %>%
@@ -540,8 +540,8 @@ plot_multiverse_sankey <- function(data){
   data_long <- data_long %>%
     mutate(x = recode(x, "ocular" = "ocular\nartifact\ncorrection")) %>%
     mutate(x = recode(x, "muscle" = "muscle\nartifact\ncorrection")) %>%
-    mutate(x = recode(x, "low pass" = "low\npass\nfilter")) %>%
-    mutate(x = recode(x, "high pass" = "high\npass\nfilter")) %>%
+    mutate(x = recode(x, "low-pass" = "low-\npass\nfilter")) %>%
+    mutate(x = recode(x, "high-pass" = "high-\npass\nfilter")) %>%
     mutate(x = recode(x, "baseline" = "baseline\ncorrection")) %>%
     mutate(x = recode(x, "autoreject" = "autoreject\nversion"))
   
