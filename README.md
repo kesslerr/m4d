@@ -1,7 +1,7 @@
 # How EEG preprocessing shapes decoding performance
 Working title: Multiverse 4 Decoding (m4d)
 
-Kessler et al. (2024), How EEG preprocessing shapes decoding performance. Arxiv. [doi.org/10.48550/arXiv.2410.14453](doi.org/10.48550/arXiv.2410.14453)
+**Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Arxiv*. [doi.org/10.48550/arXiv.2410.14453](doi.org/10.48550/arXiv.2410.14453)
 
 See preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
 
@@ -131,14 +131,14 @@ The present steps were performed before the *targets* pipeline to prevent comput
 
 ## Modeling the impact of preprocessing on decoding performance
 
-The following is performed within an *R* *targets* pipeline, with access to *Julia* language. From within RStudio, source ```targets/renv/activate.R``` ```and targets/_targets.R```. *_targets.R* contains the entire pipeline.
+The following is performed within an *R* *targets* pipeline, with access to *Julia* language. From within RStudio, source ```targets/renv/activate.R``` and ```targets/_targets.R```. *_targets.R* contains the entire pipeline.
 
 The pipeline (and the status of each node) can be visualized using
 ```
 tar_visnetwork()
 ```
 
-The complete pipeline is run using  :hourglass_flowing_sand: <1h
+The complete pipeline is run using  :hourglass_flowing_sand: <2h
 ```
 tar_make()
 ```
