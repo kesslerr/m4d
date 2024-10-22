@@ -1,7 +1,7 @@
 # How EEG preprocessing shapes decoding performance
 Working title: Multiverse 4 Decoding (m4d)
 
-Kessler et al. (2024), How EEG preprocessing shapes decoding performance. Arxiv. doi.org/10.48550/arXiv.2410.14453
+**Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Arxiv*. [doi.org/10.48550/arXiv.2410.14453](doi.org/10.48550/arXiv.2410.14453)
 
 See preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
 
@@ -59,6 +59,91 @@ The *R* environment, which is used in a *targets* pipeline and all related proce
 The *Julia* environment for LMM fitting are found in [julia](/julia).
 
 The system architecture and hardware details of the Mac used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
+
+# Run analyses
+
+The following is done on a HPC cluster with SLURM job scheduling system and the conda environment set-up.
+
+## Multiverse preprocessing and machine learning model fitting
+
+Download the ERP CORE data for all participants and experiments.  :hourglass_flowing_sand: several minutes to hours, depending on bandwidth  
+
+```
+python3 src/0-download.py
+```
+
+Prepare the data   :hourglass_flowing_sand: <1h
+- rearrange trigger values
+- rename annotations
+- get times
+- resample to 256 Hz
+- calculate artifical EOG channels
+- set montage
+
+```
+python3 src/1-pre-multiverse.py
+```
+
+Run multiverse preprocessing: For each experiment and participant, preprocess the raw data using >2500 different preprocessing pipelines.  :hourglass_flowing_sand: 24h per participant and experiment
+
+```
+bash src/2-multiverse.sh
+```
+
+Calculate evoked responses, visualize particularly for an example forking path.  :hourglass_flowing_sand: <1h
+
+```
+python3 src/3-evoked.py
+```
+
+Run decoding for each forking path, participant, and experiment:
+- EEGNet decoding  :hourglass_flowing_sand: 24h per participant and experiment
+- Time-resolved decoding  :hourglass_flowing_sand: <1h per participant and experiment
+
+```
+bash src/4a-eegnet.sh
+bash src/4b-sliding.sh
+```
+
+Aggregate EEGNet results for analysis in R/targets.  :hourglass_flowing_sand: <1h
+```
+python src/5a-aggregate_results.py
+```
+
+Aggregate time-resolved results on group level for analysis in R/targets, and visualize for example forking path.   :hourglass_flowing_sand: <1h
+```
+python src/5b-sliding_group.py
+```
+
+## Fitting Linear Mixed Models in Julia
+
+From a terminal with *Julia* installed based on the environment.    :hourglass_flowing_sand: <24h 
+
+```
+julia julia/pretarget_model_fitting_en.jl
+julia julia/pretarget_model_fitting_tr.jl
+```
+
+The model fitting in *Julia* is an inifinite times faster than in *R*, especially for large models and data sets.
+The bottleneck however is the conversion from a *Julia* LMM object to an *R* LMM object, which takes a few hours per model.
+
+The present steps were performed before the *targets* pipeline to prevent computationally intensive steps to run after pipeline invalidation. Other, less intensive steps run in Julia are performed later via *targets* pipeline, but are not for the main results but refer to calculations done for the appendix. 
+
+## Modeling the impact of preprocessing on decoding performance
+
+The following is performed within an *R* *targets* pipeline, with access to *Julia* language. From within RStudio, source ```targets/renv/activate.R``` and ```targets/_targets.R```. *_targets.R* contains the entire pipeline.
+
+The pipeline (and the status of each node) can be visualized using
+```
+tar_visnetwork()
+```
+
+The complete pipeline is run using  :hourglass_flowing_sand: <2h
+```
+tar_make()
+```
+
+The resulting plots are directly plotted into the *manuscript* folder (git submodule).
 
 # License
 
