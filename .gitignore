@@ -66,8 +66,10 @@ adhered/*
 # poster stuff
 poster/archive
 presentation/archive
+presentation
 
 # folders which contain a lot of data
 models/*
 targets/.RData
 targets/.RData
+
