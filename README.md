@@ -84,13 +84,13 @@ Prepare the data   :hourglass_flowing_sand: <1h
 python3 src/1-pre-multiverse.py
 ```
 
-Run multiverse preprocessing: For each experiment and participant, preprocess the raw data using >2500 different preprocessing pipelines.
+Run multiverse preprocessing: For each experiment and participant, preprocess the raw data using >2500 different preprocessing pipelines.  :hourglass_flowing_sand: 24h per participant and experiment
 
 ```
 bash src/2-multiverse.sh
 ```
 
-Calculate evoked responses, visualize particularly for an example forking path.
+Calculate evoked responses, visualize particularly for an example forking path.  :hourglass_flowing_sand: <1h
 
 ```
 python3 src/3-evoked.py
@@ -98,20 +98,20 @@ python3 src/3-evoked.py
 
 Run decoding for each forking path, participant, and experiment.
 
-a. EEGNet decoding
-b. Time-resolved decoding
+a. EEGNet decoding  :hourglass_flowing_sand: 24h per participant and experiment
+b. Time-resolved decoding  :hourglass_flowing_sand: <1h per participant and experiment
 
 ```
 bash src/4a-eegnet.sh
 bash src/4b-sliding.sh
 ```
 
-Aggregate EEGNet results for analysis in R/targets.
+Aggregate EEGNet results for analysis in R/targets.  :hourglass_flowing_sand: <1h
 ```
 python src/5a-aggregate_results.py
 ```
 
-Aggregate time-resolved results on group level for analysis in R/targets, and visualize for example forking path.
+Aggregate time-resolved results on group level for analysis in R/targets, and visualize for example forking path.   :hourglass_flowing_sand: <1h
 ```
 python src/5b-sliding_group.py
 ```
