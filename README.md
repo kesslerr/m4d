@@ -1,7 +1,7 @@
 # How EEG preprocessing shapes decoding performance
-Multiverse for Decoding (m4d).
+Working title: Multiverse 4 Decoding (m4d)
 
-R. Kessler et al. (2024)
+Kessler et al. (2024), How EEG preprocessing shapes decoding performance. Arxiv. doi.org/10.48550/arXiv.2410.14453
 
 See preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
 
