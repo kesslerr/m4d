@@ -60,6 +60,64 @@ The *Julia* environment for LMM fitting are found in [julia](/julia).
 
 The system architecture and hardware details of the Mac used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
 
+# Run analyses
+
+The following is done on a HPC cluster with SLURM job scheduling system and the conda environment set-up.
+
+## Multiverse preprocessing and machine learning model fitting
+
+Download the ERP CORE data for all participants and experiments.  :hourglass_flowing_sand: several minutes to hours, depending on bandwidth  
+
+```
+python3 src/0-download.py
+```
+
+Prepare the data   :hourglass_flowing_sand: <1h
+- rearrange trigger values
+- rename annotations
+- get times
+- resample to 256 Hz
+- calculate artifical EOG channels
+- set montage
+
+```
+python3 src/1-pre-multiverse.py
+```
+
+Run multiverse preprocessing: For each experiment and participant, preprocess the raw data using >2500 different preprocessing pipelines.
+
+```
+bash src/2-multiverse.sh
+```
+
+Calculate evoked responses, visualize particularly for an example forking path.
+
+```
+python3 src/3-evoked.py
+```
+
+Run decoding for each forking path, participant, and experiment.
+
+a. EEGNet decoding
+b. Time-resolved decoding
+
+```
+bash src/4a-eegnet.sh
+bash src/4b-sliding.sh
+```
+
+Aggregate EEGNet results for analysis in R/targets.
+```
+python src/5a-aggregate_results.py
+```
+
+Aggregate time-resolved results on group level for analysis in R/targets, and visualize for example forking path.
+```
+python src/5b-sliding_group.py
+```
+
+
+
 # License
 
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
