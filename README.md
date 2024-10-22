@@ -45,6 +45,7 @@ General structure adapted from [cookiecutter](https://github.com/drivendata/cook
 │
 ├── targets            <- R (targets) Pipeline.
 
+```
 
 # Environments / Packages
 
