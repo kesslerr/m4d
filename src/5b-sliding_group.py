@@ -208,7 +208,7 @@ g = sns.relplot(data=dfs_single,
             color='black',
             height=1.5,# of each facet
             aspect=5, # aspect * height = width
-            #errorbar=('ci', 99), # there is already only the mean in the data, so no CI possible, or TODO extract single sub data
+            #errorbar=('ci', 99), # there is already only the mean in the data, so no CI possible, if wanted, then extract single sub data
             #err_kws={"alpha": .4},
             facet_kws={'sharey': True, 'sharex': False}
             )

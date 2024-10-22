@@ -45,10 +45,9 @@ from src.config import translation_table, baseline_windows, decoding_windows
 """ HEADER END """
 
 # DEBUG
-#experiment = "RSVP"
+#experiment = "MMN"
 #subject = "sub-015"
 
-# TODO: MAYBE? decoding should only be done after the baseline period ended!
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -77,8 +76,6 @@ forking_paths, files, forking_paths_split = get_forking_paths(
                             subject=subject, 
                             sample=None)
 
-#assert len(forking_paths) == 1152, "Number of forking paths is not 1152"
-
 # We will train the classifier on all left visual vs auditory trials on MEG
 def slider(X,y):
     clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear", class_weight='balanced'))
@@ -89,7 +86,7 @@ def slider(X,y):
     return np.mean(scores, axis=0)
 
 
-def slider_permut(X,y, iter=100): # TODO increase iter
+def slider_permut(X,y, iter=1000): 
     """ permute labels, and then run slider """
     n_tp = X.shape[2]
     results = np.zeros((iter, n_tp))
@@ -97,16 +94,11 @@ def slider_permut(X,y, iter=100): # TODO increase iter
         y_permut = np.random.permutation(y)
         results[i,:] = slider(X,y_permut)
     return results
-# this takes too long for all fps.... maybe just do group stats vs. 0.5
+# this takes too long for all fps.... therefore just do group stats vs. 0.5
 # and then instead if HLM: LM: per forking path across subjects, separately for each experiment  
 
 
 def slider_parallel(forking_path, file):  
-    
-    # extract the string "XXXms" from forking path
-    #baseline_ms = re.search(r"_(\d{3}ms)_", forking_path).group(1)
-    #baseline_end = baseline_windows[baseline_ms][experiment][-1]
-    
     
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
@@ -130,57 +122,13 @@ def slider_parallel(forking_path, file):
         print(f"Error in {forking_path}")
         print(e)
         return
-    #permut_scores = slider_permut(X.copy(),y.copy(), iter=10)
-    
-    # save scores to file
-    # save permutation scores to file
-    #np.save(os.path.join(model_folder, f"permutations_{forking_path.translate(translation_table)}.npy"), permut_scores)
-    
-    
-    #return scores, permut_scores
 
 
 Parallel(n_jobs=-1)(delayed(slider_parallel)(forking_path, file) for forking_path, file in zip(forking_paths, files))
-# TODO: all fps
 
 # DEBUG
 # file = files[0]
 # forking_path = forking_paths[0]
 
 
-
-# TODO: the following is for one-participant / one-fp statistics... computationally very long. If want to use that kind of statistics,
-# need to find one single value that corresponds to decoding performance
-
-# epochs = mne.read_epochs(file, preload=True, verbose=None)
-
-# # extract data from epochs
-# X = epochs.get_data()
-# y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
-
-# scores = slider(X,y)
-
-# permut_scores = slider_permut(X,y)
-
-# avg_permut_scores = np.mean(permut_scores, axis=0)
-
-
-# # for each time tpoint, test how many permut_scores are larger than score
-# p_values = np.mean(permut_scores > scores, axis=0)
-# # binary vector of p values < 0.05
-# p_val_mask = (p_values < 0.05).astype(int)
-
-# # Plot
-# fig, ax = plt.subplots()
-# ax.plot(epochs.times, scores, label="score")
-# ax.plot(epochs.times, avg_permut_scores, label="H0")
-# ax.axhline(0.5, color="k", linestyle="--", label="chance")
-# ax.set_xlabel("Times")
-# ax.set_ylabel("AUC")  # Area Under the Curve
-# ax.legend()
-# ax.axvline(0.0, color="k", linestyle="-")
-# ax.set_title("Sensor space decoding")
-
-# # # add the p_val_mask as shaded regions
-# ax.fill_between(epochs.times, 0.5, 0.55, where=p_val_mask==1, color='green', alpha=0.5)
 

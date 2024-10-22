@@ -402,7 +402,7 @@ est_emm_int <- function(model, data){
   }
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
-  #fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
+  #fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% 
   #  mutate(sign.unc = stars.pval(.$p.value)) %>%
   #  mutate(sign.fdr = stars.pval(.$p.fdr))
   
@@ -476,7 +476,7 @@ reorder_variables <- function(data, column_name){
 
 relevel_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
-  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "linear", "false", "int", "intrej") # TODO double check if it is correct with the new MV3
+  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "linear", "false", "int", "intrej") 
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }

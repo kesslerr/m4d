@@ -13,7 +13,7 @@ rfx_vis <- function(model, orig_data){
     title <- "ALL" 
   } else {
     title <- unique(orig_data$experiment)
-  } # TODO: can I get the experiment information from somewhere in the model?
+  } 
   ggplot(data_long,
          aes(y=mean, x=level)) +
     geom_boxplot() +

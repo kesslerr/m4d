@@ -23,7 +23,7 @@ from skorch.callbacks import LRScheduler
 from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, cross_validate, StratifiedKFold
 from sklearn.utils import compute_class_weight
 import torch
-torch.set_num_threads(1) # TODO: check if this helps with overload
+torch.set_num_threads(1) # check if this helps with overload
 
 from joblib import Parallel, delayed, dump
 
@@ -41,7 +41,6 @@ from src.utils import get_forking_paths, recode_conditions
 # DEBUG
 #experiment = "ERN"
 #subject = "sub-001"
-#rdm=True # TODO: code if a whole rdm shall be created
 
 # define subject and session by arguments to this script
 if len(sys.argv) != 3:
@@ -66,7 +65,7 @@ forking_paths, files, forking_paths_split = get_forking_paths(
                             base_dir="/ptmp/kroma/m4d/", 
                             experiment=experiment,
                             subject=subject, 
-                            sample=None) # DEBUG 5 TODO None
+                            sample=None) 
     
 """ SPECIFICATIONS END"""
 
@@ -118,10 +117,7 @@ def parallel_eegnet(forking_path, file):
     class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
     
     # get some information about the data
-    if "RSVP" in experiment:
-        sfreq = 250 # TODO: maybe this was the MIPDB error?
-    else:
-        sfreq = 256
+    sfreq = 256
     
     # train model
     net = EEGClassifier(
@@ -142,26 +138,20 @@ def parallel_eegnet(forking_path, file):
                         scoring="balanced_accuracy", # for balanced classes, this corresponds to accuracy,
                         # chance level might be 0 (adjusted = False), or 0.X (adjusted = True)
                         cv=skfold, 
-                        n_jobs=1, # TODO: check if this avoids overload
+                        n_jobs=1, # this avoids overload
                         return_estimator=False, # if you need the model to estimate on another test set
                         return_train_score=False,
                         )
     
-    # save performance TODO    
+    # save performance 
     validation_acc = np.mean(cvs['test_score'])
 
     dfi = pd.DataFrame({'forking_path': [forking_path],
                     'accuracy': [validation_acc],
                     })
     dfi.to_csv(f"{model_folder}/{forking_path}.csv", index=False)
-    # TODO: instead in a shared object?
 
 
 # parallel processing
 Parallel(n_jobs=-1)(delayed(parallel_eegnet)(forking_path, file) for forking_path, file in zip(forking_paths, files))
 
-# TODO: summarize all these across subjects and experiments in a big results dataframe (other script)
-
-# DEBUG
-#parallel_eegnet(forking_paths[0], files[0])
-#Parallel(n_jobs=10)(delayed(parallel_eegnet)(forking_path, file) for forking_path, file in zip(forking_paths, files))

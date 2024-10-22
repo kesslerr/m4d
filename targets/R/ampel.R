@@ -1,9 +1,6 @@
 
 # heatmap of all model choices and their ranking (top=best model, bottom =worst)
 #
-#% TODO: best and worst forking paths across experiments in a table in appendix? or a histo-like fashion with some labels?
-#  % maybe in a heatmap like fashion from top to bottom (best to worst), left to right (steps), and colors (processing choices). Maybe one could even find patterns in the graph !!
-  # if left to right has space, one could put all 7 experiments in facets
 
 seq_pink = c("#e7e1ef", "#c994c7", "#dd1c77")
 
@@ -100,10 +97,10 @@ rankampel <- function(data, title=""){
     
     this_leg_data <- leg_data %>% filter(Column == step)
     
-    # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+    # relevel LPF order
     if (step=="low pass"){
       # reorder the factor levels of the variables in the following order
-      new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+      new_order = c("6", "20", "45","None") 
       this_leg_data[[Column]] <- factor(this_leg_data[[Column]], levels = new_order)  
     }
     
@@ -222,10 +219,10 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
         this_leg_data <- leg_data %>% filter(Column == step)
         
         #print(this_leg_data)
-        # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+        # relevel LPF order, 
         if (step=="low pass"){
           # reorder the factor levels of the variables in the following order
-          new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+          new_order = c("6", "20", "45","None")
           this_leg_data$Value <- factor(this_leg_data$Value, levels = new_order)  
         }
         
@@ -259,7 +256,7 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
     cow <- cow + cowplot::draw_plot(legends[[i+1]], 
                                     x = d*i+0.05, #+0.05, 
                                     y = 0.04, ##0.9-d*i, 
-                                    width = 0.01, # TODO: these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
+                                    width = 0.01, # these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
                                     height = 0.01)
   }
   cow
@@ -346,10 +343,10 @@ rankampel_single <- function(data, title=""){
       this_leg_data <- leg_data %>% filter(Column == step)
       
       #print(this_leg_data)
-      # relevel LPF order, TODO: also do it with others for consistency, event tho no effect
+      # relevel LPF order
       if (step=="low pass"){
         # reorder the factor levels of the variables in the following order
-        new_order = c("6", "20", "45","None") # TODO double check if it is correct with the new MV3
+        new_order = c("6", "20", "45","None") 
         this_leg_data$Value <- factor(this_leg_data$Value, levels = new_order)  
       }
       
@@ -382,7 +379,7 @@ rankampel_single <- function(data, title=""){
     cow <- cow + cowplot::draw_plot(legends[[i+1]], 
                                     x = d*i+0.05, #+0.05, 
                                     y = 0.04, ##0.9-d*i, 
-                                    width = 0.01, # TODO: these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
+                                    width = 0.01, # these parametes dont change anything, if legend should be smaller, then change this during creating the single ones
                                     height = 0.01)
   }
   cow

@@ -12,7 +12,6 @@ get_preprocess_data_ALT <- function(file) {
   # recode lpf levels later
   # DOESNT work becuase the variables are ordered by name later and HPF will be BEFORE LPF...
   
-  # TODO: 
   
   # new, preprocess already
   data$hpf <- factor(data$hpf, levels = c("None", "0.1", "0.5"))
@@ -52,7 +51,7 @@ reorder_variables_ALT <- function(data, column_name){
 
 relevel_variables_ALT <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
-  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "offset", "linear", "FALSE", "TRUE") # TODO double check if it is correct with the new MV3
+  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "offset", "linear", "FALSE", "TRUE") 
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
@@ -118,7 +117,7 @@ replacements_sparse_ALT <- list(
 heatmap_ALT <- function(data){
   data <- data %>% 
     reorder_variables_ALT(column_name = "variable") %>%
-    relevel_variables_ALT(column_name = "level") %>% # TODO, also rename !!!
+    relevel_variables_ALT(column_name = "level") %>% 
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements_ALT)) %>%
     # NEW: replacements for some levels, to not overload the image too much

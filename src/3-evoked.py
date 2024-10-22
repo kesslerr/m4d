@@ -22,7 +22,7 @@ model_dir = os.path.join(base_dir, "models")
 
 # DEBUG
 #experiment = "N170"
-#subject = "sub-001" # TODO: mean across ALL subjects!!
+#subject = "sub-001"
 
 """ SPECIFICATIONS END """
 
@@ -85,7 +85,7 @@ for experiment in experiments:
     grand_average_evoked_diff = {}
     for this_contrast in contrast.keys():
         grand_average_evoked_diff[this_contrast] = mne.grand_average(group_evoked_diff[this_contrast])
-        grand_average_evoked_diff[this_contrast].comment = this_contrast # TODO: test if this is right
+        grand_average_evoked_diff[this_contrast].comment = this_contrast 
 
     for channel, this_contrast in zip(channels, contrast.keys()):        
         # merge grand_average_evoked and grand_average_evoked_diff
@@ -155,7 +155,6 @@ PO8_left  = group_results['N2pc']["PO8"]["target_left"].copy().pick("PO8").get_d
 contralateral = np.mean([PO7_right, PO8_left], axis=0)
 ipsilateral = np.mean([PO7_left, PO8_right], axis=0)
 contra_minus_ipsi = contralateral - ipsilateral
-# TODO: double check that no side effects with experiment LRP
 
 contralateral = np.vstack((contralateral, contralateral))
 ipsilateral = np.vstack((ipsilateral, ipsilateral))
@@ -205,17 +204,6 @@ with open(f'{model_dir}/evoked.pck', 'rb') as handle:
 
 
 """ plotting """
-
-# get min and max values
-# min_val, max_val = 0, 0
-# for experiment in experiments:
-#     for key in list(group_results_combined[experiment].keys()):
-#         for condition in group_results_combined[experiment][key].keys():
-#             min_val = min(min_val, np.min(group_results_combined[experiment][key][condition].data))
-#             max_val = max(max_val, np.max(group_results_combined[experiment][key][condition].data))
-#             print()
-# TODO if used then x 1 mio
-# TODO, if done, the max value is a weird number, why that?
 
 # new, re-label the conditions according to feedback from MS
 # also everything in plural, and replace ALL categories, so they are ordered correctly with the linetypes in the plot
