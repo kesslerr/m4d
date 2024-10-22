@@ -96,10 +96,9 @@ Calculate evoked responses, visualize particularly for an example forking path. 
 python3 src/3-evoked.py
 ```
 
-Run decoding for each forking path, participant, and experiment.
-
-a. EEGNet decoding  :hourglass_flowing_sand: 24h per participant and experiment
-b. Time-resolved decoding  :hourglass_flowing_sand: <1h per participant and experiment
+Run decoding for each forking path, participant, and experiment:
+- EEGNet decoding  :hourglass_flowing_sand: 24h per participant and experiment
+- Time-resolved decoding  :hourglass_flowing_sand: <1h per participant and experiment
 
 ```
 bash src/4a-eegnet.sh
@@ -116,7 +115,35 @@ Aggregate time-resolved results on group level for analysis in R/targets, and vi
 python src/5b-sliding_group.py
 ```
 
+## Fitting Linear Mixed Models in Julia
 
+From a terminal with *Julia* installed based on the environment.    :hourglass_flowing_sand: <24h 
+
+```
+julia julia/pretarget_model_fitting_en.jl
+julia julia/pretarget_model_fitting_tr.jl
+```
+
+The model fitting in *Julia* is an inifinite times faster than in *R*, especially for large models and data sets.
+The bottleneck however is the conversion from a *Julia* LMM object to an *R* LMM object, which takes a few hours per model.
+
+The present steps were performed before the *targets* pipeline to prevent computationally intensive steps to run after pipeline invalidation. Other, less intensive steps run in Julia are performed later via *targets* pipeline, but are not for the main results but refer to calculations done for the appendix. 
+
+## Modeling the impact of preprocessing on decoding performance
+
+The following is performed within an *R* *targets* pipeline, with access to *Julia* language. From within RStudio, source ```targets/renv/activate.R``` ```and targets/_targets.R```. *_targets.R* contains the entire pipeline.
+
+The pipeline (and the status of each node) can be visualized using
+```
+tar_visnetwork()
+```
+
+The complete pipeline is run using  :hourglass_flowing_sand: <1h
+```
+tar_make()
+```
+
+The resulting plots are directly plotted into the *manuscript* folder (git submodule).
 
 # License
 
