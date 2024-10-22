@@ -46,7 +46,18 @@ General structure adapted from [cookiecutter](https://github.com/drivendata/cook
 ├── targets            <- R (targets) Pipeline.
 
 
+# Environments / Packages
 
+
+The conda environment is saved in folder [env](/env). All python/bash/slurm scripts are found in [src](/src).
+
+The system architecture and hardware details of the HPC used for all *Python* and *Bash* scripts  with *SLURM* job scheduling system can be found in [MPCDF RAVEN user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-details.html).
+
+The *R* environment, which is used in a *targets* pipeline and all related processing scripts are found in [targets](/targets).
+
+The *Julia* environment for LMM fitting are found in [julia](/julia).
+
+The system architecture and hardware details of the Mac used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
 
 # License
 
