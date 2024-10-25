@@ -60,7 +60,7 @@ The *R* environment, which is used in a *targets* pipeline and all related proce
 
 The *Julia* environment for LMM fitting are found in [julia](/julia).
 
-The system architecture and hardware details of the Mac used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
+The system architecture and hardware details of the Macbook Pro (2020, M1) used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
 
 # Run analyses
 
@@ -119,6 +119,8 @@ python src/5b-sliding_group.py
 
 ## Fitting Linear Mixed Models in Julia
 
+All the following steps were performed on a Macbook Pro (2020, M1).
+
 From a terminal with *Julia* installed based on the environment.    :hourglass_flowing_sand: <24h 
 
 ```
@@ -127,9 +129,9 @@ julia julia/pretarget_model_fitting_tr.jl
 ```
 
 The model fitting in *Julia* is an inifinite times faster than in *R*, especially for large models and data sets.
-The bottleneck however is the conversion from a *Julia* LMM object to an *R* LMM object, which takes a few hours per model.
+The bottleneck however is the conversion from a *Julia* LMM object to an *R* LMM object, which takes a few hours per model (due to reasons that escape me).
 
-The present steps were performed before the *targets* pipeline to prevent computationally intensive steps to run after pipeline invalidation. Other, less intensive steps run in Julia are performed later via *targets* pipeline, but are not for the main results but refer to calculations done for the appendix. 
+The present steps were performed before the *targets* pipeline to prevent computationally intensive steps from running after pipeline invalidation. Other, less intensive steps shown in the manuscript appendix - run in Julia - are performed from within the *targets* pipeline. 
 
 ## Modeling the impact of preprocessing on decoding performance
 
@@ -149,7 +151,7 @@ The resulting plots are directly plotted into the *manuscript* folder (git submo
 
 # License
 
-Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
+[![CC BY 4.0][cc-by-shield]][cc-by]
 
 This work is licensed under a
 [Creative Commons Attribution 4.0 International License][cc-by].
