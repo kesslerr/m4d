@@ -12,7 +12,7 @@ EEG preprocessing varies widely between studies, but its impact on stimulus clas
 
 Subfolders will contain READMEs which are more specific.
 
-**Note: The multiverse-preprocessed comprises >15 TB. It will be shared on a suitable data sharing platform at a later stage.**
+**Note: The multiverse-preprocessed epoch data comprises >15 TB storage. It will be shared on a suitable data sharing platform at a later stage.**
 
 General structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science):
 ```
