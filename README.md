@@ -5,6 +5,8 @@ Working title: Multiverse 4 Decoding (m4d)
 
 See preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
 
+Feel free to send me feedback: [via email](mailto:rkesslerx@gmail.com?subject=[Github]%20How%20EEG%20preprocessing%20shapes%20decoding%20performance)
+
 EEG preprocessing varies widely between studies, but its impact on stimulus classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across all experiments and models, while higher high-pass filter cutoffs consistently enhanced decoding. For EEGNet, baseline correction further improved performance, and for time-resolved classifiers, linear detrending and lower low-pass filter cutoffs were beneficial. Other optimal preprocessing choices were specific for each experiment. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. If not corrected, artifacts facilitate decoding but compromise conclusive interpretation.
 
 
@@ -12,7 +14,7 @@ EEG preprocessing varies widely between studies, but its impact on stimulus clas
 
 Subfolders will contain READMEs which are more specific.
 
-**Note: The multiverse-preprocessed epoch data comprises >15 TB storage. It will be shared on a suitable data sharing platform at a later stage.**
+**Note: The multiverse-preprocessed epoch data comprises >15 TB of storage. It will be shared on a suitable data-sharing platform at a later stage.**
 
 General structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science):
 ```
@@ -52,19 +54,19 @@ General structure adapted from [cookiecutter](https://github.com/drivendata/cook
 # Environments / Packages
 
 
-The conda environment is saved in folder [env](/env). All python/bash/slurm scripts are found in [src](/src).
+The conda environment is saved in the folder [env](/env). All python/bash/slurm scripts can be found in [src](/src).
 
 The system architecture and hardware details of the HPC used for all *Python* and *Bash* scripts  with *SLURM* job scheduling system can be found in [MPCDF RAVEN user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-details.html).
 
-The *R* environment, which is used in a *targets* pipeline and all related processing scripts are found in [targets](/targets).
+The *R* environment, used in a *targets* pipeline and all related processing scripts can be found in [targets](/targets).
 
-The *Julia* environment for LMM fitting are found in [julia](/julia).
+The *Julia* environment for LMM fitting is found in [julia](/julia).
 
 The system architecture and hardware details of the Macbook Pro (2020, M1) used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
 
 # Run analyses
 
-The following is done on a HPC cluster with SLURM job scheduling system and the conda environment set-up.
+The following is done on an HPC cluster with SLURM job scheduling system and the conda environment set-up.
 
 ## Multiverse preprocessing and machine learning model fitting
 
@@ -79,7 +81,7 @@ Prepare the data   :hourglass_flowing_sand: <1h
 - rename annotations
 - get times
 - resample to 256 Hz
-- calculate artifical EOG channels
+- calculate artificial EOG channels
 - set montage
 
 ```
@@ -112,7 +114,7 @@ Aggregate EEGNet results for analysis in R/targets.  :hourglass_flowing_sand: <1
 python src/5a-aggregate_results.py
 ```
 
-Aggregate time-resolved results on group level for analysis in R/targets, and visualize for example forking path.   :hourglass_flowing_sand: <1h
+Aggregate time-resolved results on group-level for analysis in R/targets, and visualize for example forking path.   :hourglass_flowing_sand: <1h
 ```
 python src/5b-sliding_group.py
 ```
@@ -128,7 +130,7 @@ julia julia/pretarget_model_fitting_en.jl
 julia julia/pretarget_model_fitting_tr.jl
 ```
 
-The model fitting in *Julia* is an inifinite times faster than in *R*, especially for large models and data sets.
+The model fitting in *Julia* is an infinite times faster than in *R*, especially for large models and data sets.
 The bottleneck however is the conversion from a *Julia* LMM object to an *R* LMM object, which takes a few hours per model (due to reasons that escape me).
 
 The present steps were performed before the *targets* pipeline to prevent computationally intensive steps from running after pipeline invalidation. Other, less intensive steps shown in the manuscript appendix - run in Julia - are performed from within the *targets* pipeline. 
