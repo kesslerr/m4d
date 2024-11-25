@@ -72,34 +72,20 @@ source("R/interactions.R")
 source("R/rfx.R")
 source("R/diagnostics.R")
 source("R/ALT_pipeline.R")
+source("R/vary1step.R")
 
 table_output_dir = "../manuscript/tables/"
 figure_output_dir = "../manuscript/plots/"
 
-# EMM
-#emm_options(lmerTest.limit = Inf) # TODO, include this but real command
-
-# tar_source("other_functions.R") # Source other scripts as needed.
 
 experiments = c("ERN","LRP","MMN","N170","N2pc","N400","P3")
 
 list(
-  ## define some variables in targets TODO: targets doesnt accept it, maybe use as normal list
-  # tar_target(
-  #   experiments,
-  #   command=as.list(c("ERN","LRP","MMN","N170","N2pc","N400","P3")),
-  #   iteration = "list"
-  # ),
-  # tar_target(
-  #   model_types,
-  #   c("EEGNET","Time-resolved")
-  # ),
-  # 
   
   ## define raw data files
   tar_target(
     name = eegnet_file,
-    command = "../models/eegnet_extended.csv", # TODO: put this into a different folder
+    command = "../models/eegnet_extended.csv", 
     format = "file"
   ),
   tar_target(
@@ -123,11 +109,6 @@ list(
     format = "file"
   ),
   
-  ## NEW: single LMM files
-  ## first, test if multiple files can be tracked at the same time
-  ## 
-  # TODO: track the files maybe like this: https://stackoverflow.com/questions/69652540/how-should-i-use-targets-when-i-have-multiple-data-files
-  # TODO: i could synchronize the analyses of eegnet/sliding by just using pattern instead of two targets? (no group by)
   
   ## EEGNET
   tar_target(
@@ -398,7 +379,7 @@ list(
       dummy = system2(command = julia_executable, args = c(julia_z_script, plot_file),
                       wait=TRUE,# wait for process to be finished before continuing in R
                       stdout = FALSE) # capture output (doesnt work)
-      plot_file # TODO, slight errors might not lead to aborting the pipeline
+      plot_file 
     },
     format = "file"
   ),
@@ -437,7 +418,6 @@ list(
     format="file"),  
 
   ## HLM: visualize theoretical interactions 
-  # TODO, do it instead with significant interactions per exp
   tar_target(
     interaction_chordplot_prior,
     chord_plot(paste0(figure_output_dir,"chord_interactions.png")),
@@ -477,7 +457,6 @@ list(
   ),
   tar_target(eegnet_HLMi2_emm_means, eegnet_HLMi2_emm[[1]], pattern=map(eegnet_HLMi2_emm)), 
   tar_target(eegnet_HLMi2_emm_contrasts, eegnet_HLMi2_emm[[2]], pattern=map(eegnet_HLMi2_emm)),
-  # TODO F values?
   
   ### SLIDING
   tar_target(
@@ -501,7 +480,6 @@ list(
   ),
   tar_target(sliding_LMi2_emm_means, sliding_LMi2_emm[[1]], pattern=map(sliding_LMi2_emm)), #, iteration="list"
   tar_target(sliding_LMi2_emm_contrasts, sliding_LMi2_emm[[2]], pattern=map(sliding_LMi2_emm)),
-  # TODO F values?
   
   ### Sliding Avgaccs (Single)
   tar_target(
@@ -516,7 +494,6 @@ list(
 
   
   ## heatmaps of EMMs
-  # TODO: use the omni test significances to highlight the facets
   tar_target(eegnet_heatmap,
             command=heatmap(eegnet_HLM_emm_means)),
   tar_target(sliding_heatmap,
@@ -553,8 +530,51 @@ list(
   ## concatenate all models and data in one target
   tar_target( 
     name=models_combined,
-    command=c(eegnet_HLMi2, sliding_LMi2) # TODO add new interaction models
+    command=c(eegnet_HLMi2, sliding_LMi2) 
   ), 
+  
+  
+  ## new: alfreds comments: one reference forking path for all steps!
+  # extract the data
+  #
+  tar_target(vary1step_data_en,
+             command=varyOneCalculation(data_eegnet)),
+  tar_target(vary1step_data_tr,
+             command=varyOneCalculation(data_tsum)),
+  tar_target(vary1step_heatmap_en,
+             command={
+               indata <- vary1step_data_en %>% mutate(emmean = accuracy*100) %>% select(experiment, variable, level, emmean)
+               heatmap(indata, manual = TRUE, unit="\nin accuracy\n(absolute %)")
+             }),
+  tar_target(vary1step_heatmap_tr,
+             command={
+               indata <- vary1step_data_tr %>% mutate(emmean = accuracy) %>% select(experiment, variable, level, emmean)
+               heatmap(indata, manual = TRUE, unit="\nin absolute\nT-sum")
+             }),
+  tar_target(
+    name = vary1step_heatmaps,
+    command = {
+      ggarrange(vary1step_heatmap_en + labs(title="EEGNet"), 
+                vary1step_heatmap_tr + labs(title="Time-resolved"), 
+                labels = c("A", "B"),
+                ncol = 1, nrow = 2)
+  }),  
+  tar_target(
+    name = vary1step_heatmaps_file,
+    command = {
+      ggsave(plot=vary1step_heatmaps,
+             filename="heatmaps_vary1step.png",
+             path=figure_output_dir,
+             scale=1.5,
+             width=22,
+             height=12,
+             units="cm",
+             dpi=300)
+    },
+    format="file"
+  ),                          
+  
+  
   
   ## diagnostics for all models (HLM, LM and experiment wise)
   ### convergence check
@@ -1005,7 +1025,7 @@ list(
 # alternative order of the pipeline (appendix)
 tar_target(
   name = eegnet_file_ALT,
-  command = "../models/eegnet_original_order.csv", # TODO: put this into a different folder
+  command = "../models/eegnet_original_order.csv", 
   format = "file"
 ),
 tar_target(
@@ -1063,7 +1083,6 @@ tar_target(name = eegnet_HLMi2_ALT,
            pattern=jLMM_files_ALT,
            iteration="list"),
 
-# TODO: recoding is probably adjusted to new pipeline, check if functions should be copied and adjusted or only adjusted
 ## import and recode datasets
 tar_target(
   name = data_eegnet_ALT,

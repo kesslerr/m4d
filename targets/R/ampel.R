@@ -194,9 +194,9 @@ rankampel_merge <- function(data1, data2, title1="", title2=""){
       scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
       theme_minimal() +
       labs(title = thisTitle,#"Ordered Forking Paths", 
-           x = "Preprocessing Step", 
-           y = "Ranked Forking Path", 
-           fill = "Preprocessing\nChoice") +
+           x = "Preprocessing step", 
+           y = "Ranked forking path", 
+           fill = "Preprocessing\nchoice") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
       theme(legend.position="none") +
       facet_grid(.~experiment) #, scales = "free_x"
@@ -318,9 +318,9 @@ rankampel_single <- function(data, title=""){
     scale_fill_manual(values = cols_seq) + #c("Low" = "blue", "Medium" = "yellow", "High" = "red")) +
     theme_minimal() +
     labs(title = title,#"Ordered Forking Paths", 
-         x = "Preprocessing Step", 
-         y = "Ranked Forking Path", 
-         fill = "Preprocessing\nChoice") +
+         x = "Preprocessing step", 
+         y = "Ranked forking path", 
+         fill = "Preprocessing\nchoice") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     theme(legend.position="none") +
     facet_grid(.~experiment) #, scales = "free_x"

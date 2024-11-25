@@ -416,25 +416,29 @@ est_emm_int <- function(model, data){
 
 
 # heatmap of emms
-heatmap <- function(data){
+heatmap <- function(data, manual=FALSE, unit=""){
   data <- data %>% 
     reorder_variables(column_name = "variable") %>%
     relevel_variables(column_name = "level") %>%
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements)) %>%
     # NEW: replacements for some levels, to not overload the image too much
-    mutate(level = recode(level, !!!replacements_sparse)) %>%
+    mutate(level = recode(level, !!!replacements_sparse)) #%>%
     # delete the experiment compairson in the full data
     #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
     # center around zero for better comparability
-    group_by(experiment) %>%
-    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
-
-  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+    
+  if (manual == FALSE) {
+    data <- data %>% 
+      group_by(experiment) %>%
+      mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+  }
+  
+  p <- ggplot(data, aes(y = 0, x = level, fill = emmean)) +
     geom_tile(width = 1) + # 
     #theme_void() +
     #geom_text(aes(label = sprintf("%.1f", emmean)), size = 3) + # Add text labels with one decimal place
-    geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
+    #geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
@@ -463,6 +467,13 @@ heatmap <- function(data){
         # Distance from average (in %)
         # Percent above/below average
   
+  if (manual == TRUE){
+    p <- p + labs(fill=paste0("Deviation from\nreference\nforking path",unit))
+  } else {
+    p <- p + geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) # Add text labels with one decimal place and + sign for positives
+  }
+  
+  p
 }
 
 
