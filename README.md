@@ -22,6 +22,9 @@ General structure adapted from [cookiecutter](https://github.com/drivendata/cook
 ```
 
 ├── README.md          <- The top-level README.
+│
+├── dashboard          <- dashboard submodule pointing to a different repository used for the streamlit app
+│
 ├── data
 │   ├── external       <- Data from third party sources.
 │   ├── interim        <- Intermediate data that has been transformed.
