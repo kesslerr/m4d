@@ -23,10 +23,9 @@ Subfolders will contain READMEs which are more specific.
 
 If you are interested in the TBs of epochs data, send me an email and we figure out a way of sharing.
 
-If you reuse the scripts or pipeline, please adapt all the paths in the scripts! The are sometimes absolute and shared across file servers to handle large file requirements.
-
 Some single large files can be assed via [Zenodo](https://zenodo.org/records/14223514), such as the summary csvs for analysis and modeling (single accuracy and T-sum values per participant, experiment, forking path).
 
+If you reuse the scripts or pipeline, please adapt all the paths in the scripts! Paths are sometimes absolute in the scripts because data was shared across file servers for computing requirements.
 
 General project structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science):
 ```
