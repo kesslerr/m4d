@@ -111,7 +111,7 @@ plot_baseline_artifacts <- function(data, tsums){
     relevel_variables(column_name = "value") %>%
     mutate(value = recode(value, !!!replacements)) %>%
     # mark: FALSE to absent, TRUE to present
-    mutate(mark = ifelse(mark, "Present", "Absent"))
+    mutate(mark = ifelse(mark, "present", "absent"))
   
   p <- ggplot(data_marked_all) +
     geom_bar(aes(x = value, fill = mark), 
@@ -120,7 +120,7 @@ plot_baseline_artifacts <- function(data, tsums){
     facet_grid(experiment ~ variable, scales = "free_x") +
     #facet_wrap(experiment ~ variable, scales = "free_x") +  # Use facet_wrap for free x-axis scales
     #theme_minimal() +
-    labs(x = "Preprocessing step", y = "Count", fill = "Baseline\nArtifact") +
+    labs(x = "Preprocessing step", y = "Number of forking paths", fill = "Baseline\nartifact") +
     scale_fill_manual(values = c("#4f7871","#851e3e")) +
     # rotate xticklabels to be able to upscale the graph a bit without overlap
     theme(

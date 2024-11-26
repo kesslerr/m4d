@@ -20,9 +20,9 @@ from src.config import multiverse_params, epoch_windows, baseline_windows, trans
 """ HEADER END """
 
 # DEBUG
-experiment = "MMN"
-subject = "sub-008"
-stragglers = 10 # number of stragglers to be processed in the end
+#experiment = "MMN"
+#subject = "sub-008"
+#stragglers = 10 # number of stragglers to be processed in the end
 
 
 # define subject and session by arguments to this script
@@ -60,22 +60,13 @@ raw = mne.io.read_raw_fif(os.path.join(raw_folder, f"{subject}-raw.fif"), preloa
 manager = CharacteristicsManager(f"{interim_folder}/characteristics.json", force_new=True)
 
 # calculate again event_counts, because it doesnt surive i/o operations
-if experiment == "MIPDB":
-    with open(os.path.join(raw_folder, "event_counts.pck"), "rb") as file:
-        event_counts = pickle.load(file)
-    with open(os.path.join(raw_folder, "events.pck"), "rb") as file:
-        events = pickle.load(file)
-    with open(os.path.join(raw_folder, "event_id.pck"), "rb") as file:
-        event_dict = pickle.load(file)
-    
-else:
-    event_counts = {} # TODO get from file instead
-    for key in sorted(set(raw.annotations.description)):
-        event_counts[key] = np.count_nonzero(raw.annotations.description == key)
-        print(key, event_counts[key])
-    # get events again, because it doesn't survive i/o operations
-    events, event_dict = mne.events_from_annotations(raw) # TODO: get from file instead, because no annotations in MIPDB dataset, and already done in pre-multiverse
-    
+
+event_counts = {} 
+for key in sorted(set(raw.annotations.description)):
+    event_counts[key] = np.count_nonzero(raw.annotations.description == key)
+    print(key, event_counts[key])
+# get events again, because it doesn't survive i/o operations
+events, event_dict = mne.events_from_annotations(raw)     
 
 manager.update_characteristic('event_counts', event_counts)
 
@@ -85,7 +76,7 @@ path_id = 1
 total_iterations = len(list(itertools.product(*multiverse_params.values())))
 print(f'Number of parameter combinations: {total_iterations}')
 
-# new: apply Cz reference (preliminary) for all datasets, TODO re-reference later in some pipelines
+# new: apply Cz reference (preliminary) for all datasets, re-reference later in some pipelines
 raw = raw.set_eeg_reference(['Cz'], projection=False)    
 
 with tqdm(total=total_iterations) as pbar:
@@ -205,7 +196,7 @@ with tqdm(total=total_iterations) as pbar:
                                         # estimate autoreject model on all epochs (not only training epochs), 
                                         epochs_ar, n1 = autorej(epochs.copy(), version=ar)
 
-                                        # TODO adjust to new AR methods
+                                        # adjusted to new AR methods
                                         interp_frac_channels, interp_frac_trials, total_interp_frac, rej_frac_channels, rej_frac_trials, total_rej_frac = summarize_artifact_interpolation(n1, version = ar)
                                         manager.update_subsubfield('autoreject', param_str, 'total_interp_frac', total_interp_frac)
                                         manager.update_subsubfield('autoreject', param_str, 'interp_frac_channels', interp_frac_channels)

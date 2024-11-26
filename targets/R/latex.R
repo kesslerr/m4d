@@ -27,6 +27,7 @@ output.table.f <- function(data, filename="", thisLabel="", thisCaption=""){
         include.rownames=FALSE, # row numbers not printed to file
         caption.placement = "top", # caption on top of table
         latex.environments = "widestuff", # this uses the widestuff environment which I have designed in latex to adjust the width of the table (move left)
+        table.placement = "!htp",
         file = filename)
   filename # it seems that the filename should be printed last for file targets
 }
@@ -52,6 +53,7 @@ output.table.con <- function(data, filename="", thisLabel="", thisCaption=""){
         include.rownames=FALSE, # row numbers not printed to file
         caption.placement = "top", # caption on top of table
         latex.environments = "widestuff", # this uses the widestuff environment which I have designed in latex to adjust the width of the table (move left)
+        table.placement = "!htp",
         file = filename)
   filename # it seems that the filename should be printed last for file targets
 }

@@ -6,28 +6,6 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 experiments = ['ERN', 'LRP', 'MMN', 'N170', 'N2pc', 'N400', 'P3']  
 subjects = [f"sub-{str(i).zfill(3)}" for i in range(1, 41)] # TODO: 40 subjects
 
-# cichy / paperclip
-cichy_exclude = [4,8,9,15,25,30,32,40]
-cichy_subjects_infants = [f"sub-{str(i).zfill(2)}" for i in range(1, 49) if i not in cichy_exclude] 
-cichy_subjects_adults = [f"sub-{str(i).zfill(2)}" for i in range(1, 21)]
-
-# child mind institute
-#subjects_mipdb = pd.read_csv('data/mipdb/participants.csv')['ID'].tolist()
-
-# mipdb age groups and their corresponding participants
-#subjects_mipdb_dem = pd.read_csv('data/mipdb/participants.csv')
-#age_groups = {"6-9": [6,7,8,9],
-#              "10-11": [10,11],
-#              "12-13": [12,13],
-#              "14-17": [14,15,16,17],
-#              "18-25": [18,19,20,21,22,23,24,25],
-#              }
-
-#groups_subjects_mipdb = {}
-#for group, ages in age_groups.items():
-#    groups_subjects_mipdb[group] = subjects_mipdb_dem[subjects_mipdb_dem['Age'].isin(ages)]['ID'].tolist()
-    
-
 
 # define triggers and stuff
 delete_triggers = { # ERPCORE
@@ -43,11 +21,6 @@ delete_triggers = { # ERPCORE
                             '111', '112', '121', '122'], # prime words
                    'P3': ['201', '202'], # responses (correct and incorrect)
                    
-                   # Cichy
-                   'paperclip': ['New Segment/', 'Stimulus/S129', 'Stimulus/S200', 'Stimulus/S222','Stimulus/S244'], # found in adults, probably paperclip stimuli (for blinks) and responses to it
-                   
-                   # infants
-                   'RSVP': ["-1", "-2"]
                    }
 
 # collate triggers so conditions are merged for decoding
@@ -85,65 +58,9 @@ conditions_triggers = {
                       '51','52','53','54'], # standards # TODO Future: one could also decode letters from standards
         'deviants': ['11','22','33','44','55'], # deviants
     },
-    'paperclip': {
-        'toy': ['Stimulus/S  1', 'Stimulus/S  2', 'Stimulus/S  3',
-                'Stimulus/S  4', 'Stimulus/S  5', 'Stimulus/S  6', 'Stimulus/S  7',
-                'Stimulus/S  8', 'Stimulus/S  9', 'Stimulus/S 10', 'Stimulus/S 11',
-                'Stimulus/S 12', 'Stimulus/S 13', 'Stimulus/S 14', 'Stimulus/S 15',
-                'Stimulus/S 16', 'Stimulus/S 17', 'Stimulus/S 18', 'Stimulus/S 19',
-                'Stimulus/S 20', 'Stimulus/S 21', 'Stimulus/S 22', 'Stimulus/S 23',
-                'Stimulus/S 24', 'Stimulus/S 25', 'Stimulus/S 26', 'Stimulus/S 27',
-                'Stimulus/S 28', 'Stimulus/S 29', 'Stimulus/S 30', 'Stimulus/S 31',
-                'Stimulus/S 32'], 
-        'body': ['Stimulus/S 33', 'Stimulus/S 34', 'Stimulus/S 35',
-                'Stimulus/S 36', 'Stimulus/S 37', 'Stimulus/S 38', 'Stimulus/S 39',
-                'Stimulus/S 40', 'Stimulus/S 41', 'Stimulus/S 42', 'Stimulus/S 43',
-                'Stimulus/S 44', 'Stimulus/S 45', 'Stimulus/S 46', 'Stimulus/S 47',
-                'Stimulus/S 48', 'Stimulus/S 49', 'Stimulus/S 50', 'Stimulus/S 51',
-                'Stimulus/S 52', 'Stimulus/S 53', 'Stimulus/S 54', 'Stimulus/S 55',
-                'Stimulus/S 56', 'Stimulus/S 57', 'Stimulus/S 58', 'Stimulus/S 59',
-                'Stimulus/S 60', 'Stimulus/S 61', 'Stimulus/S 62', 'Stimulus/S 63',
-                'Stimulus/S 64'], 
-        'houses': ['Stimulus/S 65', 'Stimulus/S 66', 'Stimulus/S 67',
-                'Stimulus/S 68', 'Stimulus/S 69', 'Stimulus/S 70', 'Stimulus/S 71',
-                'Stimulus/S 72', 'Stimulus/S 73', 'Stimulus/S 74', 'Stimulus/S 75',
-                'Stimulus/S 76', 'Stimulus/S 77', 'Stimulus/S 78', 'Stimulus/S 79',
-                'Stimulus/S 80', 'Stimulus/S 81', 'Stimulus/S 82', 'Stimulus/S 83',
-                'Stimulus/S 84', 'Stimulus/S 85', 'Stimulus/S 86', 'Stimulus/S 87',
-                'Stimulus/S 88', 'Stimulus/S 89', 'Stimulus/S 90', 'Stimulus/S 91',
-                'Stimulus/S 92', 'Stimulus/S 93', 'Stimulus/S 94', 'Stimulus/S 95',
-                'Stimulus/S 96'], 
-        'faces': ['Stimulus/S 97', 'Stimulus/S 98',
-                'Stimulus/S 99', 'Stimulus/S100', 'Stimulus/S101', 'Stimulus/S102',
-                'Stimulus/S103', 'Stimulus/S104', 'Stimulus/S105', 'Stimulus/S106',
-                'Stimulus/S107', 'Stimulus/S108', 'Stimulus/S109', 'Stimulus/S110',
-                'Stimulus/S111', 'Stimulus/S112', 'Stimulus/S113', 'Stimulus/S114',
-                'Stimulus/S115', 'Stimulus/S116', 'Stimulus/S117', 'Stimulus/S118',
-                'Stimulus/S119', 'Stimulus/S120', 'Stimulus/S121', 'Stimulus/S122',
-                'Stimulus/S123', 'Stimulus/S124', 'Stimulus/S125', 'Stimulus/S126',
-                'Stimulus/S127', 'Stimulus/S128'],
-    },
     
 }
 
-
-# Groot. infants
-category_triggers = {
-    'aquatic':   [str(i) for i in range(1,21)],
-    'bird':      [str(i) for i in range(21,41)],
-    'human':     [str(i) for i in range(41,61)],
-    'insect':    [str(i) for i in range(61,81)],
-    'mammal':    [str(i) for i in range(81,101)],
-    'clothing':  [str(i) for i in range(101,121)],
-    'fruits':    [str(i) for i in range(121,141)],
-    'furniture': [str(i) for i in range(141,161)],
-    'plants':    [str(i) for i in range(161,181)],
-    'tools':     [str(i) for i in range(181,201)],
-}
-supraordinate_triggers = {
-    'animate':   [str(i) for i in range(1,101)],
-    'inanimate': [str(i) for i in range(101,201)],
-}
 
 # epoching windows
 epoch_windows = {
@@ -155,10 +72,6 @@ epoch_windows = {
     'N2pc': [-.4, .8],
     'N400': [-.4, .8],
     'P3':   [-.4, .8],
-    # MIPDB
-    'MIPDB': [-.8, .4],
-    # infants
-    'RSVP': [-.4, .8],
     }
 
 # windows for baseline correction
@@ -171,8 +84,6 @@ baseline_windows = {
         'N2pc': (-.2, 0.),
         'N400': (-.2, 0.),
         'P3':   (-.2, 0.),
-        'MIPDB': [-.8, -.6],
-        'RSVP': [-.2, 0.],
         },
     '400ms': {
         'ERN':  (-.6, -.2),
@@ -182,8 +93,6 @@ baseline_windows = {
         'N2pc': (-.4, 0.),
         'N400': (-.4, 0.),
         'P3':   (-.4, 0.),
-        'MIPDB': [-.8, -.4],
-        'RSVP': [-.4, 0.],
         },
     }    
 
@@ -201,20 +110,6 @@ baseline_end = {
 
 decoding_windows = epoch_windows.copy()
 
-# # if potential baseline should not be included
-# decoding_windows = {
-#     # ERPCORE
-#     'ERN':  [-.2, .6],
-#     'LRP':  [-.4, .4],
-#     'MMN':  [.0, .8],
-#     'N170': [.0, .8],
-#     'N2pc': [.0, .8],
-#     'N400': [.0, .8],
-#     'P3':   [.0, .8],
-#     # MIPDB
-#     'MIPDB': [-.4, .4],
-#     }
-
 # define multiverse parameter space
 multiverse_params = {
         'ref': [['Cz'], 'average', ['P9', 'P10']], # 'Cz' instead of FCz because some experiments have FCz as electrode of interest (would be 0 else)
@@ -224,8 +119,6 @@ multiverse_params = {
         'mus': [None, 'ica'], 
         'det': [None, 'linear'], 
         'base': [None, '200ms', '400ms'], # "None" is ommitted, makes no sense not to detrend
-        # TODO: univariate noise normalization in baseline?: 
-        # this can only be done in UNIVERSE, not MULTIVERSE, because value range would be much different from all other pipelines
         'ar': [False, 'int', 'intrej'], 
         }
 
@@ -260,7 +153,6 @@ luck_forking_paths = { # these are not really the same, but some steps are compa
         'N2pc': "ica_ica_None_0.1_P9P10_None_200ms_int",
         'N400': "ica_ica_None_0.1_P9P10_None_200ms_int",
         'P3': "ica_ica_None_0.1_P9P10_None_200ms_int",
-        'MIPDB': "ica_ica_None_0.1_P9P10_None_200ms_int",
         }
 
 

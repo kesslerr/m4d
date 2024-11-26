@@ -13,11 +13,11 @@ rfx_vis <- function(model, orig_data){
     title <- "ALL" 
   } else {
     title <- unique(orig_data$experiment)
-  } # TODO: can I get the experiment information from somewhere in the model?
+  } 
   ggplot(data_long,
          aes(y=mean, x=level)) +
     geom_boxplot() +
-    labs(y="Conditional Mean", x="Random Effects Term", title=title) +
+    labs(y="Conditional mean", x="Random effects term", title=title) +
     theme(axis.text.x = element_text(angle=90))
   
 }
@@ -64,7 +64,7 @@ plot_rfx_demographics <- function(model, demographics, orig_data, framework){
                aes(x=Intercept, fill=handedness)) +
     geom_histogram(bins=20) + 
     geom_vline(aes(xintercept=0), lty="dashed") +
-    labs(x="Intercept", y="Participant Count", fill="Handedness") +
+    labs(x="Intercept", y="Participant count", fill="Handedness") +
     #scale_fill_viridis_d(begin=0, end=0.8) +
     scale_fill_manual(values = c(colors_light[3], "grey"))
   

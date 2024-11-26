@@ -360,7 +360,7 @@ def autorej(epochs, version="int"):
 
     epochs.del_proj()  # remove proj, don't proj while interpolating (https://autoreject.github.io/stable/auto_examples/plot_auto_repair.html)
     
-    # sample 25% of epochs to increase speed TODO describe in paper
+    # sample 25% of epochs to increase speed
     n_epochs = len(epochs)
     np.random.seed(12) # for subsampling
     indices = np.random.choice(n_epochs, int(n_epochs * 0.25), replace=False)
@@ -373,7 +373,7 @@ def autorej(epochs, version="int"):
                     consensus=consensus,
                     random_state=seed,
                     n_jobs=-1, 
-                    cv=cv, # TODO, i changed this from default=10 to save time,describe in paper
+                    cv=cv, 
                     verbose=False)
     ar.fit(epochs_sample)
     
@@ -393,17 +393,12 @@ def autorej(epochs, version="int"):
                 consensus=consensus,
                 random_state=seed,
                 n_jobs=-1, 
-                cv=cv, # TODO, i changed this from default=10 to save time,describe in paper
+                cv=cv,
                 verbose=False)
         ar.fit(epochs_sample)
         epochs_ar, reject_log = ar.transform(epochs, return_log=True)
         perc_kept = len(epochs_ar) / len(epochs)
-
     
-    # plot # DEBUG  TODO remove or save to file
-    #rej_plot = reject_log.plot('horizontal', show=True)
-    #rej_plot.savefig(plot_path, dpi=300)
-
     return epochs_ar, reject_log
 
 # function to count bads / interpolated from AR reject log matrix
@@ -485,7 +480,7 @@ def recode_conditions(epochs, version="superordinate"):
     """
     assert version in ["categories", "superordinate", "pseudo-superordinate"], "Version not recognized."
     
-    # if exist, drop -2 TODO
+    # if exist, drop -2 
     if "-2" in epochs.event_id.keys():
         # drop -2 epochs
         indices = np.where(epochs.events[:, 2] == 1)[0]
@@ -515,7 +510,7 @@ def recode_conditions(epochs, version="superordinate"):
         epo_list = []
         for key in epochs.event_id.keys():
             epo_list.append(epochs[key])
-        mne.epochs.equalize_epoch_counts(epo_list, method="mintime") # TODO check if that works or i need to work with 2 lists
+        mne.epochs.equalize_epoch_counts(epo_list, method="mintime")
         equ_epochs = mne.epochs.concatenate_epochs(epo_list)
         # make pseudo trials
         conditions = {

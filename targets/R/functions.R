@@ -7,15 +7,15 @@ julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.app
 colors_dark <- c("#851e3e", "#4f7871", "#3c1d85") # red, green, purple "#537d7d", 
 colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
 
-#rkcolors  = c("#792427",
-#              "#54828e",
-#              "#d1bda2")
+rkcolors  = c("#792427",
+              "#54828e",
+              "#d1bda2")
 
 
 # rename variables
 replacements <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",
@@ -42,8 +42,8 @@ replacements <- list(
   "P9P10" = "P9/P10"
 )
 replacements_sparse <- list(
-  "hpf" = "high pass", # [Hz]
-  "lpf" = "low pass", # [Hz]
+  "hpf" = "high-pass", # [Hz]
+  "lpf" = "low-pass", # [Hz]
   "ref" = "reference",
   "ar" = "autoreject",
   "mac" = "muscle",
@@ -402,7 +402,7 @@ est_emm_int <- function(model, data){
   }
   # significance asterisks
   contra <- contra %>% mutate(significance = stars.pval(.$p.value) )
-  #fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% # TODO: write in manuscript that now BY correction is done per experiment!!
+  #fs %<>% mutate(p.fdr = p.adjust(.$p.value, "BY", length(.$p.value))) %>% 
   #  mutate(sign.unc = stars.pval(.$p.value)) %>%
   #  mutate(sign.fdr = stars.pval(.$p.fdr))
   
@@ -416,25 +416,29 @@ est_emm_int <- function(model, data){
 
 
 # heatmap of emms
-heatmap <- function(data){
+heatmap <- function(data, manual=FALSE, unit=""){
   data <- data %>% 
     reorder_variables(column_name = "variable") %>%
     relevel_variables(column_name = "level") %>%
     # Apply replacements batchwise across all columns
     mutate(variable = recode(variable, !!!replacements)) %>%
     # NEW: replacements for some levels, to not overload the image too much
-    mutate(level = recode(level, !!!replacements_sparse)) %>%
+    mutate(level = recode(level, !!!replacements_sparse)) #%>%
     # delete the experiment compairson in the full data
     #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
     # center around zero for better comparability
-    group_by(experiment) %>%
-    mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
-
-  ggplot(data, aes(y = 0, x = level, fill = emmean)) +
+    
+  if (manual == FALSE) {
+    data <- data %>% 
+      group_by(experiment) %>%
+      mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+  }
+  
+  p <- ggplot(data, aes(y = 0, x = level, fill = emmean)) +
     geom_tile(width = 1) + # 
     #theme_void() +
     #geom_text(aes(label = sprintf("%.1f", emmean)), size = 3) + # Add text labels with one decimal place
-    geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
+    #geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
@@ -463,6 +467,13 @@ heatmap <- function(data){
         # Distance from average (in %)
         # Percent above/below average
   
+  if (manual == TRUE){
+    p <- p + labs(fill=paste0("Deviation from\nreference\nforking path",unit))
+  } else {
+    p <- p + geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) # Add text labels with one decimal place and + sign for positives
+  }
+  
+  p
 }
 
 
@@ -476,7 +487,7 @@ reorder_variables <- function(data, column_name){
 
 relevel_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
-  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "linear", "false", "int", "intrej") # TODO double check if it is correct with the new MV3
+  new_order = c("average", "Cz", "P9P10", "6", "20", "45","None","0.1", "0.5","ica", "200ms", "400ms", "linear", "false", "int", "intrej") 
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
@@ -500,8 +511,8 @@ plot_multiverse_sankey <- function(data){
   data <- data %>%
     mutate(ocular = recode(ocular, !!!replacements)) %>%
     mutate(muscle = recode(muscle, !!!replacements)) %>%
-    mutate(`low pass` = recode(`low pass`, !!!replacements)) %>%
-    mutate(`high pass` = recode(`high pass`, !!!replacements)) %>%
+    mutate(`low-pass` = recode(`low-pass`, !!!replacements)) %>%
+    mutate(`high-pass` = recode(`high-pass`, !!!replacements)) %>%
     mutate(reference = recode(reference, !!!replacements)) %>%
     mutate(detrending = recode(detrending, !!!replacements)) %>%
     mutate(baseline = recode(baseline, !!!replacements)) %>%
@@ -512,8 +523,8 @@ plot_multiverse_sankey <- function(data){
    data <- data %>%
      mutate(ocular = recode(ocular, "ICA" = "ICA*")) %>%
      mutate(muscle = recode(muscle, "ICA" = "ICA*")) %>%
-     mutate(`low pass` = recode(`low pass`, "None" = "None*")) %>%
-     mutate(`high pass` = recode(`high pass`, "0.1 Hz" = "0.1 Hz*")) %>%
+     mutate(`low-pass` = recode(`low-pass`, "None" = "None*")) %>%
+     mutate(`high-pass` = recode(`high-pass`, "0.1 Hz" = "0.1 Hz*")) %>%
      mutate(reference = recode(reference, "average" = "average*")) %>%
      mutate(reference = recode(reference, "P9/P10" = "P9/P10*")) %>%
      mutate(detrending = recode(detrending, "None" = "None*")) %>%
@@ -540,8 +551,8 @@ plot_multiverse_sankey <- function(data){
   data_long <- data_long %>%
     mutate(x = recode(x, "ocular" = "ocular\nartifact\ncorrection")) %>%
     mutate(x = recode(x, "muscle" = "muscle\nartifact\ncorrection")) %>%
-    mutate(x = recode(x, "low pass" = "low\npass\nfilter")) %>%
-    mutate(x = recode(x, "high pass" = "high\npass\nfilter")) %>%
+    mutate(x = recode(x, "low-pass" = "low-\npass\nfilter")) %>%
+    mutate(x = recode(x, "high-pass" = "high-\npass\nfilter")) %>%
     mutate(x = recode(x, "baseline" = "baseline\ncorrection")) %>%
     mutate(x = recode(x, "autoreject" = "autoreject\nversion"))
   

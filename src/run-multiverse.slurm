@@ -17,8 +17,8 @@
 #SBATCH --mail-type=ALL
 ##SBATCH --mem 512G             # new
 
-# # set number of OMP threads *per process*
-# export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+# set number of OMP threads *per process*
+export OMP_NUM_THREADS=1
 
 # Check if the correct number of arguments is provided (e.g., 2 arguments)
 if [ "$#" -ne 2 ]; then
