@@ -7,9 +7,9 @@ julia_setup(JULIA_HOME = "/Users/roman/.julia/juliaup/julia-1.10.2+0.aarch64.app
 colors_dark <- c("#851e3e", "#4f7871", "#3c1d85") # red, green, purple "#537d7d", 
 colors_light <- c("#f6eaef", "#f2fefe", "#9682c0")
 
-#rkcolors  = c("#792427",
-#              "#54828e",
-#              "#d1bda2")
+rkcolors  = c("#792427",
+              "#54828e",
+              "#d1bda2")
 
 
 # rename variables
