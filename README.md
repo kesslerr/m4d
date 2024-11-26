@@ -3,14 +3,14 @@ Working title: Multiverse 4 Decoding (m4d)
 
 **Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Arxiv*. [doi.org/10.48550/arXiv.2410.14453](doi.org/10.48550/arXiv.2410.14453)
 
-See preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
+- Read preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
 
-Feel free to send me feedback: [via email](mailto:rkesslerx@gmail.com?subject=[Github]%20How%20EEG%20preprocessing%20shapes%20decoding%20performance)
+- Feel free to send me feedback: [via email](mailto:rkesslerx@gmail.com?subject=[Github]%20How%20EEG%20preprocessing%20shapes%20decoding%20performance)
 
-An interactive dashboard to explore the impact of changing single preprocessing steps on decoding performance can be found on [streamlit](https://multiverse.streamlit.app).
+- An interactive dashboard to explore the impact of changing single preprocessing steps on decoding performance can be found on [streamlit](https://multiverse.streamlit.app).
 
 
-*Abstract**:
+**Abstract**:
 
 EEG preprocessing varies widely between studies, but its impact on stimulus classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across all experiments and models, while higher high-pass filter cutoffs consistently enhanced decoding. For EEGNet, baseline correction further improved performance, and for time-resolved classifiers, linear detrending and lower low-pass filter cutoffs were beneficial. Other optimal preprocessing choices were specific for each experiment. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. If not corrected, artifacts facilitate decoding but compromise conclusive interpretation.
 
