@@ -9,6 +9,9 @@ Feel free to send me feedback: [via email](mailto:rkesslerx@gmail.com?subject=[G
 
 An interactive dashboard to explore the impact of changing single preprocessing steps on decoding performance can be found on [streamlit](https://multiverse.streamlit.app).
 
+
+*Abstract**:
+
 EEG preprocessing varies widely between studies, but its impact on stimulus classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across all experiments and models, while higher high-pass filter cutoffs consistently enhanced decoding. For EEGNet, baseline correction further improved performance, and for time-resolved classifiers, linear detrending and lower low-pass filter cutoffs were beneficial. Other optimal preprocessing choices were specific for each experiment. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. If not corrected, artifacts facilitate decoding but compromise conclusive interpretation.
 
 
@@ -18,7 +21,14 @@ Subfolders will contain READMEs which are more specific.
 
 **Note: The multiverse-preprocessed epoch data comprises >15 TB of storage. It will be shared on a suitable data-sharing platform at a later stage.**
 
-General structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science):
+If you are interested in the TBs of epochs data, send me an email and we figure out a way of sharing.
+
+If you reuse the scripts or pipeline, please adapt all the paths in the scripts! The are sometimes absolute and shared across file servers to handle large file requirements.
+
+Some single large files can be assed via [Zenodo](https://zenodo.org/records/14223514), such as the summary csvs for analysis and modeling (single accuracy and T-sum values per participant, experiment, forking path).
+
+
+General project structure adapted from [cookiecutter](https://github.com/drivendata/cookiecutter-data-science):
 ```
 
 ├── README.md          <- The top-level README.

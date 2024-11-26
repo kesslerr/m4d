@@ -75,6 +75,10 @@ presentation
 
 # folders which contain a lot of data
 models/*/sub-*
+models/eegnet.zip
+models/sliding*
+models/eegnet*
+
 targets/.RData
 targets/.RData
 
