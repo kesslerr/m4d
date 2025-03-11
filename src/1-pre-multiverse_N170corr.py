@@ -1,6 +1,6 @@
 """ Multiverse preprocessing """
 
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import mne
@@ -25,13 +25,29 @@ from src.exceptions import exception_pre_preprocessing_annotations
 """ HEADER END """
 
 
+delete_triggers = { 'N170': ['201', '202'] # responses (correct and incorrect)
+                          # [str(i) for i in list(range(101,141))] + # # scrambled faces 
+                          # [str(i) for i in list(range(141,181))], # scrambled cars            
+                   
+                   }
+# collate triggers so conditions are merged for decoding
+conditions_triggers = {
+    'N170': {
+        'faces': [str(i) for i in list(range(1,41))], # faces
+        'cars': [str(i) for i in list(range(41,81))], # cars
+        'faces_scr': [str(i) for i in list(range(101,141))], # cars
+        'cars_scr': [str(i) for i in list(range(141,181))], # cars
+        
+    },
+}
 
 
 """ ERPCORE """
 
 # DEBUG
-#experiment = "ERN"
+#experiment = "N170"
 #subject = "sub-001"
+experiments = ["N170"]
 
 for experiment in experiments:
     print(f"Processing experiment {experiment}...")
@@ -41,7 +57,8 @@ for experiment in experiments:
 
         # file paths
         download_folder = os.path.join(base_dir, "data", "erpcore", experiment, subject, "eeg")
-        raw_folder = os.path.join(base_dir, "data", "raw", experiment)
+        raw_folder = os.path.join(base_dir, "data", "raw", experiment + "_corr")
+        #raw_folder = os.path.join(base_dir, "data", "raw", experiment)
         if not os.path.exists(raw_folder):
             os.makedirs(raw_folder)
         
@@ -59,7 +76,7 @@ for experiment in experiments:
         
         # collate triggers into conditions in annotations
         raw = rename_annotations(raw.copy(), conditions_triggers[experiment])
-        raw = exception_pre_preprocessing_annotations(experiment, subject, raw.copy())
+        #raw = exception_pre_preprocessing_annotations(experiment, subject, raw.copy())
         
         # get events
         events, event_dict = mne.events_from_annotations(raw)
