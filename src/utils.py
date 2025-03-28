@@ -116,7 +116,7 @@ def recalculate_eog_signal(raw, sfreq=256, has_EOG=True):
         veog_data = ( raw['Fp1'][0] + raw['Fp2'][0] ) / 2
 
     heog_raw = mne.io.RawArray(heog_data, heog_info)
-    veog_raw = mne.io.RawArray(heog_data, veog_info)
+    veog_raw = mne.io.RawArray(veog_data, veog_info)
     #Append them to the data
     raw.add_channels([heog_raw, veog_raw],True)
     # delete original EOG channels

@@ -84,3 +84,5 @@ targets/.Rhistory
 
 # literature (copyright)
 literature
+targets/.RData
+targets/.RData
