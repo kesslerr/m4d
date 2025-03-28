@@ -82,6 +82,10 @@ models/eegnet*
 targets/.RData
 targets/.Rhistory
 
+# etc
+poster/
+presentation/
+
 # literature (copyright)
 literature
 targets/.RData
