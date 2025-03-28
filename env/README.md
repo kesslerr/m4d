@@ -11,7 +11,7 @@ A complete package list can be found in [conda_environment.yml](conda_environmen
 
 The R environment was setup locally on a [MacBook Pro M1](https://support.apple.com/en-us/111893).
 
-A complete package list can be found in (R_packages.csv](R_packages.csv)
+A complete package list can be found in [R_packages.csv](R_packages.csv)
 
 ## Julia (1.10.2)
 
