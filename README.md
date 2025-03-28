@@ -72,7 +72,7 @@ The conda environment is saved in the folder [env](/env). All python/bash/slurm 
 
 The system architecture and hardware details of the HPC used for all *Python* and *Bash* scripts  with *SLURM* job scheduling system can be found in [MPCDF RAVEN user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-details.html).
 
-The *R* environment, used in a *targets* pipeline and all related processing scripts can be found in [targets](/targets).
+The *R* environment, used in a *targets* pipeline and all related processing scripts can be found in [targets](/targets), and a list of packages in [env](/env).
 
 The *Julia* environment for LMM fitting is found in [julia](/julia).
 
