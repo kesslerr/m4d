@@ -5,7 +5,7 @@ setwd("../env")
 
 Rversion <- R.version.string
 # save version string to txt file
-write(Rversion, "Rversion.txt")
+write(Rversion, "R_version.txt")
 
 # make sure to have sourced the activate.R file before running
 
