@@ -80,5 +80,8 @@ models/sliding*
 models/eegnet*
 
 targets/.RData
-targets/.RData
+
+# etc
+poster/
+presentation/
 
