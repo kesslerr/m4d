@@ -80,5 +80,7 @@ models/sliding*
 models/eegnet*
 
 targets/.RData
-targets/.RData
+targets/.Rhistory
 
+# literature (copyright)
+literature
