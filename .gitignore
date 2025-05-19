@@ -96,4 +96,9 @@ targets/_targets/meta/meta
 manuscript
 dashboards
 
-
+# R1
+src/90-*
+src/91-*
+src/eegnet_save*
+literature
+presentation
