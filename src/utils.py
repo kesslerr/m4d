@@ -289,7 +289,7 @@ def ica_eog_emg(raw, method='eog'):
 
     # because it is an "additive" process, the ica component removel on filtered data 
     # can be used on the unfiltered raw data (source: tutorial)
-    # ica.apply() changes the Raw object in-place, so let's make a copy first:
+    # ica.apply() changes the Raw object in-place, so do it on the copy
     ica.apply(raw_new)
 
     return raw_new, len(indices), explained_var_ratio
@@ -401,6 +401,56 @@ def autorej(epochs, version="int"):
     
     return epochs_ar, reject_log
 
+# autoreject parser
+def autorej_seed(epochs, version="int", sampling_seed=1, ar_seed=1):
+    """
+    Run Autoreject on trials.
+    
+    Args:
+        epochs (mne.epochs): epochs object
+        version (str): "int" for only interpolated, "intrej" for interpolated and rejected
+        sampling_seed (int): seed for random sampling of epochs
+        ar_seed (int): seed for autoreject
+        
+    Returns:
+        epochs_ar (mne.epochs): artifact rejected epochs
+        drop_log (pandas.DataFrame): drop log  
+    
+    """
+    if version == "int":
+        n_interpolate = [len(epochs.copy().pick('eeg').ch_names)] # must be list for hyperparam opt; pick 'eeg' in case eog channels are still present
+        consensus = [len(epochs.copy().pick('eeg').ch_names)]
+    elif version == "rej":
+        n_interpolate = [0]
+        consensus = np.linspace(0.2, 0.8, 4)
+    elif version == "intrej":
+        n_interpolate = [4, 8, 16, 32]
+        consensus = np.linspace(0.2, 0.8, 4)
+    
+
+    epochs.del_proj()  # remove proj, don't proj while interpolating (https://autoreject.github.io/stable/auto_examples/plot_auto_repair.html)
+    
+    # sample 25% of epochs to increase speed
+    n_epochs = len(epochs)
+    np.random.seed(sampling_seed) # for subsampling
+    indices = np.random.choice(n_epochs, int(n_epochs * 0.25), replace=False)
+    epochs_sample = epochs[indices].copy()
+    
+    # automated estimation of rejection threshold based on channel and trial per participant
+    cv=5
+    ar = AutoReject(n_interpolate=n_interpolate, 
+                    consensus=consensus,
+                    random_state=ar_seed,
+                    n_jobs=-1, 
+                    cv=cv, 
+                    verbose=False)
+    ar.fit(epochs_sample)
+    
+    epochs_ar, reject_log = ar.transform(epochs, return_log=True)
+        
+    return epochs_ar, reject_log
+
+
 # function to count bads / interpolated from AR reject log matrix
 def summarize_artifact_interpolation(reject_log, version="int"):
     """if epochs are ONLY interpolated (not rejected),
@@ -423,7 +473,7 @@ def summarize_artifact_interpolation(reject_log, version="int"):
     
     # for both versions
     armat_binary = np.where(armat == 2.0, 1.0, armat) 
-    # 2 means interpolated, 1 would be bad(?), but we then interpolate anyway therfore not in the data, 0 means ok
+    # 2 means interpolated, 1 would be bad, 0 means ok
     mean_per_channel = np.mean(armat_binary, axis=0)
     mean_per_trial = np.mean(armat_binary, axis=1)
     interp_frac_channels = {channel: value for channel, value in zip(ch_names, mean_per_channel)}
@@ -575,10 +625,12 @@ def cluster_test(data, side=1):
     X = wide_data.values.T
     t_obs, clusters, cluster_pv, H0 = mne.stats.permutation_cluster_1samp_test(
                                                 X-0.5, # to make it zero centered (theoretically) 
-                                                threshold=None, 
+                                                #threshold=None, # OLD: None = automatically determines the threshold for p=0.05
+                                                threshold={"start": 0, "step": 0.2}, # NEW: TFCE
+                                                n_jobs=-1, # NEW: use all cores
                                                 n_permutations=1024, 
                                                 tail=side, # 0: two-sided, 1: right, -1: left
-                                                stat_fun=None, adjacency=None, n_jobs=None, 
+                                                stat_fun=None, adjacency=None, 
                                                 seed=None, max_step=1, exclude=None, step_down_p=0, 
                                                 t_power=1, out_type='indices', check_disjoint=False, 
                                                 buffer_size=1000, 

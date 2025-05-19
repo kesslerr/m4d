@@ -35,44 +35,33 @@ from src.utils import get_forking_paths, recode_conditions
 
 """ HEADER END """
 
+experiment = "N170"
+
 # DEBUG
-#experiment = "ERN"
 #subject = "sub-001"
 
 # define subject and session by arguments to this script
-if len(sys.argv) != 3:
-    print("Usage: python script.py experiment subject")
+if len(sys.argv) != 2:
+    print("Usage: python script.py subject")
     sys.exit(1)
 else:
-    experiment = sys.argv[1]
-    subject = sys.argv[2]
+    subject = sys.argv[1]
     print(f'Processing Experiment {experiment} Subject {subject}!')
 
-raw_folder = os.path.join(base_dir, "data", "raw", experiment)
-interim_folder = os.path.join(base_dir, "data", "interim", experiment, subject)
-processed_folder = f"/ptmp/kroma/m4d/data/processed/{experiment}/{subject}" #os.path.join(base_dir, "data", "processed", experiment, subject)
-model_folder = os.path.join("/ptmp/kroma/m4d/", "models", "eegnet", experiment, subject)
+
+ar_folder = f"/ptmp/kroma/m4d/data/processed/ar_seeds/{experiment}/{subject}"
+model_folder = os.path.join("/ptmp/kroma/m4d/", "models", "ar_seed", "eegnet", experiment, subject)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 else:
     _ = [os.remove(file) for file in glob(os.path.join(model_folder, "*"))]
 
 
-forking_paths, files, forking_paths_split = get_forking_paths(
-                            base_dir="/ptmp/kroma/m4d/", 
-                            experiment=experiment,
-                            subject=subject, 
-                            sample=None) 
-    
-""" SPECIFICATIONS END"""
+# get all epoch files available
+files = glob(f"{ar_folder}/*epo.fif")
 
-rdm=False
 
-# DEBUG
-#forking_path = forking_paths[0]
-#file = files[0]
-
-def parallel_eegnet(forking_path, file):  
+def parallel_eegnet(file, counter):  
     
     try: # this is a quick and dirty workaround for an error, related to a RAVEN update and braindecode incompatibilities
         from braindecode.preprocessing import exponential_moving_standardize # workaround, because the second import usually works
@@ -85,14 +74,7 @@ def parallel_eegnet(forking_path, file):
     
     # load epochs
     epochs = mne.read_epochs(file, preload=True, verbose=None)
-    
-    if experiment == "RSVP":
-        if rdm == False:
-            # recode conditions
-            epochs = recode_conditions(epochs.copy(), version="superordinate")
-        elif rdm == True:
-            epochs = recode_conditions(epochs.copy(), version="categories")
-    
+        
     # extract data from epochs
     X = epochs.get_data()
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
@@ -105,7 +87,7 @@ def parallel_eegnet(forking_path, file):
     set_random_seeds(108, cuda=False)
     
     # create stratified k folds (same percentage (nearly) of each class in each fold, relative to original ratio)
-    skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=None) # TODO: set seed?
+    skfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=109) # TODO: seed here used because AR seed is investigated
     
     # class weight for imbalanced learning
     class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
@@ -137,13 +119,30 @@ def parallel_eegnet(forking_path, file):
     
     # save performance 
     validation_acc = np.mean(cvs['test_score'])
+    
+    # get filename of file
+    filename = os.path.basename(file)
+    # extract everything before the second last underscore
+    forking_path = "_".join(filename.split("_")[:-2])
+    # extract the seed method
+    seed_type = filename.split("_")[-2]
+    # extract the seed number
+    seed_number = int(filename.split("_")[-1].split("-")[0])
+    # extract ar version
+    ar_version = filename.split("_")[-3]
 
     dfi = pd.DataFrame({'forking_path': [forking_path],
-                    'accuracy': [validation_acc],
+                        'seed_type': [seed_type],
+                        'seed_number': [seed_number],
+                        'ar_version': [ar_version],
+                        'experiment': [experiment],
+                        'subject': [subject],
+                        'accuracy': [validation_acc],
                     })
-    dfi.to_csv(f"{model_folder}/{forking_path}.csv", index=False)
+    dfi.to_csv(f"{model_folder}/{counter}.csv", index=False)
 
 
 # parallel processing
-Parallel(n_jobs=-1)(delayed(parallel_eegnet)(forking_path, file) for forking_path, file in zip(forking_paths, files))
+Parallel(n_jobs=-1)(delayed(parallel_eegnet)(file, counter) for file, counter in zip(files, range(len(files))))
+
 

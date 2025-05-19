@@ -76,12 +76,13 @@ forking_paths, files, forking_paths_split = get_forking_paths(
                             subject=subject, 
                             sample=None)
 
-# We will train the classifier on all left visual vs auditory trials on MEG
+
 def slider(X,y):
-    clf = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear", class_weight='balanced'))
-    time_decod = SlidingEstimator(clf, n_jobs=1, scoring="balanced_accuracy", verbose=True) # "roc_auc" balanced_accuracy  # new, n_jobs=1 to prevent overload
-    # here we use cv=3 just for speed
-    scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=1) # new, n_jobs=1 to prevent overload
+    clf = make_pipeline(StandardScaler(), 
+                        LogisticRegression(solver="liblinear", 
+                                           class_weight='balanced')) #  "balanced" mode: uses y to automatically adjust weights inversely proportional to class frequencies in the input data
+    time_decod = SlidingEstimator(clf, n_jobs=1, scoring="balanced_accuracy", verbose=True) 
+    scores = cross_val_multiscore(time_decod, X, y, cv=10, n_jobs=1) # new, n_jobs=1 to prevent overload; uses stratified k-fold CV under the hood if cv=integer
     # Mean scores across cross-validation splits
     return np.mean(scores, axis=0)
 
