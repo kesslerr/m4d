@@ -93,3 +93,11 @@ targets/.RData
 targets/.RData
 targets/.Rhistory
 targets/_targets/meta/meta
+
+
+# R1
+src/90-*
+src/91-*
+src/eegnet_save*
+literature
+presentation
