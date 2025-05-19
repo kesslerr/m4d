@@ -1,0 +1,35 @@
+% latex table generated in R 4.2.2 by xtable 1.8-4 package
+% Fri Oct 18 11:59:31 2024
+\begin{table}[!htp]
+\begin{widestuff}
+\caption{For each experiment, pairwise post-hoc comparisons in EEGNet decoding performance within each preprocessing step using Tukey adjustment. See Table~\ref{eegnet_omni} for details.} 
+\label{eegnet_contrasts}
+\begin{tabular}{llllllllll}
+  \hline
+variable & level.1 & level.2 & ERN & LRP & MMN & N170 & N2pc & N400 & P3 \\ 
+  \hline
+ocular & None & ICA &   &   &   &   & * &   &   \\ 
+  muscle & None & ICA &   & *** & ** &   & * & . &   \\ 
+  low-pass & None & 6 Hz & . &   &   & *** &   &   &   \\ 
+  low-pass & None & 20 Hz &   &   &   &   &   &   &   \\ 
+  low-pass & None & 45 Hz &   &   &   &   &   &   &   \\ 
+  low-pass & 6 Hz & 20 Hz & * &   &   & *** &   &   &   \\ 
+  low-pass & 6 Hz & 45 Hz & * &   &   & *** &   &   &   \\ 
+  low-pass & 20 Hz & 45 Hz &   &   &   &   &   &   &   \\ 
+  high-pass & None & 0.1 Hz & . & ** &   & * &   &   &   \\ 
+  high-pass & None & 0.5 Hz & ** & *** & . & * &   &   &   \\ 
+  high-pass & 0.1 Hz & 0.5 Hz &   &   &   &   &   &   &   \\ 
+  reference & average & Cz & ** &   &   &   &   & * &   \\ 
+  reference & average & P9/P10 &   & * & . & * &   & * &   \\ 
+  reference & Cz & P9/P10 & * &   &   &   &   &   &   \\ 
+  detrending & None & linear &   & ** & ** & *** &   &   &   \\ 
+  baseline & None & 200 ms &   & *** &   & ** & *** & * & ** \\ 
+  baseline & None & 400 ms &   & *** &   & *** & *** & ** & *** \\ 
+  baseline & 200 ms & 400 ms &   &   &   &   &   &   &   \\ 
+  autoreject & None & interpolate & ** & *** & * & *** & . &   & *** \\ 
+  autoreject & None & reject & ** & *** &   & ** & * &   & * \\ 
+  autoreject & interpolate & reject &   &   &   &   &   &   &   \\ 
+   \hline
+\end{tabular}
+\end{widestuff}
+\end{table}

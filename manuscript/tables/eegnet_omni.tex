@@ -1,0 +1,50 @@
+% latex table generated in R 4.2.2 by xtable 1.8-4 package
+% Fri Apr 11 09:53:13 2025
+\begin{table}[!htp]
+\begin{widestuff}
+\caption{Significant effects of preprocessing on EEGNet decoding performance, separately for each experiment. $F$-tests were performed for each processing step. Stars indicate the signicifance level ('.'~$p<0.1$; '*'~$p<0.05$; '**'~$p<0.01$; '***'~$p<0.001$), false discovery rate-corrected using the Benjamini–Yekutieli procedure. \textit{Ocular}: ocular artifact correction; \textit{muscle}: muscle artifact correction; \textit{ICA}: independent component analysis, \textit{low-pass}: low-pass filter; \textit{high-pass}: high-pass filter.} 
+\label{eegnet_omni}
+\begin{tabular}{llllllll}
+  \hline
+model term & ERN & LRP & MMN & N170 & N2pc & N400 & P3 \\ 
+  \hline
+ocular &   &   &   &   & * &   &   \\ 
+  muscle &   & *** & ** &   & * & . &   \\ 
+  low-pass & . &   &   & *** &   &   &   \\ 
+  high-pass & *** & *** &   & ** & * &   &   \\ 
+  reference & ** & . & . & * &   & ** &   \\ 
+  detrending &   & ** & ** & *** &   &   &   \\ 
+  baseline & * & *** &   & *** & *** & *** & *** \\ 
+  autoreject & *** & *** & ** & *** & ** & . & *** \\ 
+  ocular:muscle & . &   &   &   &   &   &   \\ 
+  ocular:low-pass &   &   &   &   &   &   &   \\ 
+  ocular:high-pass &   &   & . &   &   &   &   \\ 
+  ocular:reference &   & * &   &   & * &   &   \\ 
+  ocular:detrending &   &   &   &   & . &   &   \\ 
+  ocular:baseline &   &   &   &   &   &   &   \\ 
+  ocular:autoreject &   &   &   & ** &   &   &   \\ 
+  muscle:low-pass & ** & * &   & ** &   & ** &   \\ 
+  muscle:high-pass &   & * &   &   &   &   &   \\ 
+  muscle:reference &   &   &   & * &   &   &   \\ 
+  muscle:detrending & . &   & . &   &   &   &   \\ 
+  muscle:baseline &   & . &   &   &   &   &   \\ 
+  muscle:autoreject &   & * &   & * &   &   & . \\ 
+  low-pass:high-pass &   & ** &   &   &   &   &   \\ 
+  low-pass:reference & * &   &   & . &   &   &   \\ 
+  low-pass:detrending & . & *** &   & ** &   &   & . \\ 
+  low-pass:baseline &   &   &   &   &   &   &   \\ 
+  low-pass:autoreject &   & * &   & * &   &   & . \\ 
+  high-pass:reference &   &   &   &   & ** &   &   \\ 
+  high-pass:detrending & * & *** & ** & *** & *** & * & *** \\ 
+  high-pass:baseline &   & *** & . & *** & *** & *** & *** \\ 
+  high-pass:autoreject & *** & *** & * & *** & *** & *** & *** \\ 
+  reference:detrending &   &   & ** &   &   &   &   \\ 
+  reference:baseline &   &   &   &   & * &   &   \\ 
+  reference:autoreject &   & . &   & *** & ** &   &   \\ 
+  detrending:baseline & *** & *** & ** & *** & *** & *** & *** \\ 
+  detrending:autoreject &   & *** & *** & *** & *** & *** & . \\ 
+  baseline:autoreject & * & *** & . & *** & *** & *** & *** \\ 
+   \hline
+\end{tabular}
+\end{widestuff}
+\end{table}
