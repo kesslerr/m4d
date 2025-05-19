@@ -67,14 +67,13 @@ General project structure adapted from [cookiecutter](https://github.com/drivend
 
 # Environments / Packages
 
-
 The conda environment is saved in the folder [env](/env). All python/bash/slurm scripts can be found in [src](/src).
-
-The system architecture and hardware details of the HPC used for all *Python* and *Bash* scripts  with *SLURM* job scheduling system can be found in [MPCDF RAVEN user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-details.html).
 
 The *R* environment, used in a *targets* pipeline and all related processing scripts can be found in [targets](/targets), and a list of packages in [env](/env).
 
-The *Julia* environment for LMM fitting is found in [julia](/julia).
+The *Julia* environment for LMM fitting is found in [env](/env), Julia scripts in [julia](/julia).
+
+The system architecture and hardware details of the HPC used for all *Python* and *Bash* scripts  with *SLURM* job scheduling system can be found in [MPCDF RAVEN user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-details.html).
 
 The system architecture and hardware details of the Macbook Pro (2020, M1) used to process the *targets* pipeline in *R* and *Julia* can be found [here](https://support.apple.com/en-us/111893). A 16 GB RAM version was used.
 
