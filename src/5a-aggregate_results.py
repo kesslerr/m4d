@@ -1,5 +1,5 @@
 
-# aggregate the results of eegnet and sliding 
+# aggregate the results of eegnet 
 
 
 import os, sys

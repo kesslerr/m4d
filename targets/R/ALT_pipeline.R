@@ -136,25 +136,11 @@ heatmap_ALT <- function(data){
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
           strip.text.y = element_text(angle=0)) + # rotate the experiment labels
-    #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-    #                                l1 = 45, # luminance at endpoints
-    #                                l2 = 100, # luminance at midpoints
-    #                                p1 = .9, 
-    #                                p2 = 1.2) +
-    #scale_fill_gradientn(colours=brewer.prgn(100), guide = "colourbar") +
-    #scale_fill_gradientn(colours = c(colors_dark[1], "white", colors_dark[2]), # numerosity colors
-    #                     #values = scales::rescale(c(-2, -0.5, 0, 0.5, 2))
-    #                     ) +
-    #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
-    #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
   scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
     labs(x="Preprocessing step",
          y="",
          #fill="% change\naccuracy")  
          fill="% Deviation from\nmarginal mean")  
-  # Percentage marginal mean discrepancy
-  # Distance from average (in %)
-  # Percent above/below average
-  
+
 }
 

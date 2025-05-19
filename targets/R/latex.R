@@ -1,4 +1,5 @@
 
+# R1: changed fdr correction to unc in F-tests
 
 # Create a custom function to perform replacements within strings (eg emc:mac)
 replace_with_list <- function(string, replacements) {
@@ -11,10 +12,10 @@ replace_with_list <- function(string, replacements) {
 # LATEX OUTPUTs
 output.table.f <- function(data, filename="", thisLabel="", thisCaption=""){
   output <- data %>%
-    select(c(`model term`, experiment, sign.fdr)) %>%
+    select(c(`model term`, experiment, sign.unc)) %>%
     pivot_wider(
       names_from = experiment, 
-      values_from = sign.fdr
+      values_from = sign.unc
     ) %>%
     mutate(across(everything(), ~ if_else(is.na(.x), "/", .x))) %>%
     mutate(`model term` = sapply(`model term`, replace_with_list, replacements = replacements)) %>% # replace the variable names with the full names

@@ -422,7 +422,7 @@
     },
     "bibliometrix": {
       "Package": "bibliometrix",
-      "Version": "4.2.1",
+      "Version": "4.3.3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -443,6 +443,7 @@
         "openxlsx",
         "plotly",
         "pubmedR",
+        "purrr",
         "readr",
         "readxl",
         "rscopus",
@@ -450,10 +451,12 @@
         "stats",
         "stringdist",
         "stringi",
+        "stringr",
         "tidyr",
-        "tidytext"
+        "tidytext",
+        "visNetwork"
       ],
-      "Hash": "e14a002b7abe1232ca9abbb7d5430ea9"
+      "Hash": "35e9e12bfc2af14449642642fe0320ce"
     },
     "bibliometrixData": {
       "Package": "bibliometrixData",
@@ -3952,6 +3955,24 @@
         "R"
       ],
       "Hash": "c826c7c4241b6fc89ff55aaea3fa7491"
+    },
+    "visNetwork": {
+      "Package": "visNetwork",
+      "Version": "2.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "grDevices",
+        "htmltools",
+        "htmlwidgets",
+        "jsonlite",
+        "magrittr",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "3e48b097e8d9a91ecced2ed4817a678d"
     },
     "vroom": {
       "Package": "vroom",

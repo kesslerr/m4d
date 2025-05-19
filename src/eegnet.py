@@ -17,10 +17,7 @@ except:
     from braindecode import EEGClassifier
     from braindecode.util import set_random_seeds
     
-from sklearn.metrics import accuracy_score, balanced_accuracy_score
-from skorch.dataset import ValidSplit
-from skorch.callbacks import LRScheduler
-from sklearn.model_selection import KFold, cross_val_score, cross_val_predict, cross_validate, StratifiedKFold
+from sklearn.model_selection import cross_validate, StratifiedKFold
 from sklearn.utils import compute_class_weight
 import torch
 torch.set_num_threads(1) # check if this helps with overload
@@ -95,17 +92,14 @@ def parallel_eegnet(forking_path, file):
             epochs = recode_conditions(epochs.copy(), version="superordinate")
         elif rdm == True:
             epochs = recode_conditions(epochs.copy(), version="categories")
-        # TODO change way of decoding for RDM
     
     # extract data from epochs
     X = epochs.get_data()
     y = epochs.events[:,-1] - 1 # subtract 1 to get 0 and 1 instead of 1 and 2
     
-    # The exponential moving standardization function seems to work on single trials, therefore:
-    #X_train_ems = np.zeros(X_train.shape)
+    # The exponential moving standardization function works on single trials, therefore:
     for i in range(X.shape[0]):
         X[i,:,:] = exponential_moving_standardize(X[i,:,:], factor_new=0.001, init_block_size=None, eps=1e-4)
-    # This is probably more important than conversion to mV, as this also brings data in the similar range. 
     
     # set random seed    
     set_random_seeds(108, cuda=False)
@@ -124,12 +118,10 @@ def parallel_eegnet(forking_path, file):
         "EEGNetv4", 
         criterion__weight=torch.Tensor(class_weights).to('cpu'), # class weight
         module__final_conv_length='auto',
-        train_split=None, #ValidSplit(0.2),
-        max_epochs=200, # TODO maybe increase, I saw consistent increase from 30 to 100, so maybe we can even more increase
-        batch_size=16, # this worked better than no batch size (which is then very large compared to the amount of data available)
+        train_split=None, 
+        max_epochs=200, 
+        batch_size=16, 
         module__sfreq=sfreq, 
-        #optimizer__lr=lr,
-        #module__drop_prob=0.25,
     )
 
     cvs = cross_validate(net, 
