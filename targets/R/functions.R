@@ -238,7 +238,20 @@ sliding_plot_experiment <- function(data){
 
 
 # raw accuracies in a raincloud plot
-raincloud_acc <- function(data, title = ""){
+raincloud_acc <- function(data, title = "", show_minimal=FALSE){
+  # DEBUG
+  #data <- tar_read(data_eegnet) %>%
+  #  group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
+  #    summarize(accuracy = mean(accuracy)) %>% 
+  #    select(accuracy, everything()) # put the accuracy in the first column
+
+  # DEBUG for ALT pipeline
+  #data <- tar_read(data_eegnet_ALT) %>%
+  #  group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
+  #  summarize(accuracy = mean(accuracy)) %>% 
+  #  select(accuracy, everything()) # put the accuracy in the first column
+  
+    
   names(data)[1] <- str_to_title(names(data)[1])
   DV <- names(data)[1]
   if (DV == "Tsum"){
@@ -246,6 +259,10 @@ raincloud_acc <- function(data, title = ""){
   } else {
     DV_label <- DV
   }
+  
+  # R1: find the actual minimum value for y-lim
+  min_y <- min(data[[DV]], na.rm = TRUE) 
+  min_y <- min(min_y, 0.46) # if Tsum: 0 is anyway included, so no extra code necessary
   
   # https://rpubs.com/rana2hin/raincloud
   p <- ggplot(data, aes(x = experiment, y = !!sym(DV) )) +
@@ -274,10 +291,31 @@ raincloud_acc <- function(data, title = ""){
     labs(title = title,
          x="Experiment",
          y=DV_label)
+  
   if (DV=="Accuracy"){
     p <- p + geom_hline(yintercept=0.5, lty="dashed")
-    p <- p + lims(y=c(0.46,NA))
+    p <- p + lims(y=c(min_y,NA))
   }
+  
+  
+  if (show_minimal==TRUE){ # minimally-preprocessed data, just as a reference for visualization
+    minimal_data <- data %>%
+      filter(emc=="None" & mac=="None" & lpf=="None" & hpf=="None" & 
+               ref=="Cz" & det=="None" & base=="None" & ar=="false") %>%
+      # if several lines per experiments are chosen: mean for each experiment
+      group_by(experiment) %>%
+      summarize(!!sym(DV) := mean(!!sym(DV)), .groups = "drop")  # <- use := here
+    
+    p <- p + geom_point(data=minimal_data, 
+                        aes(x=experiment, y=!!sym(DV)), 
+                        color="black", size=1,
+                        shape=17,
+                        position = position_nudge(x = -0.15))  # shift left)
+  
+  }
+    
+
+  
   p
 }
 
@@ -287,17 +325,19 @@ raincloud_acc <- function(data, title = ""){
 est_emm <- function(model, orig_data){
   # DEBUG
   #model = return_model
-  #data <- tar_read(data_tsum_exp, branches=1)
+  #ata <- tar_read(data_tsum_exp, branches=1)
   #data <- data %>% filter(experiment=="ERN")
   #model <- tar_read(sliding_LMi2, branches=1)
   #model <- model[[1]]
-  
   
   variables = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "hpf","lpf","emc","mac","det","base","ar")
   experiment = unique(orig_data$experiment)
   means = data.frame()
   contra = data.frame()
   fs = data.frame()
+  
+  # DEBUG
+  #variable <- "emc"
   for (variable in variables){
     # MAIN EFFECTS (1 factor)
     emm <- emmeans(model, 
@@ -313,7 +353,8 @@ est_emm <- function(model, orig_data){
       as.data.frame() # leaving out contrasts for now
     dfw$variable <- names(dfw)[1]
     names(dfw)[1] <- "level"
-    dfw <- dfw[, c(7, 1, 2)]  # CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+    #dfw <- dfw[, c(7, 1, 2)]  # R0: CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+    dfw <- dfw[, c(7, 1, 2, 5, 6)]  # R1: add CIs
     if (class(dfw$level) == "logical"){ # to avoid TRUE and FALSE being converted to NA (in variable="ar")
       dfw$level <- as.factor(dfw$level)
     }
@@ -352,6 +393,10 @@ est_emm_int <- function(model, data){
   variables = c("emc","mac","lpf","hpf","ref","det","base","ar") 
   means = data.frame()
   contra = data.frame()
+  
+  # DEBUG
+  #variable.1 <- "emc"
+  #variable.2 <- "mac"
   for (variable.1 in variables) {
     for (variable.2 in variables) {
       if (variable.1 != variable.2) {
@@ -371,7 +416,8 @@ est_emm_int <- function(model, data){
         dfw$variable.2 <- names(dfw)[2] 
         names(dfw)[1] <- "level.1" # grouping variable
         names(dfw)[2] <- "level.2" 
-        dfw <- dfw[, c(8, 9, 1, 2, 3)]  # CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+        #dfw <- dfw[, c(8, 9, 1, 2, 3)]  # R0: CAVE: the SD/CIs can not be used (see warning and values), therefore cutting them
+        dfw <- dfw[, c(8, 9, 1, 2, 3, 6, 7)]  # R1: include CIs
         # to avoid TRUE and FALSE being converted to NA (in variable="ar")
         if (class(dfw$level.1) == "logical") {dfw$level <- as.factor(dfw$level.1)}
         if (class(dfw$level.2) == "logical") {dfw$level <- as.factor(dfw$level.2)}
@@ -417,6 +463,9 @@ est_emm_int <- function(model, data){
 
 # heatmap of emms
 heatmap <- function(data, manual=FALSE, unit=""){
+  # DEBUG
+  #data <- tar_read(vary1step_data_tr) %>% mutate(emmean = accuracy) %>% select(experiment, variable, level, emmean)
+  
   data <- data %>% 
     reorder_variables(column_name = "variable") %>%
     relevel_variables(column_name = "level") %>%
@@ -436,9 +485,6 @@ heatmap <- function(data, manual=FALSE, unit=""){
   
   p <- ggplot(data, aes(y = 0, x = level, fill = emmean)) +
     geom_tile(width = 1) + # 
-    #theme_void() +
-    #geom_text(aes(label = sprintf("%.1f", emmean)), size = 3) + # Add text labels with one decimal place
-    #geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) + # Add text labels with one decimal place and + sign for positives
     facet_grid(experiment~variable, scales="free") +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
@@ -447,17 +493,6 @@ heatmap <- function(data, manual=FALSE, unit=""){
           panel.grid.minor = element_blank(),
           
           strip.text.y = element_text(angle=0)) + # rotate the experiment labels
-    #scale_fill_continuous_diverging(palette = "Blue-Red 3", 
-    #                                l1 = 45, # luminance at endpoints
-    #                                l2 = 100, # luminance at midpoints
-    #                                p1 = .9, 
-    #                                p2 = 1.2) +
-    #scale_fill_gradientn(colours=brewer.prgn(100), guide = "colourbar") +
-    #scale_fill_gradientn(colours = c(colors_dark[1], "white", colors_dark[2]), # numerosity colors
-    #                     #values = scales::rescale(c(-2, -0.5, 0, 0.5, 2))
-    #                     ) +
-    #scale_fill_gradient2(cetcolor::cet_pal(5, "d3")) +  
-    #scale_fill_gradient2(low=cetcolor::cet_pal(2, "d3")[1], mid="white", high=cetcolor::cet_pal(2, "d3")[2]) + 
     scale_fill_gradient2(low=colors_dark[1], mid="white", high=colors_dark[2]) + 
     labs(x="Preprocessing step",
          y="",
@@ -469,9 +504,75 @@ heatmap <- function(data, manual=FALSE, unit=""){
   
   if (manual == TRUE){
     p <- p + labs(fill=paste0("Deviation from\nreference\nforking path",unit))
+    if (max(data$emmean, na.rm = TRUE) < 100) { # this shall infer if it is accuracy / eegnet
+      p <- p + geom_text(aes(label =ifelse(is.na(emmean), "", sprintf("%+.1f", emmean))), size = 3)  
+    } else { # this is done for time-resolved, where tsums are higher
+      p <- p + geom_text(aes(label = ifelse(is.na(emmean), "", sprintf("%+d", round(emmean)))), size = 3)
+    }
   } else {
     p <- p + geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) # Add text labels with one decimal place and + sign for positives
   }
+  
+  p
+}
+
+# R1: heatmap of emms, with significances (by not coloring insignificant cells) 
+heatmap_sign <- function(data, omni_data, manual=FALSE, unit=""){
+  # DEBUG
+  #data <- tar_read(eegnet_HLM_emm_means)
+  #omni_data <- tar_read(eegnet_HLM_emm_omni) # TODO: add to arguments
+  
+  if (manual == FALSE) {
+    data <- data %>% 
+      group_by(experiment) %>%
+      mutate(emmean = (emmean / mean(emmean) - 1) * 100 ) # now it is percent
+  }
+  
+  # R1: add the significances
+  # merge omni data on data, with data keys: experiment, variable; omni_data keys: experiment, `model term`
+  data %<>% 
+    left_join(omni_data, by = c("experiment", "variable" = "model term"), 
+              keep = FALSE) %>% # TRUE: keeps ordering of factors
+    # NA all non-significant emmeans
+    mutate(emmean_thresholded = ifelse(p.value > 0.05, NA, emmean)) # uncorrected
+  
+  
+  data <- data %>% 
+    reorder_variables(column_name = "variable") %>%
+    relevel_variables(column_name = "level") %>%
+    # Apply replacements batchwise across all columns
+    mutate(variable = recode(variable, !!!replacements)) %>%
+    # NEW: replacements for some levels, to not overload the figure too much
+    mutate(level = recode(level, !!!replacements_sparse)) #%>%
+  # delete the experiment compairson in the full data
+  #filter(!(experiment == "ALL" & variable == "experiment")) %>% 
+  # center around zero for better comparability
+  
+  p <- ggplot(data, aes(y = 0, x = level, fill = emmean_thresholded)) +
+    geom_tile(width = 1) + # 
+    facet_grid(experiment~variable, scales="free") +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          
+          strip.text.y = element_text(angle=0)) + # rotate the experiment labels
+    scale_fill_gradient2(low=colors_dark[1], 
+                         mid="white", 
+                         high=colors_dark[2], 
+                         na.value = "white") + 
+    labs(x="Preprocessing step",
+         y="",
+         #fill="% change\naccuracy")  
+         fill="% Deviation from\nmarginal mean")  
+  if (manual == TRUE){
+    p <- p + labs(fill=paste0("Deviation from\nreference\nforking path",unit))
+  } 
+  
+
+  # R1: add numbers to all cells now
+  p <- p + geom_text(aes(label = sprintf("%+.1f", emmean)), size = 3) # Add text labels with one decimal place and + sign for positives
   
   p
 }
@@ -481,6 +582,14 @@ reorder_variables <- function(data, column_name){
   # reorder the factor levels of the variables in the following order
   #new_order = c("ref", "hpf","lpf","emc","mac","det","base","ar") # original
   new_order = c("emc","mac","lpf","hpf","ref","det","base","ar") #c("ref", "lpf","hpf","emc","mac","det","base","ar") # I CHANGED HPF AND LPF
+  data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
+  return(data)
+}
+
+reorder_variables_long <- function(data, column_name){
+  # reorder the factor levels of the variables in the following order
+  #new_order = c("ref", "hpf","lpf","emc","mac","det","base","ar") # original
+  new_order = c("ocular","muscle","low-pass","high-pass","reference","detrending","baseline","autoreject") #c("ref", "lpf","hpf","emc","mac","det","base","ar") # I CHANGED HPF AND LPF
   data[[column_name]] <- factor(data[[column_name]], levels = new_order)  
   return(data)
 }
@@ -579,3 +688,65 @@ plot_multiverse_sankey <- function(data){
   #                                  'average' = "black"))
   p1
 }
+
+r2aic_arrows <- function(r2aic_table){
+  
+  this_data <- r2aic_table %>% filter(metric %in% c("R2", "AIC")) %>%
+    # capitalize interactions
+    mutate(interactions = ifelse(interactions == "false", "Absent", interactions)) %>%
+    mutate(interactions = ifelse(interactions == "true", "Present", interactions))
+  # Prepare data for arrows: Match 'absent' to 'present' per facet & experiment
+  arrow_data <- this_data %>%
+    filter(interactions %in% c("Absent", "Present")) %>%
+    pivot_wider(names_from = interactions, values_from = value, 
+                values_fn = list(value = first)) %>%
+    rename(ymin = Absent, ymax = Present)  # Rename for clarity
+  
+  # AIC
+  p1 <- this_data %>%
+    filter(metric== "AIC") %>%
+    ggplot(aes(y = value, x = experiment, color = interactions)) +
+    geom_point(size = 5) + 
+    scale_color_grey(start = 0.2, end = 0.6) +
+    # Arrows from 'absent' to 'present' per facet & experiment
+    geom_segment(data = arrow_data %>% filter(metric == "AIC"), 
+                 aes(x = experiment, xend = experiment, 
+                     y = ymin, yend = ymax), 
+                 arrow = arrow(type = "closed", length = unit(0.15, "inches")), 
+                 size = 0.8, inherit.aes = FALSE) +
+    
+    facet_wrap(. ~ model, scales = "free_y", 
+               #labeller = labeller(metric = label_both)) +
+    ) +
+    labs(y = "AIC", x = "Experiment", color = "Interactions") +
+    #theme_minimal() +
+    theme(legend.position = c(0.9, 0.85))
+  
+  p2 <- this_data %>%
+    filter(metric== "R2") %>%
+    ggplot(aes(y = value, x = experiment, color = interactions)) +
+    geom_point(size = 5) + 
+    scale_color_grey(start = 0.2, end = 0.6) +
+    # Arrows from 'absent' to 'present' per facet & experiment
+    geom_segment(data = arrow_data %>% filter(metric == "R2"), 
+                 aes(x = experiment, xend = experiment, 
+                     y = ymin, yend = ymax), 
+                 arrow = arrow(type = "closed", length = unit(0.15, "inches")), 
+                 size = 0.8, inherit.aes = FALSE) +
+    
+    facet_wrap(. ~ model, scales = "free_y", 
+               #labeller = labeller(metric = label_both)) +
+    ) +
+    labs(y = "R2", x = "Experiment", color = "Interactions") +
+    #theme_minimal() +
+    theme(legend.position = "none")
+  
+  
+  # merge both plots vertically
+  aicr2plot <- p1 + p2 +
+    plot_layout(ncol = 1) +
+    plot_annotation(title = "Model performance with and without interactions") +
+    theme(plot.title = element_text(hjust = 0.5))
+  aicr2plot
+}
+

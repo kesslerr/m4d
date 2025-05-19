@@ -69,6 +69,7 @@ data/raw/RSVP
 adhered/*
 
 # poster stuff
+poster
 poster/archive
 presentation/archive
 presentation
@@ -79,17 +80,20 @@ models/eegnet.zip
 models/sliding*
 models/eegnet*
 
-targets/.RData
-targets/.Rhistory
-
 # etc
 poster/
 presentation/
 
 # literature (copyright)
 literature
-targets/.RData
-targets/.RData
+
+# R
 targets/.RData
 targets/.Rhistory
 targets/_targets/meta/meta
+
+# submodules
+manuscript
+dashboards
+
+

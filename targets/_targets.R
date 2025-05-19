@@ -28,6 +28,7 @@ tar_option_set( # packages that your targets use
                "ggsankey", # sankey plots
                "ggview", # scale plots correctly for publication
                "cowplot", # to overlay plots
+               "patchwork", # merge plots
                "pals", # some colorscales
                "readr", 
                #"lmerTest", # has p value estimations
@@ -250,7 +251,7 @@ list(
   ## Overview of decoding accuracies for each pipeline
   tar_target(
     name = overview_accuracy,
-    command = raincloud_acc(data_eegnet, title = "EEGNet")
+    command = raincloud_acc(data_eegnet, title = "EEGNet", show_minimal=FALSE)
   ),
   tar_target( # average across subjects for each pipeline
     name = overview_accuracy_avgsub,
@@ -258,11 +259,11 @@ list(
                               group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
-                            title = "EEGNet")
+                            title = "EEGNet", show_minimal=TRUE)
   ),
   tar_target(
     name = overview_tsum,
-    command = raincloud_acc(data_tsum, title = "Time-resolved")
+    command = raincloud_acc(data_tsum, title = "Time-resolved", show_minimal=TRUE)
   ),
   
   tar_target( # average across subjects for each pipeline
@@ -271,7 +272,7 @@ list(
                               group_by(emc, mac, lpf, hpf, ref, base, det, ar, experiment) %>% #ref, hpf, lpf, emc, mac, base, det, ar, experiment
                               summarize(accuracy = mean(accuracy)) %>% 
                               select(accuracy, everything()), # put the accuracy in the first column
-                            title = "Time-resolved")
+                            title = "Time-resolved", show_minimal=TRUE)
   ),
   
   tar_target(
@@ -324,8 +325,8 @@ list(
              filename="ampel_eegnet.png",
              path=figure_output_dir,
              scale=1.1,
-             width=15,
-             height=30,
+             width=20,
+             height=20,
              units="cm",
              dpi=300)
     },
@@ -342,8 +343,8 @@ list(
              filename="ampel_tr.png",
              path=figure_output_dir,
              scale=1.1,
-             width=15,
-             height=30,
+             width=20,
+             height=20,
              units="cm",
              dpi=300)
     },
@@ -359,6 +360,11 @@ list(
   tar_group_by(
     data_tsum_exp, 
     data_tsum, 
+    experiment 
+  ),    
+  tar_group_by( # R1: for BLA analysis
+    data_sliding_exp, 
+    data_sliding, 
     experiment 
   ),    
   tar_group_by(
@@ -391,17 +397,7 @@ list(
   ),
   tar_target(
     r2aic_plot,
-    { r2aic_table %>% filter(metric %in% c("R2", "AIC")) %>%
-        # capitalize interactions
-        mutate(interactions = ifelse(interactions == "false", "Absent", interactions)) %>%
-        mutate(interactions = ifelse(interactions == "true", "Present", interactions)) %>%
-        ggplot(aes(y=value, x=experiment, fill=interactions)) +
-        geom_bar(stat = "identity", position="dodge") +
-        scale_fill_grey(start=0.2, end=0.6) +
-        facet_wrap(metric ~ model, scales = "free_y",
-                   labeller = labeller(metric = label_both)) +
-        labs(y="", x="Experiment", fill="Interactions")
-    }
+    r2aic_arrows(r2aic_table)
   ),
   tar_target(
     name = r2aic_plot_file,
@@ -491,15 +487,15 @@ list(
   ),
   tar_target(sliding_HLMi2_emm_means, sliding_HLMi2_emm[[1]], pattern=map(sliding_HLMi2_emm)), #, iteration="list"
   tar_target(sliding_HLMi2_emm_contrasts, sliding_HLMi2_emm[[2]], pattern=map(sliding_HLMi2_emm)),
-
+  tar_target(sliding_HLMi2_emm_omni, sliding_HLMi2_emm[[3]], pattern=map(sliding_HLMi2_emm)), # R1: new, to be able to plot significance
   
   ## heatmaps of EMMs
   tar_target(eegnet_heatmap,
-            command=heatmap(eegnet_HLM_emm_means)),
+             heatmap_sign(eegnet_HLM_emm_means, eegnet_HLM_emm_omni)),
   tar_target(sliding_heatmap,
-             heatmap(sliding_LM_emm_means)),
+             heatmap_sign(sliding_LM_emm_means, sliding_LM_emm_omni)),
   tar_target(slidingavgaccs_heatmap,
-             heatmap(sliding_HLMi2_emm_means)),
+             heatmap_sign(sliding_HLMi2_emm_means, sliding_HLMi2_emm_omni)), # R1
   tar_target(
     name = heatmaps,
     command = {
@@ -519,11 +515,11 @@ list(
 
   ## interaction plots of EMMs
   tar_target(eegnet_interaction,
-            command=interaction_plot(eegnet_HLMi2_emm_means, "EEGNet - "),
+            command=interaction_plot(eegnet_HLMi2_emm_means, "EEGNet - ", eegnet_HLM_emm_omni), # R1: new add sign. stars
             pattern=map(eegnet_HLMi2_emm_means),
             iteration="list"),
   tar_target(sliding_interaction,
-             command=interaction_plot(sliding_LMi2_emm_means, "Time-resolved - "),
+             command=interaction_plot(sliding_LMi2_emm_means, "Time-resolved - ", eegnet_HLM_emm_omni), # R1: new add sign stars
              pattern = map(sliding_LMi2_emm_means),
              iteration="list"),
   
@@ -541,9 +537,10 @@ list(
              command=varyOneCalculation(data_eegnet)),
   tar_target(vary1step_data_tr,
              command=varyOneCalculation(data_tsum)),
-  tar_target(vary1step_heatmap_en,
+  tar_target(vary1step_heatmap_en, # R1: i can not use the contrast values here, so no extra stat testing for this 
              command={
-               indata <- vary1step_data_en %>% mutate(emmean = accuracy*100) %>% select(experiment, variable, level, emmean)
+               indata <- vary1step_data_en %>% mutate(emmean = accuracy*100) %>% select(experiment, variable, level, emmean) # R1
+               #indata <- vary1step_data_en %>% mutate(emmean = accuracy*100) %>% select(experiment, variable, level, emmean)
                heatmap(indata, manual = TRUE, unit="\nin accuracy\n(absolute %)")
              }),
   tar_target(vary1step_heatmap_tr,
@@ -702,7 +699,9 @@ list(
                  select(-c("Subject")) # remove sub for now
                
                ggpairs(wide_data,
-                       upper = list(continuous = wrap(cor_with_p_adjust))) + # BH multiple comparison correction across all comparisons
+                       upper = list(continuous = wrap(cor_with_p_adjust)), # BH multiple comparison correction across all comparisons
+                       lower = list(continuous = wrap("points", size = 0.7))  # R1; dot size smaller
+                 ) +
                  #labs(title="Random Intercept Correlation Between Experiments") +
                  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
                  labs(title="EEGNet")
@@ -721,7 +720,9 @@ list(
                  select(-c("Subject")) # remove sub for now
                
                ggpairs(wide_data,
-                       upper = list(continuous = wrap(cor_with_p_adjust))) + # BH multiple comparison correction across all comparisons
+                       upper = list(continuous = wrap(cor_with_p_adjust)), # BH multiple comparison correction across all comparisons
+                       lower = list(continuous = wrap("points", size = 0.7))  # R1; dot size smaller
+               ) +
                  #labs(title="Random Intercept Correlation Between Experiments") +
                  theme(axis.text.x = element_text(angle = 90, hjust = 1))  +
                  labs(title="Time-resolved")
@@ -729,8 +730,6 @@ list(
   ),   
 
 
-  # TODO: all plot file tarets to the respective creation target, no need to separate
-  
   # time resolved all forking paths visualization
   tar_target(tr_accuracy_plot,
              cluster_heatmap(data_sliding, data_tsum)
@@ -750,10 +749,14 @@ list(
     format="file"
   ),  
 
-  # baseline artifact investigation
+  # R1 new plot version: baseline artifact investigation
   tar_target(tr_baseline_artifact_plot,
-             plot_baseline_artifacts(data_sliding, data_tsum)
+             plot_baseline_artifacts_with_stats(data_sliding, data_tsum, bla_models_f)
   ),
+  #tar_target(tr_baseline_artifact_plot,
+  #           plot_baseline_artifacts(data_sliding, data_tsum)
+  #),
+  
   tar_target(
     name = tr_baseline_artifact_plot_file,
     command = {
@@ -768,6 +771,51 @@ list(
     },
     format="file"
   ),  
+
+  # R1: Baseline artifact modeling !!
+  
+  # get the information about containing a baseline artifact (BLA) into the data
+  tar_target(
+    name = data_bla_exp,
+    command = {
+      thisExp <- unique(data_sliding_exp$experiment)
+      data <- data_sliding_exp %>%
+        left_join(data_tsum_exp, by=c("emc","mac","lpf","hpf","ref","det","base","ar","experiment")) %>%
+        group_by(emc, mac, lpf, hpf, ref, det, base, ar) %>%
+        summarize(
+         mark = any(times < preceding_intervals[[thisExp]] & significance == TRUE), # preceding_intervals is specified in timeresolved_baseline_artifact.R
+         .groups = 'drop'  # This drops the grouping structure after summarizing
+        ) %>%
+        mutate(bla = ifelse(mark == TRUE, "present", "absent")) %>%
+        mutate(bla = factor(bla, levels=c("absent", "present"))) %>%
+        mutate(experiment = thisExp)
+    },
+    pattern = map(data_sliding_exp, data_tsum_exp),
+  ),
+
+  # model: BLA as function of steps
+  tar_target(
+    name = bla_models,
+    command={
+      glm(formula="bla ~ emc + mac + lpf + hpf + ref + det + base + ar", 
+                            data = data_bla_exp,
+               family = "binomial")
+      },
+    pattern = map(data_bla_exp),
+    iteration = "list"
+  ),
+
+  # extract the significances
+  tar_target(
+    name = bla_models_f,
+    command={as.data.frame(anova(bla_models, test = "Chisq")) %>%
+        mutate(variable = rownames(.)) %>%
+        mutate(experiment = unique(data_bla_exp$experiment)) %>%
+        # delete first row
+        slice(-1)
+      },
+    pattern = map(bla_models, data_bla_exp)
+  ),
 
   ## Exports for Paper
 
@@ -956,8 +1004,8 @@ list(
              filename="eegnet_rfx_demographics.png",
              path=figure_output_dir,
              scale=1.5,
-             width=15,
-             height=20,
+             width=20,
+             height=17,
              units="cm",
              dpi=300)
     },
@@ -969,8 +1017,8 @@ list(
              filename="tr_rfx_demographics.png",
              path=figure_output_dir,
              scale=1.5,
-             width=15,
-             height=20,
+             width=20,
+             height=17,
              units="cm",
              dpi=300)
     },
@@ -1100,7 +1148,7 @@ tar_target(
 ## Overview of decoding accuracies for each pipeline
 tar_target(
   name = overview_accuracy_ALT,
-  command = raincloud_acc(data_eegnet_ALT, title = "EEGNet")
+  command = raincloud_acc(data_eegnet_ALT, title = "EEGNet", show_minimal=FALSE)
 ),
 tar_target( # average across subjects for each pipeline
   name = overview_accuracy_avgsub_ALT,
@@ -1108,11 +1156,12 @@ tar_target( # average across subjects for each pipeline
                             group_by(emc, mac, lpf, hpf, ref, det, base, ar, experiment) %>% #ref, hpf, lpf, emc, mac, det, base, ar, experiment
                             summarize(accuracy = mean(accuracy)) %>% 
                             select(accuracy, everything()), # put the accuracy in the first column
-                          title = "EEGNet")
+                          title = "EEGNet", 
+                          show_minimal=FALSE) # R1: show_minimal makes only partly sense, because even the minimal pipeline was processed a bit more then in the main multiverse
 ),
 tar_target(
   name = overview_tsum_ALT,
-  command = raincloud_acc(data_tsum_ALT, title = "Time-resolved")
+  command = raincloud_acc(data_tsum_ALT, title = "Time-resolved", show_minimal=FALSE)  # R1: show_minimal makes only partly sense, because even the minimal pipeline was processed a bit more then in the main multiverse
 ),
 tar_target(
   name = overview_ALT,

@@ -108,12 +108,17 @@ plot_rfx_demographics <- function(model, demographics, orig_data, framework){
               correct = FALSE, 
               conf.int = FALSE)
   adj_p <- p.adjust(w_result$p.value, method="BH", n=7) # alternative: bonferroni
+
+  # R1: extend y-range so that the annotation is not cut in half
+  y_max = max(data$Intercept, na.rm=TRUE) + 0.02
+  p2 <- p2 + ylim(NA, y_max + 0.015)
   
   if (adj_p < 0.995){
-    p2 <- p2 + annotate("text", x=1.5, y=0.15, label=paste("p=", sprintf("%.2f", adj_p)), color="black", size=4)
+    p2 <- p2 + annotate("text", x=1.5, y=y_max, label=paste("p =", sprintf("%.2f", adj_p)), color="black", size=4)
   } else {
-    p2 <- p2 + annotate("text", x=1.5, y=0.15, label=paste("p≈", sprintf("%.2f", adj_p)), color="black", size=4)
+    p2 <- p2 + annotate("text", x=1.5, y=y_max, label=paste("p ≈", sprintf("%.2f", adj_p)), color="black", size=4)
   }
+  
   # 2. are lines in p1 stat diff
   #agemodel <- lm(Intercept ~ age * sex, data = data)
   #if used, then interpret the interaction term but maybe also the slope

@@ -1,0 +1,13 @@
+LPF (Hz),HPF (Hz),Filter Type,Passband Edge,Transition Bandwidth,-6 dB Cutoff Frequency,Filter Length,Filter Duration (s),Window Type,Passband Ripple,Stopband Attenuation
+None,None,Allpass,-,-,-,1,0.004,Hamming,0.0194,53 dB
+None,0.1,Highpass,0.10,0.10,0.05,8449,33.004,Hamming,0.0194,53 dB
+None,0.5,Highpass,0.50,0.50,0.25,1691,6.605,Hamming,0.0194,53 dB
+6,None,Lowpass,6.00,2.00,7.00,423,1.652,Hamming,0.0194,53 dB
+6,0.1,Bandpass,0.10 - 6.00,0.10 / 2.00,0.05 / 7.00,8449,33.004,Hamming,0.0194,53 dB
+6,0.5,Bandpass,0.50 - 6.00,0.50 / 2.00,0.25 / 7.00,1691,6.605,Hamming,0.0194,53 dB
+30,None,Lowpass,30.00,7.50,33.75,113,0.441,Hamming,0.0194,53 dB
+30,0.1,Bandpass,0.10 - 30.00,0.10 / 7.50,0.05 / 33.75,8449,33.004,Hamming,0.0194,53 dB
+30,0.5,Bandpass,0.50 - 30.00,0.50 / 7.50,0.25 / 33.75,1691,6.605,Hamming,0.0194,53 dB
+45,None,Lowpass,45.00,11.25,50.62,77,0.301,Hamming,0.0194,53 dB
+45,0.1,Bandpass,0.10 - 45.00,0.10 / 11.25,0.05 / 50.62,8449,33.004,Hamming,0.0194,53 dB
+45,0.5,Bandpass,0.50 - 45.00,0.50 / 11.25,0.25 / 50.62,1691,6.605,Hamming,0.0194,53 dB
