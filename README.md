@@ -12,18 +12,18 @@ Working title: Multiverse 4 Decoding (m4d)
 
 **Abstract**:
 
-EEG preprocessing varies widely between studies, but its impact on stimulus classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across all experiments and models, while higher high-pass filter cutoffs consistently enhanced decoding. For EEGNet, baseline correction further improved performance, and for time-resolved classifiers, linear detrending and lower low-pass filter cutoffs were beneficial. Other optimal preprocessing choices were specific for each experiment. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. If not corrected, artifacts facilitate decoding but compromise conclusive interpretation.
+EEG preprocessing varies widely between studies, but its impact on classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across experiments and models, while higher high-pass filter cutoffs consistently increased decoding performance. For EEGNet, baseline correction further increased decoding performance, and for time-resolved classifiers, linear detrending, and lower low-pass filter cutoffs increased decoding performance. The influence of other preprocessing choices was specific for each experiment or event-related potential component. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. While uncorrected artifacts may increase decoding performance, this comes at the expense of interpretability and model validity, as the model may exploit structured noise rather than the neural signal. 
 
 
 # Structure of this repository
 
 Subfolders will contain READMEs which are more specific.
 
-**Note: The multiverse-preprocessed epoch data comprises >15 TB of storage. It will be shared on a suitable data-sharing platform at a later stage.**
+**Note: The multiverse-preprocessed epoch data comprises >15 TB of storage.**
 
 If you are interested in the TBs of epochs data, send me an email and we figure out a way of sharing.
 
-Some single large files can be assed via [Zenodo](https://zenodo.org/records/14223514), such as the summary csvs for analysis and modeling (single accuracy and T-sum values per participant, experiment, forking path).
+Single large files can be assed via [Zenodo](https://zenodo.org/records/14223514), such as the summary csvs for analysis and modeling (single accuracy and T-sum values per participant, experiment, forking path).
 
 If you reuse the scripts or pipeline, please adapt all the paths in the scripts! Paths are sometimes absolute in the scripts because data was shared across file servers for computing requirements.
 
