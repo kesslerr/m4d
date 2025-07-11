@@ -1,7 +1,7 @@
 # How EEG preprocessing shapes decoding performance
 Working title: Multiverse 4 Decoding (m4d)
 
-**Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Communications Biology*. [https://rdcu.be/evH5m](https://rdcu.be/evH5m) 
+**Kessler et al., 2025**, How EEG preprocessing shapes decoding performance. *Communications Biology*. [https://rdcu.be/evH5m](https://rdcu.be/evH5m) 
 
 - Read article [here](https://rdcu.be/evH5m)
 - [Supplementary Information](https://static-content.springer.com/esm/art%3A10.1038%2Fs42003-025-08464-3/MediaObjects/42003_2025_8464_MOESM2_ESM.pdf)
