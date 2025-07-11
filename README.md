@@ -1,18 +1,20 @@
 # How EEG preprocessing shapes decoding performance
 Working title: Multiverse 4 Decoding (m4d)
 
-**Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Arxiv*. [doi.org/10.48550/arXiv.2410.14453](https://doi.org/10.48550/arXiv.2410.14453)
+**Kessler et al., 2024**, How EEG preprocessing shapes decoding performance. *Communications Biology*. [https://rdcu.be/evH5m](https://rdcu.be/evH5m) 
 
-- Read preprint [here](https://doi.org/10.48550/arXiv.2410.14453) 
-
-- Feel free to send me feedback: [via email](mailto:rkesslerx@gmail.com?subject=[Github]%20How%20EEG%20preprocessing%20shapes%20decoding%20performance)
-
+- Read article [here](https://rdcu.be/evH5m)
+- [Supplementary Information](https://static-content.springer.com/esm/art%3A10.1038%2Fs42003-025-08464-3/MediaObjects/42003_2025_8464_MOESM2_ESM.pdf)
+- Read previous versions [here](https://doi.org/10.48550/arXiv.2410.14453) 
+- GitHub repository [https://github.com/kesslerr/m4d](https://github.com/kesslerr/m4d)
+- Zenodo repository (large result files) [https://zenodo.org/records/14223514](https://zenodo.org/records/14223514)
 - An interactive dashboard to explore the impact of changing single preprocessing steps on decoding performance can be found on [streamlit](https://multiverse.streamlit.app).
+
 
 
 **Abstract**:
 
-EEG preprocessing varies widely between studies, but its impact on classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across experiments and models, while higher high-pass filter cutoffs consistently increased decoding performance. For EEGNet, baseline correction further increased decoding performance, and for time-resolved classifiers, linear detrending, and lower low-pass filter cutoffs increased decoding performance. The influence of other preprocessing choices was specific for each experiment or event-related potential component. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. While uncorrected artifacts may increase decoding performance, this comes at the expense of interpretability and model validity, as the model may exploit structured noise rather than the neural signal. 
+EEG preprocessing varies widely between studies, but its impact on classification performance remains poorly understood. To address this gap, we analyzed seven experiments with 40 participants drawn from the public ERP CORE dataset. We systematically varied key preprocessing steps, such as filtering, referencing, baseline interval, detrending, and multiple artifact correction steps, all of which implemented in MNE-Python. Then we performed trial-wise binary classification (i.e., decoding) using neural networks (EEGNet), or time-resolved logistic regressions. Our findings demonstrate that preprocessing choices influenced decoding performance considerably. All artifact correction steps reduced decoding performance across experiments and models, while higher high-pass filter cutoffs consistently increased decoding performance. For EEGNet, baseline correction further increased decoding performance, and for time-resolved classifiers, linear detrending, and lower low-pass filter cutoffs increased decoding performance. The influence of other preprocessing choices was specific for each experiment or event-related potential component. The current results underline the importance of carefully selecting preprocessing steps for EEG-based decoding. While uncorrected artifacts may increase decoding performance, this comes at the expense of interpretability and model validity, as the model may exploit structured noise rather than the neural signal. 
 
 
 # Structure of this repository
@@ -45,7 +47,7 @@ General project structure adapted from [cookiecutter](https://github.com/drivend
 │
 ├── julia              <- Julia scripts.
 │
-├── manuscript         <- Manuscript submodule pointing to a different repository synced with Overleaf
+├── manuscript         <- Plots and Tables
 │
 ├── models             <- Trained models, model predictions, or model summaries
 │
